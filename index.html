@@ -124,8 +124,8 @@
         Three hits ends the program.</p>
       <p class="brief" id="brief-velocity" hidden>Voyager's court, walls lit in holodeck gold. An
         eight-inch disc runs the walls, ricocheting off every surface — and when it has run them
-        long enough, it comes looking for you. <b>Shoot it</b> to send it back where your muzzle
-        points, and it returns faster every time. Take it in the head or the chest and that is a
+        long enough, it comes looking for you. <b>Shoot it</b> and it ricochets off your
+        beam — angle in, angle out — and comes back faster every time. Take it in the head or the chest and that is a
         full impact: one of your three pips. There is no remote here and nothing else to shoot —
         just you, the disc, and the walls.</p>
       <div class="progpick" role="group" aria-label="Holodeck program">
@@ -183,7 +183,7 @@
       <dl class="legend">
         <dt>Trigger tap</dt><dd>Phaser bolt — instant, always ready. No aim assist unless you dial some in</dd>
         <dt>Light-targets</dt><dd>They hold a charge, shrink as you burn it off, and bolt when your muzzle crosses them</dd>
-        <dt>Velocity</dt><dd>Shoot the disc to send it back; take it in the head or chest and it costs a pip</dd>
+        <dt>Velocity</dt><dd>Shots ricochet the disc off at an angle &mdash; square it up to send it straight back. Take it in the head or chest and it costs a pip</dd>
         <dt>Trigger hold</dt><dd>Wide red beam &mdash; sweeps several targets at once, then recharges</dd>
         <dt>Thumb key</dt><dd>B / Y fires as well &mdash; the way the swept TNG shell is meant to be worked</dd>
         <dt>A / X or grip</dt><dd>Cycle that hand through whatever you left in the rotation</dd>
@@ -751,13 +751,26 @@ function velocityLaunch() {
   VEL.disc.visible = true; VEL.live = true;
   AudioKit.serve();
 }
+const _dn = new THREE.Vector3();
 function onDiscStruck(dir) {
   VEL.speed = Math.min(TUNE.discSpeedMax, VEL.speed * TUNE.discSpeedStep);
-  VEL.v.copy(dir).normalize();
-  VEL.v.x += (Math.random() - 0.5) * 0.35;               // never a pure ping-pong
-  VEL.v.y += (Math.random() - 0.5) * 0.25;
-  VEL.v.z += (Math.random() - 0.5) * 0.35;
-  VEL.v.normalize().multiplyScalar(VEL.speed);
+  _dn.copy(dir).normalize();
+  const closing = VEL.v.dot(_dn);        // negative while the disc is coming at you
+  if (closing < 0) {
+    VEL.v.addScaledVector(_dn, -2 * closing);          // mirror it off the shot: angle in, angle out
+  } else {
+    VEL.v.addScaledVector(_dn, VEL.speed * 0.6);       // already running — the hit just drives it harder
+  }
+  VEL.v.x += (Math.random() - 0.5) * VEL.speed * 0.12; // a little scatter, never a pure ping-pong
+  VEL.v.y += (Math.random() - 0.5) * VEL.speed * 0.10;
+  VEL.v.z += (Math.random() - 0.5) * VEL.speed * 0.12;
+  const outward = VEL.v.dot(_dn), least = VEL.speed * 0.25;
+  if (outward < least) VEL.v.addScaledVector(_dn, least - outward); // a hit always sends it away
+  const sp = VEL.v.length() || 1;
+  VEL.v.multiplyScalar(VEL.speed / sp);
+  // a short streak along the new heading, so you can read where it went
+  flashLine(VEL.disc.position.clone(),
+            VEL.disc.position.clone().addScaledVector(VEL.v, 0.14), 0x9fe8ff, 0.2);
   VEL.sinceStrike = 0;
   VEL.strikes++; game.strikes = VEL.strikes;
   addScore(TUNE.ptsDiscStrike); bumpStreak();

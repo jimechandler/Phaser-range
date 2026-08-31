@@ -103,6 +103,14 @@
     font-family:var(--display);text-transform:uppercase;letter-spacing:.24em;font-size:15px;
     color:var(--pale);opacity:0;transition:opacity .3s}
 
+  /* pause overlay */
+  #pause{position:fixed;inset:0;z-index:15;display:flex;align-items:center;justify-content:center;
+    background:rgba(7,7,12,.82)}
+  .pausecard{border-left:3px solid var(--amber);padding:22px 26px;background:var(--panel);max-width:420px}
+  .pausecard h2{font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;
+    font-size:34px;color:var(--grid);margin:0 0 16px;font-weight:700}
+  .pausecard .actions{margin-bottom:12px}
+
   @media (prefers-reduced-motion: reduce){ *{transition:none !important} }
 </style>
 </head>
@@ -187,15 +195,28 @@
         <dt>Trigger hold</dt><dd>Wide red beam &mdash; sweeps several targets at once, then recharges</dd>
         <dt>Thumb key</dt><dd>B / Y fires as well &mdash; the way the swept TNG shell is meant to be worked</dd>
         <dt>A / X or grip</dt><dd>Cycle that hand through whatever you left in the rotation</dd>
+        <dt>Thumbstick</dt><dd>Flick right to raise the power setting, left to lower it &mdash; ten detents, stun to kill, the lamp runs green to red (desktop: mouse wheel). Click the stick to pause</dd>
         <dt>Your body</dt><dd>Dodge stun bolts physically — sidestep, duck</dd>
         <dt>Bat'leth</dt><dd>One blade, either hand &mdash; take it in the other hand to pass it, or hold it in both for a two-handed grip. Deflects stun bolts even held still; a returned bolt that hits the remote pays 200</dd>
         <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD step · Shift duck · B or 1/2/3 to change weapon</dd>
       </dl>
-      <p class="footnote">M0.6 feel prototype — telegraph timing, phaser feel, and a first bat'leth. On Quest, open this
+      <p class="footnote">M0.8 feel prototype — telegraph timing, phaser feel, and a first bat'leth. On Quest, open this
         page in the headset browser. If the Enter button stays unavailable inside an embedded viewer,
         open the page in its own tab.</p>
       <p class="footnote" id="diag" style="font-family:monospace;font-size:11px;color:#6a6a5c;line-height:1.6"></p>
     </div>
+  </div>
+</div>
+
+<div id="pause" hidden>
+  <div class="pausecard">
+    <p class="eyebrow">Holodeck</p>
+    <h2>Program suspended</h2>
+    <div class="actions">
+      <button class="lcars" id="btn-resume">Resume</button>
+      <button class="lcars alt" id="btn-quit">Main menu</button>
+    </div>
+    <p class="footnote">P or thumbstick click pauses. In the headset: trigger resumes, A / X returns here.</p>
   </div>
 </div>
 
@@ -270,7 +291,7 @@ const TUNE = {
   // — velocity (VOY) —
   discRadius: 0.10,        // m — the canon disc is about eight inches
   discSpeed: 3.0,          // m/s serve
-  discSpeedStep: 1.05,     // per strike
+  discImpulse: 2.2,        // m/s of shove a phaser hit adds along the shot (scaled by power)
   discSpeedMax: 11.0,
   courtX: 3.4, courtZ: 3.4, courtY: 3.0,       // m half-extents / height of the court
   ptsDiscStrike: 50,
@@ -426,7 +447,7 @@ function buildPhaser() {
   const brushed  = new THREE.MeshStandardMaterial({ color: 0x8a8f99, metalness: 0.9, roughness: 0.3 });  brushed.name  = 'Mat_BrushedSteel';
   const amber    = new THREE.MeshBasicMaterial({ color: 0xffb347 }); amber.name = 'Mat_EmitterAmber';
   const g = new THREE.Group(); g.name = 'Phaser_Type2_FirstContact';
-  const m = new THREE.Group(); m.name = 'PhaserModel'; m.rotation.x = -0.5; g.add(m); // pistol rake, visual only
+  const m = new THREE.Group(); m.name = 'PhaserModel'; m.rotation.x = 0.35; g.add(m); // barrel tilts UP off the handle
   const body = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.045, 0.17), gunmetal);
   body.name = 'PhaserBody'; body.position.set(0, 0.015, -0.03); m.add(body);
   const grip = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.09, 0.045), gunmetal);
@@ -437,7 +458,18 @@ function buildPhaser() {
   tip.name = 'PhaserTip'; tip.position.set(0, 0.028, -0.152); m.add(tip);
   const muzzle = new THREE.Object3D(); muzzle.name = 'Muzzle';
   muzzle.position.copy(tip.position); m.add(muzzle);
+  // power dial: a rotary on the spine — the lamp walks clockwise from stun to kill
+  const dialBase = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.005, 16),
+    new THREE.MeshStandardMaterial({ color: 0x24262c, metalness: 0.6, roughness: 0.5 }));
+  dialBase.material.name = 'Mat_DialHousing';
+  dialBase.name = 'PowerDial'; dialBase.position.set(0, 0.041, 0.028); m.add(dialBase);
+  const dialPivot = new THREE.Group(); dialPivot.name = 'PowerDialPivot';
+  dialPivot.position.copy(dialBase.position); m.add(dialPivot);
+  const lampMat = new THREE.MeshBasicMaterial({ color: 0x22cc44 }); lampMat.name = 'Mat_PowerLamp';
+  const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.0035, 8, 8), lampMat);
+  lamp.name = 'PowerLampFC'; lamp.position.set(0, 0.004, -0.008); dialPivot.add(lamp);
   g.userData.muzzle = muzzle; g.userData.tip = tip;
+  g.userData.power = 5; g.userData.powerLamp = lampMat; g.userData.dialPivot = dialPivot;
   g.userData.isGun = true; g.userData.label = 'PHASER · FIRST CONTACT';
   return g;
 }
@@ -480,7 +512,14 @@ function buildType2TNG() {
   tip.name = 'PhaserTip'; tip.position.set(0, 0.019, -0.098); m.add(tip);
   const muzzle = new THREE.Object3D(); muzzle.name = 'Muzzle';
   muzzle.position.copy(tip.position); m.add(muzzle);
+  // power strip across the shell: the lamp slides left (stun) to right (kill)
+  const rail = new THREE.Mesh(new THREE.BoxGeometry(0.032, 0.003, 0.008), panel);
+  rail.name = 'PowerRail'; rail.position.set(0, 0.0555, -0.020); rail.rotation.x = -0.10; m.add(rail);
+  const lampMat2 = new THREE.MeshBasicMaterial({ color: 0x22cc44 }); lampMat2.name = 'Mat_PowerLamp';
+  const slider = new THREE.Mesh(new THREE.SphereGeometry(0.0035, 8, 8), lampMat2);
+  slider.name = 'PowerLampTNG'; slider.position.set(-0.013, 0.058, -0.020); m.add(slider);
   g.userData.muzzle = muzzle; g.userData.tip = tip;
+  g.userData.power = 5; g.userData.powerLamp = lampMat2; g.userData.powerSlider = slider;
   g.userData.isGun = true; g.userData.label = 'PHASER · TNG TYPE 2';
   return g;
 }
@@ -752,22 +791,20 @@ function velocityLaunch() {
   AudioKit.serve();
 }
 const _dn = new THREE.Vector3();
-function onDiscStruck(dir) {
-  VEL.speed = Math.min(TUNE.discSpeedMax, VEL.speed * TUNE.discSpeedStep);
+function onDiscStruck(dir, power) {
   _dn.copy(dir).normalize();
   const closing = VEL.v.dot(_dn);        // negative while the disc is coming at you
-  if (closing < 0) {
-    VEL.v.addScaledVector(_dn, -2 * closing);          // mirror it off the shot: angle in, angle out
-  } else {
-    VEL.v.addScaledVector(_dn, VEL.speed * 0.6);       // already running — the hit just drives it harder
-  }
-  VEL.v.x += (Math.random() - 0.5) * VEL.speed * 0.12; // a little scatter, never a pure ping-pong
-  VEL.v.y += (Math.random() - 0.5) * VEL.speed * 0.10;
-  VEL.v.z += (Math.random() - 0.5) * VEL.speed * 0.12;
-  const outward = VEL.v.dot(_dn), least = VEL.speed * 0.25;
+  if (closing < 0) VEL.v.addScaledVector(_dn, -1.7 * closing);   // the blow kills its approach and bounces it
+  VEL.v.addScaledVector(_dn, TUNE.discImpulse * (0.6 + 0.08 * (power || 5))); // and shoves it down the shot line
+  VEL.v.x += (Math.random() - 0.5) * 0.3;                        // a touch of scatter
+  VEL.v.y += (Math.random() - 0.5) * 0.25;
+  VEL.v.z += (Math.random() - 0.5) * 0.3;
+  const spd = VEL.v.length() || 0.001;
+  const outward = VEL.v.dot(_dn), least = spd * 0.3;
   if (outward < least) VEL.v.addScaledVector(_dn, least - outward); // a hit always sends it away
-  const sp = VEL.v.length() || 1;
-  VEL.v.multiplyScalar(VEL.speed / sp);
+  const capped = Math.min(TUNE.discSpeedMax, VEL.v.length());
+  VEL.v.multiplyScalar(capped / (VEL.v.length() || 0.001));
+  VEL.speed = capped;                     // the rally keeps whatever pace the blows have built
   // a short streak along the new heading, so you can read where it went
   flashLine(VEL.disc.position.clone(),
             VEL.disc.position.clone().addScaledVector(VEL.v, 0.14), 0x9fe8ff, 0.2);
@@ -802,9 +839,10 @@ function velocityTick(dt) {
     _tmp.copy(_head).sub(d.position);
     if (_tmp.lengthSq() > 0.04) {
       _tmp.normalize();
+      const keep = VEL.v.length() || VEL.speed;
       VEL.v.addScaledVector(_tmp, TUNE.discSeek * dt);
       const s = VEL.v.length() || 1;
-      VEL.v.multiplyScalar(VEL.speed / s);
+      VEL.v.multiplyScalar(keep / s);
     }
   }
   _tmp.copy(_head); _tmp.y -= 0.45;                       // head or chest counts as a full impact
@@ -824,7 +862,7 @@ function applyProgram() {
 
 /* ───────────────────── game state ───────────────────── */
 const game = {
-  running: false, over: false, mode: null,           // 'vr' | 'desk'
+  running: false, over: false, paused: false, mode: null,  // 'vr' | 'desk'
   program: 'range', strikes: 0,                      // 'range' | 'velocity'
   score: 0, streak: 0, bestStreak: 0, wave: 1,
   pips: TUNE.pips, shots: 0, hits: 0, pops: 0, tags: 0, dodges: 0,
@@ -896,14 +934,11 @@ const _vis = new THREE.Vector3();
 function getMuzzleRay(phaser, out0, outD) {
   if (phaser.userData.useCameraRay) {        // desktop: aim exactly down the reticle
     camera.getWorldPosition(out0); camera.getWorldDirection(outD);
-  } else if (phaser.parent) {                // VR: shots follow where the controller points,
-    phaser.parent.getWorldPosition(out0);    // never the prop's cosmetic rake
-    phaser.parent.getWorldDirection(outD); outD.multiplyScalar(-1);
-  } else {
+  } else {                                    // VR: the shot runs down the barrel, coincident with the prop
     phaser.userData.muzzle.getWorldPosition(out0);
-    phaser.userData.muzzle.getWorldDirection(outD); outD.multiplyScalar(-1);
+    phaser.userData.muzzle.getWorldDirection(outD); outD.multiplyScalar(-1); // -Z forward
   }
-  phaser.userData.muzzle.getWorldPosition(_vis); // beam visuals always leave the emitter
+  phaser.userData.muzzle.getWorldPosition(_vis); // beam visuals leave the emitter
 }
 
 function fireBolt(phaser) {
@@ -927,13 +962,13 @@ function fireBolt(phaser) {
     remoteJuke();  // shot went close — the remote saw it and breaks off
   const end = hitPoint || _rayO.clone().add(_rayD.clone().multiplyScalar(25));
   flashLine(_vis.clone(), end, 0xff1018, 0.09); // tap bolt reads red, same family as the beam
-  if (bestKind === 'target') damageTarget(bestIdx, 1);
+  if (bestKind === 'target') damageTarget(bestIdx, boltDamage(phaser));
   else if (bestKind === 'bolt') { const b = stunBolts[bestIdx];
     popEffect(b.position, 0xff5533); AudioKit.boltDown(); despawnBolt(bestIdx);
     addScore(TUNE.ptsBoltDown); bumpStreak(); toast('BOLT INTERCEPTED'); }
   else if (bestKind === 'remote') onRemoteTagged();
   else if (bestKind === 'chip') onRemoteChipped();
-  else if (bestKind === 'disc') onDiscStruck(_rayD);
+  else if (bestKind === 'disc') onDiscStruck(_rayD, phaser.userData.power);
   hudDirty = true;
 }
 
@@ -944,11 +979,12 @@ function beamTick(phaser, dt) {
   haptic(phaser, 0.35, 30);
   for (let i = targets.length - 1; i >= 0; i--)
     if (rayHit(_rayO, _rayD, targets[i].position, targetRadius(), TUNE.beamSweep) > 0) {
-      game.hits++; game.shots++; damageTarget(i, TUNE.beamDPS * dt); }
+      game.hits++; game.shots++; damageTarget(i, TUNE.beamDPS * dt * beamPowerScale(phaser)); }
   if (game.program === 'velocity') {
     if (VEL.live && rayHit(_rayO, _rayD, VEL.disc.position, TUNE.discRadius, TUNE.beamSweep) > 0) {
       VEL.v.addScaledVector(_rayD, 7 * dt);              // the beam shoves it, the bolt scores it
-      const s = VEL.v.length(); if (s > VEL.speed) VEL.v.multiplyScalar(VEL.speed / s);
+      const s = VEL.v.length(); if (s > TUNE.discSpeedMax) VEL.v.multiplyScalar(TUNE.discSpeedMax / s);
+      VEL.speed = Math.max(VEL.speed, Math.min(TUNE.discSpeedMax, VEL.v.length()));
     }
     return;
   }
@@ -994,7 +1030,10 @@ function drawHUD() {
   c.fillStyle = '#cc99cc'; c.font = dsp(34, 400); c.fillText('TOLERANCE', 140, 280);
   for (let i = 0; i < TUNE.pips; i++) { c.beginPath(); c.arc(170 + i * 90, 375, 30, 0, Math.PI * 2);
     c.fillStyle = i < game.pips ? '#f2c14e' : '#232330'; c.fill(); }
-  if (game.over) {
+  if (game.paused) {
+    c.fillStyle = '#99ccff'; c.font = dsp(44, 600);
+    c.fillText('PAUSED — TRIGGER RESUMES · A / X ENDS PROGRAM', 140, 400);
+  } else if (game.over) {
     c.fillStyle = '#99ccff'; c.font = dsp(44, 600);
     c.fillText('PROGRAM COMPLETE — PULL TRIGGER TO RESTART', 140, 400);
   } else {
@@ -1031,6 +1070,58 @@ function triggerUp(phaser, src) {
     beamRecharging = true;
   } else if (!game.over) fireBolt(phaser);
 }
+/* Pause: thumbstick click or P. The program holds; trigger resumes, A/X walks out. */
+function setPause(on) {
+  if (on && (!game.running || game.over || game.paused)) return;
+  if (!on && !game.paused) return;
+  game.paused = on;
+  if (on) {
+    AudioKit.beamStop();
+    activePhasers.forEach(p => { p.userData.holding = false; p.userData.beaming = false; });
+    if (game.mode === 'desk') { pauseEl.hidden = false; try { document.exitPointerLock(); } catch (e) {} }
+    AudioKit.ackBeep();
+  } else {
+    pauseEl.hidden = true;
+    if (game.mode === 'desk') lockPointer(renderer.domElement);
+  }
+  hudDirty = true; drawHUD();
+}
+function togglePause() { setPause(!game.paused); }
+function quitToMenu() {
+  game.paused = false; game.running = false; game.over = false;
+  AudioKit.beamStop(); AudioKit.humStop();
+  pauseEl.hidden = true;
+  const s = renderer.xr.getSession && renderer.xr.getSession();
+  if (s) { try { s.end(); } catch (e) {} return; }   // the session-end handler restores the lobby
+  game.mode = null;
+  hudEl.style.display = 'none'; lobbyEl.style.display = 'flex';
+  try { document.exitPointerLock(); } catch (e) {}
+}
+
+/* Phaser power: setting 1 is stun, 10 is kill. Damage, lamp colour and the disc's
+   shove all follow it. */
+function powerColor(mat, p) { mat.color.setHSL(0.33 * (1 - (p - 1) / 9), 1.0, 0.5); }
+function updatePowerVisual(w) {
+  const u = w.userData; if (!u.isGun) return;
+  if (u.powerLamp) powerColor(u.powerLamp, u.power);
+  if (u.dialPivot) u.dialPivot.rotation.y = -((u.power - 1) / 9) * (Math.PI * 1.5); // clockwise sweep
+  if (u.powerSlider) u.powerSlider.position.x = -0.013 + ((u.power - 1) / 9) * 0.026; // left → right
+}
+function powerLabel(p) { return p <= 3 ? 'STUN' : p >= 8 ? 'KILL' : 'DISRUPT'; }
+function changePower(w, delta) {
+  const u = w.userData; if (!u.isGun) return;
+  const next = Math.max(1, Math.min(10, u.power + delta));
+  if (next === u.power) return;
+  u.power = next; updatePowerVisual(w);
+  AudioKit.unlock();
+  if (typeof AudioKit.chip === 'function') blipPower(next);
+  haptic(w, 0.25, 25);
+  toast('SETTING ' + next + ' · ' + powerLabel(next));
+}
+function blipPower(n) { AudioKit.ackBeep(); }
+function boltDamage(w) { return 0.5 + 0.25 * ((w.userData.power || 5)); } // setting 10 one-shots a stock target
+function beamPowerScale(w) { return 0.4 + 0.12 * ((w.userData.power || 5)); }
+
 /* one hand = a rack of weapons; the non-trigger buttons cycle through it */
 function cycleWeapon(hand, dir) {
   AudioKit.unlock();
@@ -1045,6 +1136,7 @@ function cycleWeapon(hand, dir) {
 }
 function handWeapon(hand) { return hand.weapons[hand.idx]; }
 function handFire(hand, down, src) {
+  if (game.paused) { if (down) setPause(false); return; }
   const w = handWeapon(hand);
   if (!w.userData.isGun) { if (down && game.over) tryRestart(); return; }
   down ? triggerDown(w, src) : triggerUp(w, src);
@@ -1099,6 +1191,7 @@ for (let i = 0; i < 2; i++) {
   c.addEventListener('selectstart', () => handFire(hand, true, 'trigger'));
   c.addEventListener('selectend', () => handFire(hand, false, 'trigger'));
   c.addEventListener('squeezestart', () => cycleWeapon(hand, 1));
+  updatePowerVisual(fc); updatePowerVisual(tng);
   playerRig.add(c); vrControllers.push(c); hands.push(hand);
 }
 
@@ -1137,12 +1230,27 @@ function bladeGripTick() {
 function pollHandButtons() {
   for (const hand of hands) {
     const gp = hand.src && hand.src.gamepad;
-    if (!gp || !gp.buttons) { hand.prevLower = hand.prevUpper = false; continue; }
+    if (!gp || !gp.buttons) { hand.prevLower = hand.prevUpper = hand.prevStick = false; hand.prevAx = 0; continue; }
     const lower = !!(gp.buttons[4] && gp.buttons[4].pressed);
     const upper = !!(gp.buttons[5] && gp.buttons[5].pressed);
-    if (lower && !hand.prevLower) cycleWeapon(hand, 1);
-    if (upper !== hand.prevUpper) handFire(hand, upper, 'thumb');
-    hand.prevLower = lower; hand.prevUpper = upper;
+    const stick = !!(gp.buttons[3] && gp.buttons[3].pressed);   // thumbstick click
+    const ax = (gp.axes && gp.axes.length > 2) ? gp.axes[2] : 0; // thumbstick x
+    if (stick && !hand.prevStick) togglePause();
+    if (game.paused) {
+      if (lower && !hand.prevLower) quitToMenu();               // A/X ends the program from pause
+      if (upper && !hand.prevUpper) togglePause();              // any fire key resumes
+    } else {
+      if (lower && !hand.prevLower) cycleWeapon(hand, 1);
+      if (upper !== hand.prevUpper) handFire(hand, upper, 'thumb');
+      const w = hand.weapons.length ? handWeapon(hand) : null;
+      const pAx = hand.prevAx === undefined ? 0 : hand.prevAx;  // first flick after connect must count
+      if (w && w.userData.isGun) {                              // a flick right arms it up, left backs it down
+        if (ax > 0.6 && pAx <= 0.6) changePower(w, 1);
+        if (ax < -0.6 && pAx >= -0.6) changePower(w, -1);
+      }
+      hand.prevAx = ax;
+    }
+    hand.prevLower = lower; hand.prevUpper = upper; hand.prevStick = stick;
   }
 }
 
@@ -1199,17 +1307,25 @@ function setupDesk() {
   camera.add(bl); desk.batleth = bl; activeBlades.push(bl);
   const none = buildEmptyHand(); camera.add(none);
   desk.hand = { all: { fc: p, tng: t2, batleth: bl, none }, weapons: [], idx: 0, desk: true };
+  updatePowerVisual(p); updatePowerVisual(t2);
   rebuildRacks();
   const cv = renderer.domElement;
   cv.addEventListener('click', () => { if (game.mode === 'desk' && !desk.locked) lockPointer(cv); });
-  document.addEventListener('pointerlockchange', () => { desk.locked = document.pointerLockElement === cv; });
+  document.addEventListener('pointerlockchange', () => { desk.locked = document.pointerLockElement === cv;
+    if (!desk.locked && game.mode === 'desk' && game.running && !game.over && !game.paused) setPause(true); });
   document.addEventListener('mousemove', e => { if (!desk.locked || game.mode !== 'desk') return;
     desk.yaw -= e.movementX * 0.0022; desk.pitch -= e.movementY * 0.0022;
     desk.pitch = Math.max(-1.35, Math.min(1.35, desk.pitch)); });
   document.addEventListener('mousedown', e => { if (desk.locked && game.mode === 'desk' && e.button === 0) handFire(desk.hand, true, 'trigger'); });
   document.addEventListener('mouseup', e => { if (game.mode === 'desk' && e.button === 0) handFire(desk.hand, false, 'trigger'); });
+  document.addEventListener('wheel', e => {
+    if (game.mode !== 'desk' || !desk.hand || game.paused) return;
+    const w = handWeapon(desk.hand);
+    if (w && w.userData.isGun) changePower(w, e.deltaY < 0 ? 1 : -1);
+  }, { passive: true });
   document.addEventListener('keydown', e => { desk.keys[e.code] = true;
-    if (game.mode !== 'desk' || !desk.hand) return;
+    if (e.code === 'KeyP' && game.mode === 'desk') { togglePause(); return; }
+    if (game.mode !== 'desk' || !desk.hand || game.paused) return;
     if (e.code === 'KeyB' || e.code === 'KeyQ') cycleWeapon(desk.hand, 1);
     if (e.code === 'Digit1' || e.code === 'Digit2' || e.code === 'Digit3') {
       const want = Number(e.code.slice(5)) - 1;
@@ -1443,13 +1559,16 @@ function targetsTick(dt) {
 
 /* ───────────────────── program control ───────────────────── */
 const lobbyEl = document.getElementById('lobby'), hudEl = document.getElementById('hud');
+const pauseEl = document.getElementById('pause');
+document.getElementById('btn-resume').addEventListener('click', () => setPause(false));
+document.getElementById('btn-quit').addEventListener('click', quitToMenu);
 const toastEl = document.getElementById('toast');
 let toastTimer = null;
 function toast(msg) { toastEl.textContent = msg; toastEl.style.opacity = 1;
   clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.style.opacity = 0, 1400); }
 
 function resetGame() {
-  Object.assign(game, { running: true, over: false, score: 0, streak: 0, bestStreak: 0,
+  Object.assign(game, { running: true, over: false, paused: false, score: 0, streak: 0, bestStreak: 0,
     wave: 1, pips: TUNE.pips, shots: 0, hits: 0, pops: 0, tags: 0, dodges: 0, strikes: 0,
     popsThisWave: 0, startTime: perf });
   while (stunBolts.length) despawnBolt(0);
@@ -1651,7 +1770,7 @@ renderer.setAnimationLoop((time) => {
   if (renderer.xr.isPresenting) pollHandButtons();
   bladeGripTick();
   if (game.mode === 'desk') deskTick(dt);
-  if (game.running || game.over) {
+  if (!game.paused && (game.running || game.over)) {
     updateAim();
     if (game.program === 'velocity') {
       if (game.running) velocityTick(dt);

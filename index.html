@@ -180,9 +180,12 @@
         <p class="hint">Serve pace, and how far the walls stand. 3.4 is the classic court; 5.6 fills the whole arena.</p>
 
         <h2>Aim</h2>
-        <div class="row"><label for="s-ast">Assist</label>
+        <div class="row"><label for="s-ast">Bolt assist</label>
           <input type="range" id="s-ast" min="0" max="6" step="0.5"><output id="o-ast"></output></div>
-        <p class="hint">Forgiveness added around each target. Zero means you point at the thing.</p>
+        <div class="row"><label for="s-bw">Beam width</label>
+          <input type="range" id="s-bw" min="0.02" max="0.4" step="0.02"><output id="o-bw"></output></div>
+        <p class="hint">A snap bolt gets forgiveness that grows with range; the beam never does — it
+          only has its own width. Zero assist means you point at the thing.</p>
         <div class="row"><label for="s-tsz">Target size</label>
           <input type="range" id="s-tsz" min="0.5" max="1.25" step="0.05"><output id="o-tsz"></output></div>
 
@@ -204,10 +207,10 @@
         <button id="btn-reset" type="button">Restore defaults</button>
       </div>
       <dl class="legend">
-        <dt>Trigger tap</dt><dd>Phaser bolt — instant, always ready. No aim assist unless you dial some in</dd>
+        <dt>Trigger tap</dt><dd>A six-inch bolt thrown down the line. Snap shots get aim assist &mdash; dial it in Settings</dd>
         <dt>Light-targets</dt><dd>They hold a charge, shrink as you burn it off, and bolt when your muzzle crosses them</dd>
         <dt>Velocity</dt><dd>Shots ricochet the disc off at an angle &mdash; square it up to send it straight back. Take it in the head or chest and it costs a pip</dd>
-        <dt>Trigger hold</dt><dd>Wide red beam &mdash; sweeps several targets at once, then recharges</dd>
+        <dt>Trigger hold</dt><dd>Sustained beam &mdash; no assist at all, just its own width. Precision work, and it drains the cell</dd>
         <dt>Thumb key</dt><dd>B / Y fires as well &mdash; the way the swept TNG shell is meant to be worked</dd>
         <dt>A / X or grip</dt><dd>Tap to cycle that hand's weapons &mdash; <b>hold A / X 0.6&thinsp;s to pause</b> (a fresh press on the pause card ends the program)</dd>
         <dt>Thumbstick</dt><dd>Flick right to raise the power setting, left to lower it &mdash; ten detents, stun to kill, the lamp runs green to red (desktop: mouse wheel)</dd>
@@ -288,7 +291,7 @@ const TUNE = {
   // Aim is a true ray against the object's real radius. Assist, if any, widens that
   // radius with distance; 0 means you have to actually point at the thing.
   aimAssistDeg: 0,
-  beamSweep: 0.24,         // m the wide beam reaches past a target's own radius
+  beamSweep: 0.10,         // m the beam reaches past a target's own radius — width, never assist
   boltHitBolt: 0.10,       // m effective radius of an incoming stun bolt (it's a glowing blob)
   beamMax: 1.0,            // s of sustained beam
   beamRecharge: 1.6,       // s to refill after any beam use
@@ -1011,7 +1014,7 @@ function splitDiscs() {
 function nearestLiveDisc(o, dir) {
   let best = null, bd = Infinity;
   VEL.discs.forEach(d => { if (!d.live) return;
-    const t = rayHit(o, dir, d.mesh.position, TUNE.discRadius + TUNE.discHitBonus);
+    const t = rayHit(o, dir, d.mesh.position, TUNE.discRadius + TUNE.discHitBonus, 0, boltAssist());
     if (t > 0 && t < bd) { bd = t; best = d; } });
   return best ? { d: best, dist: bd } : null;
 }
@@ -1177,15 +1180,17 @@ function onCleanDodge() { game.dodges++; addScore(TUNE.ptsDodge); bumpStreak(); 
 /* ───────────────────── firing ───────────────────── */
 const _rayO = new THREE.Vector3(), _rayD = new THREE.Vector3(), _toT = new THREE.Vector3();
 /* True ray test: how far off the line the object's centre sits, against its own radius.
-   TUNE.aimAssistDeg (0 by default) widens that radius with distance if you want help. */
-function rayHit(origin, dir, point, radius, extra) {
+   `assistDeg` is opt-in and only the bolt passes it — a snap shot gets help, the beam
+   earns its hits on width alone. */
+function rayHit(origin, dir, point, radius, extra, assistDeg) {
   _toT.copy(point).sub(origin);
   const along = _toT.dot(dir);
   if (along < 0.05 || along > 40) return -1;
   const perpSq = Math.max(0, _toT.lengthSq() - along * along);
-  const r = radius + (extra || 0) + Math.tan(TUNE.aimAssistDeg * Math.PI / 180) * along;
+  const r = radius + (extra || 0) + (assistDeg ? Math.tan(assistDeg * Math.PI / 180) * along : 0);
   return (perpSq <= r * r) ? along : -1;
 }
+function boltAssist() { return TUNE.aimAssistDeg; }
 function targetRadius() { return TUNE.targetRadius * TUNE.targetScale; }
 const REMOTE_RADIUS = 0.16;
 
@@ -1210,18 +1215,19 @@ function fireBolt(phaser) {
   drainBattery(phaser, TUNE.boltDrain * powerDrain(phaser.userData.power));
   game.shots++; AudioKit.phaserBolt(); haptic(phaser, 0.7, 40);
   let bestD = Infinity, bestKind = null, bestIdx = -1, hitPoint = null, bestDisc = null;
-  targets.forEach((t, i) => { const d = rayHit(_rayO, _rayD, t.position, targetRadius());
+  const asst = boltAssist();
+  targets.forEach((t, i) => { const d = rayHit(_rayO, _rayD, t.position, targetRadius(), 0, asst);
     if (d > 0 && d < bestD) { bestD = d; bestKind = 'target'; bestIdx = i; } });
-  stunBolts.forEach((b, i) => { const d = rayHit(_rayO, _rayD, b.position, TUNE.boltHitBolt);
+  stunBolts.forEach((b, i) => { const d = rayHit(_rayO, _rayD, b.position, TUNE.boltHitBolt, 0, asst);
     if (d > 0 && d < bestD) { bestD = d; bestKind = 'bolt'; bestIdx = i; } });
   if (game.program === 'velocity') {
     const nd = nearestLiveDisc(_rayO, _rayD);
     if (nd && nd.dist < bestD) { bestD = nd.dist; bestKind = 'disc'; bestDisc = nd.d; }
-  } else { const d = rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS); // remote is a target any time now
+  } else { const d = rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS, 0, asst); // remote is a target any time now
     if (d > 0 && d < bestD) { bestD = d; bestKind = (remote.state === 'vulnerable') ? 'remote' : 'chip'; } }
   if (bestKind) { game.hits++; hitPoint = _rayO.clone().add(_rayD.clone().multiplyScalar(bestD)); }
   else if (game.program !== 'velocity' &&
-           rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS + 0.55) > 0 &&
+           rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS + 0.55, 0, 0) > 0 &&
            Math.random() < TUNE.remoteJukeChance)
     remoteJuke();  // shot went close — the remote saw it and breaks off
   let end = hitPoint;
@@ -2021,9 +2027,9 @@ function deskTick(dt) {
 
 /* ───────────────────── settings ─────────────────────
    The dials worth arguing about live here, not in the code. Saved per browser. */
-const DEFAULTS = { telegraph: 0.55, assist: 0, targetScale: 0.75, agility: 1.0, brightness: 0.72,
+const DEFAULTS = { telegraph: 0.55, assist: 2.5, targetScale: 0.75, agility: 1.0, brightness: 0.72,
                    targetHP: 3, fleeSpeed: 3.4, discSpeed: 3.0, courtSize: 3.4, phaserVol: 0.45,
-                   dominant: 'right' };
+                   beamSweep: 0.10, dominant: 'right', v: 2 };
 const SETTINGS = JSON.parse(JSON.stringify(DEFAULTS));
 function loadSettings() {
   try {
@@ -2032,6 +2038,12 @@ function loadSettings() {
     const saved = JSON.parse(raw);
     Object.assign(SETTINGS, saved);
     if (SETTINGS.dominant !== 'left') SETTINGS.dominant = 'right';
+    if (!saved.v || saved.v < DEFAULTS.v) {   // v2 split assist from the beam — reset both dials
+      SETTINGS.assist = DEFAULTS.assist;
+      SETTINGS.beamSweep = DEFAULTS.beamSweep;
+      SETTINGS.v = DEFAULTS.v;
+      try { localStorage.setItem('phaserRange.settings', JSON.stringify(SETTINGS)); } catch (e) {}
+    }
   } catch (e) { /* private window or blocked storage — defaults are fine */ }
 }
 function saveSettings() {
@@ -2040,7 +2052,8 @@ function saveSettings() {
 function applySettings() {
   TUNE.telegraph = SETTINGS.telegraph;
   TUNE.telegraphFloor = Math.max(0.22, SETTINGS.telegraph - 0.15);
-  TUNE.aimAssistDeg = SETTINGS.assist;
+  TUNE.aimAssistDeg = SETTINGS.assist;      // bolts only — beamTick never passes it
+  TUNE.beamSweep = SETTINGS.beamSweep;
   TUNE.targetScale = SETTINGS.targetScale;
   TUNE.remoteAgility = SETTINGS.agility;
   TUNE.beamBright = SETTINGS.brightness;
@@ -2375,6 +2388,7 @@ const CONTROLS = [
   { id: 's-tel', out: 'o-tel', key: 'telegraph',   fmt: v => v.toFixed(2) + 's' },
   { id: 's-agi', out: 'o-agi', key: 'agility',     fmt: v => '×' + v.toFixed(1) },
   { id: 's-ast', out: 'o-ast', key: 'assist',      fmt: v => v === 0 ? 'off' : v.toFixed(1) + '°' },
+  { id: 's-bw', out: 'o-bw', key: 'beamSweep',     fmt: v => Math.round(v * 100) + ' cm' },
   { id: 's-tsz', out: 'o-tsz', key: 'targetScale', fmt: v => '×' + v.toFixed(2) },
   { id: 's-bri', out: 'o-bri', key: 'brightness',  fmt: v => Math.round(v * 100) + '%' },
   { id: 's-thp', out: 'o-thp', key: 'targetHP',    fmt: v => v + (v === 1 ? ' hit' : ' hits') },

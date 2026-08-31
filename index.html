@@ -292,7 +292,7 @@ const TUNE = {
   discRadius: 0.10,        // m — the canon disc is about eight inches
   discSpeed: 3.0,          // m/s serve
   discSpeedMax: 11.0,
-  courtX: 3.4, courtZ: 3.4, courtY: 3.0,       // m half-extents / height of the court
+  courtX: 5.6, courtZ: 5.6, courtY: 3.2,       // m half-extents / height — same room as the range arena (arenaRMax / arenaYMax)
   ptsDiscStrike: 50,
   discStrikesPerLevel: 6,
   discSeekDelay: 2.6,      // s of free ricochet before the disc starts hunting you
@@ -615,8 +615,8 @@ function remotePickWaypoint() {
 /* A shot went past its hull — break hard sideways. */
 function remoteJuke() {
   const R = remote;
-  if (perf - R.lastJuke < 0.6 / TUNE.remoteAgility) return;
-  R.lastJuke = perf;
+  if (gt - R.lastJuke < 0.6 / TUNE.remoteAgility) return;
+  R.lastJuke = gt;
   headPos(_head);
   _tmp.copy(R.base).sub(_head); _tmp.y = 0;
   if (_tmp.lengthSq() < 0.01) _tmp.set(0, 0, 1);
@@ -772,6 +772,32 @@ const VEL = (() => {
            live: false, serveT: 0, spin: 0, sinceStrike: 0 };
 })();
 
+/* Distance along a ray (origin inside the court) to the first wall. */
+function courtRayLimit(o, d) {
+  let t = 40;
+  const face = (co, cd, lo, hi) => { if (Math.abs(cd) > 1e-6) {
+    const tt = ((cd > 0 ? hi : lo) - co) / cd; if (tt > 0) t = Math.min(t, tt); } };
+  face(o.x, d.x, -TUNE.courtX, TUNE.courtX);
+  face(o.z, d.z, -TUNE.courtZ, TUNE.courtZ);
+  face(o.y, d.y, 0.02, TUNE.courtY);
+  return t;
+}
+/* Where a beam lands on the wall: a splash that lingers, so a sweep leaves a glowing trail. */
+function wallGlow(point, towardShooter, big) {
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(big ? 0.11 : 0.07, 12),
+    new THREE.MeshBasicMaterial({ color: 0xff2a1a, transparent: true, opacity: 0.8,
+      depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
+  disc.name = 'WallGlow'; disc.material.name = 'Mat_WallGlow';
+  disc.position.copy(point).addScaledVector(towardShooter, 0.015);
+  disc.lookAt(_tmp.copy(point).add(towardShooter));
+  scene.add(disc); shotFlashes.push({ line: disc, life: 0.5, max: 0.5, peak: 0.8 });
+  const core = new THREE.Mesh(new THREE.SphereGeometry(0.02, 8, 8),
+    new THREE.MeshBasicMaterial({ color: 0xffccd8, transparent: true, opacity: 0.9,
+      depthWrite: false, blending: THREE.AdditiveBlending }));
+  core.name = 'WallGlowCore'; core.position.copy(disc.position);
+  scene.add(core); shotFlashes.push({ line: core, life: 0.18, max: 0.18, peak: 0.9 });
+}
+
 function velocityServe(delay) { VEL.live = false; VEL.serveT = delay || 1.2; VEL.disc.visible = false; }
 function velocityLaunch() {
   headPos(_head);
@@ -828,8 +854,8 @@ function registerDiscStrike() {
 /* The bat'leth is a moving wall: the disc rebounds off the blade, carrying the swing. */
 const _bn = new THREE.Vector3(), _brel = new THREE.Vector3();
 function discBladeHit(point, bladeVel) {
-  if (perf - (VEL.lastBladeHit ?? -9) < 0.25) return; // ?? — a timestamp of 0 is still a timestamp
-  VEL.lastBladeHit = perf;
+  if (gt - (VEL.lastBladeHit ?? -9) < 0.25) return; // ?? — a timestamp of 0 is still a timestamp
+  VEL.lastBladeHit = gt;
   _bn.copy(VEL.disc.position).sub(point);
   if (_bn.lengthSq() < 1e-6) _bn.set(0, 1, 0);
   _bn.normalize();
@@ -921,8 +947,8 @@ function onRemoteTagged() {
 }
 
 function onRemoteChipped() {
-  if (perf - (remote.lastChip ?? -9) < TUNE.chipCooldown) return;
-  remote.lastChip = perf;
+  if (gt - (remote.lastChip ?? -9) < TUNE.chipCooldown) return;
+  remote.lastChip = gt;
   popEffect(remote.pos, 0xff9c00); AudioKit.chip();
   addScore(TUNE.ptsRemoteChip); hudDirty = true;
   if (remote.state === 'telegraph') {           // counter-fire breaks its attack
@@ -985,7 +1011,12 @@ function fireBolt(phaser) {
            rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS + 0.55) > 0 &&
            Math.random() < TUNE.remoteJukeChance)
     remoteJuke();  // shot went close — the remote saw it and breaks off
-  const end = hitPoint || _rayO.clone().add(_rayD.clone().multiplyScalar(25));
+  let end = hitPoint;
+  if (!end) {
+    const reach = game.program === 'velocity' ? Math.min(25, courtRayLimit(_rayO, _rayD)) : 25;
+    end = _rayO.clone().addScaledVector(_rayD, reach);
+    if (game.program === 'velocity') wallGlow(end, _rayD.clone().multiplyScalar(-1), true);
+  }
   flashLine(_vis.clone(), end, 0xff1018, 0.09); // tap bolt reads red, same family as the beam
   if (bestKind === 'target') damageTarget(bestIdx, boltDamage(phaser));
   else if (bestKind === 'bolt') { const b = stunBolts[bestIdx];
@@ -1000,7 +1031,17 @@ function fireBolt(phaser) {
 function beamTick(phaser, dt) {
   if (!game.running) return;
   getMuzzleRay(phaser, _rayO, _rayD);
-  flashBeam(_vis.clone(), _rayD.clone(), 25);
+  let reach = 25;
+  if (game.program === 'velocity') {
+    reach = Math.min(25, courtRayLimit(_rayO, _rayD));
+    const hitPt = _rayO.clone().addScaledVector(_rayD, reach);
+    const u = phaser.userData;
+    if (gt - (u.glowT ?? -9) > 0.045) { u.glowT = gt; wallGlow(hitPt, _rayD.clone().multiplyScalar(-1)); }
+    const vDir = hitPt.sub(_vis); const vLen = Math.max(0.1, vDir.length()); vDir.normalize();
+    flashBeam(_vis.clone(), vDir, vLen);
+  } else {
+    flashBeam(_vis.clone(), _rayD.clone(), 25);
+  }
   haptic(phaser, 0.35, 30);
   for (let i = targets.length - 1; i >= 0; i--)
     if (rayHit(_rayO, _rayD, targets[i].position, targetRadius(), TUNE.beamSweep) > 0) {
@@ -1079,6 +1120,27 @@ const pausePanel = (() => {
   mesh.name = 'PauseMenu'; mesh.visible = false; scene.add(mesh);
   return { cv, ctx: cv.getContext('2d'), tex, mesh };
 })();
+/* The arch — the holodeck's doorway, called up whenever the program is suspended. */
+const holoArch = (() => {
+  const g = new THREE.Group(); g.name = 'HolodeckArch'; g.visible = false;
+  const frame = new THREE.MeshStandardMaterial({ color: 0x565a63, metalness: 0.7, roughness: 0.4 });
+  frame.name = 'Mat_ArchFrame';
+  const glow = new THREE.MeshBasicMaterial({ color: 0xf2c14e }); glow.name = 'Mat_ArchGlow';
+  [-1.15, 1.15].forEach((x, i) => {
+    const p = new THREE.Mesh(new THREE.BoxGeometry(0.26, 1.8, 0.34), frame);
+    p.name = 'ArchPillar' + (i + 1); p.position.set(x, 0.9, 0); g.add(p);
+    const strip = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.55, 0.02), glow);
+    strip.name = 'ArchPillarStrip' + (i + 1);
+    strip.position.set(x + (x < 0 ? 0.10 : -0.10), 0.9, 0.18); g.add(strip);
+  });
+  const lintel = new THREE.Mesh(new THREE.TorusGeometry(1.15, 0.15, 10, 28, Math.PI), frame);
+  lintel.name = 'ArchLintel'; lintel.position.set(0, 1.8, 0); g.add(lintel);
+  const lintelGlow = new THREE.Mesh(new THREE.TorusGeometry(1.15, 0.045, 8, 28, Math.PI), glow);
+  lintelGlow.name = 'ArchLintelGlow'; lintelGlow.position.set(0, 1.8, 0.12); g.add(lintelGlow);
+  scene.add(g);
+  return g;
+})();
+
 const _pfwd = new THREE.Vector3(), _phead = new THREE.Vector3();
 function showPausePanel() {
   const c = pausePanel.ctx, W = pausePanel.cv.width, H = pausePanel.cv.height;
@@ -1103,6 +1165,11 @@ function showPausePanel() {
   pausePanel.mesh.position.y = Math.max(0.9, Math.min(2.3, pausePanel.mesh.position.y));
   pausePanel.mesh.lookAt(_phead);
   pausePanel.mesh.visible = true;
+  // the arch stands on the floor just past the card, framing it
+  holoArch.position.copy(_phead).addScaledVector(_pfwd, 2.4);
+  holoArch.position.y = 0;
+  holoArch.rotation.y = Math.atan2(-_pfwd.x, -_pfwd.z);
+  holoArch.visible = true;
 }
 
 function roundRect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y);
@@ -1144,6 +1211,7 @@ function setPause(on) {
   } else {
     pauseEl.hidden = true;
     pausePanel.mesh.visible = false;
+    holoArch.visible = false;
     if (game.mode === 'desk') lockPointer(renderer.domElement);
     AudioKit.resumeTone();
   }
@@ -1489,10 +1557,10 @@ function remoteTick(dt) {
   _tmp.copy(R.base).sub(_head); _tmp.y = 0;
   if (_tmp.lengthSq() < 0.01) _tmp.set(0, 0, 1);
   _tmp.normalize();
-  const weave = Math.sin(perf * 1.9 * ag + R.phase) * TUNE.remoteStrafe;
+  const weave = Math.sin(gt * 1.9 * ag + R.phase) * TUNE.remoteStrafe;
   R.pos.set(R.base.x - _tmp.z * weave, R.base.y, R.base.z + _tmp.x * weave);
-  R.pos.y += Math.sin(perf * 2.3 * ag + R.phase) * 0.05
-           + (R.state === 'vulnerable' ? Math.sin(perf * 9) * 0.03 : 0); // wounded wobble
+  R.pos.y += Math.sin(gt * 2.3 * ag + R.phase) * 0.05
+           + (R.state === 'vulnerable' ? Math.sin(gt * 9) * 0.03 : 0); // wounded wobble
   R.g.position.copy(R.pos);
   R.g.lookAt(headPos(_head));
   // state clock
@@ -1512,7 +1580,7 @@ function remoteTick(dt) {
   if (R.state === 'telegraph') {
     const k = 1 - R.timer / telegraphNow();
     R.eyeMat.color.setRGB(0.25 + 0.75 * k, 0.1, 0.1); R.glow.color.setHex(0xff3322); R.glow.intensity = 1.5 * k;
-    R.g.scale.setScalar(1 + Math.sin(perf * 30) * 0.02 * k);
+    R.g.scale.setScalar(1 + Math.sin(gt * 30) * 0.02 * k);
   } else if (R.state === 'vulnerable') {
     const k = R.timer / TUNE.vulnWindow;
     R.eyeMat.color.setRGB(1, 1, 0.85); R.glow.color.setHex(0xfff3d6); R.glow.intensity = 2.2 * k;
@@ -1642,7 +1710,7 @@ function toast(msg) { toastEl.textContent = msg; toastEl.style.opacity = 1;
 function resetGame() {
   Object.assign(game, { running: true, over: false, paused: false, score: 0, streak: 0, bestStreak: 0,
     wave: 1, pips: TUNE.pips, shots: 0, hits: 0, pops: 0, tags: 0, dodges: 0, strikes: 0,
-    popsThisWave: 0, startTime: perf });
+    popsThisWave: 0, startTime: gt });
   while (stunBolts.length) despawnBolt(0);
   while (targets.length) { scene.remove(targets[0]); targets.splice(0, 1); }
   targetRespawnQueue = [];
@@ -1673,13 +1741,13 @@ function startProgram(mode) {
 
 let endedAt = 0;
 function endProgram() {
-  game.running = false; game.over = true; endedAt = perf;
+  game.running = false; game.over = true; endedAt = gt;
   AudioKit.beamStop(); AudioKit.endChime(); flashGrid(0.7); hudDirty = true;
   const acc = game.shots ? Math.round(100 * game.hits / game.shots) : 0;
   AudioKit.say('Program complete. Wave ' + game.wave + '. Accuracy, ' + acc + ' percent.');
   toast('PROGRAM COMPLETE — SCORE ' + game.score);
 }
-function tryRestart() { if (game.over && perf - endedAt > 1.5) { resetGame(); flashGrid(0.4); AudioKit.ackBeep(); toast('PROGRAM RESTARTED'); } }
+function tryRestart() { if (game.over && gt - endedAt > 1.5) { resetGame(); flashGrid(0.4); AudioKit.ackBeep(); toast('PROGRAM RESTARTED'); } }
 
 /* DOM hooks */
 const btnVR = document.getElementById('btn-vr'), btnDesk = document.getElementById('btn-desk'),
@@ -1831,11 +1899,12 @@ function drawDomHud() {
 }
 
 /* ───────────────────── main loop ───────────────────── */
-let perf = 0, lastT = 0, hudClock = 0;
+let perf = 0, gt = 0, lastT = 0, hudClock = 0; // perf is wall clock; gt is PROGRAM time — it freezes with pause
 drawHUD();
 renderer.setAnimationLoop((time) => {
   const t = time * 0.001;
   const dt = Math.min(0.05, lastT ? t - lastT : 0.016); lastT = t; perf = t;
+  if (!game.paused) gt += dt;
 
   vrControllers.forEach(c => c.visible = renderer.xr.isPresenting);
   if (desk.hand) desk.hand.weapons.forEach((w, i) => w.visible = (game.mode === 'desk' && i === desk.hand.idx));
@@ -1854,14 +1923,16 @@ renderer.setAnimationLoop((time) => {
     activeBlades.forEach(b => bladeTick(b, dt));
   }
 
-  // effects decay
+  // effects decay (frozen with everything else while paused)
+  if (!game.paused)
   for (let i = shotFlashes.length - 1; i >= 0; i--) { const f = shotFlashes[i];
     f.life -= dt; if (f.life <= 0) { scene.remove(f.line); shotFlashes.splice(i, 1); }
     else if (f.line.material) f.line.material.opacity = (f.peak || 1) * f.life / f.max; }
+  if (!game.paused)
   for (let i = popFx.length - 1; i >= 0; i--) { const p = popFx[i]; p.life -= dt;
     if (p.life <= 0) { scene.remove(p.m); popFx.splice(i, 1); }
     else { p.m.scale.setScalar(1 + (1 - p.life / p.max) * 4); p.m.material.opacity = 0.9 * p.life / p.max; } }
-  if (gridFlash > 0) { gridFlash = Math.max(0, gridFlash - dt * 0.6); holoGrid.userData.mat.opacity = gridFlash; }
+  if (!game.paused && gridFlash > 0) { gridFlash = Math.max(0, gridFlash - dt * 0.6); holoGrid.userData.mat.opacity = gridFlash; }
 
   // HUD refresh (throttled)
   hudClock += dt;

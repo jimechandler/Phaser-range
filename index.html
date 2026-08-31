@@ -115,6 +115,10 @@
   .pausecard h2{font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;
     font-size:34px;color:var(--grid);margin:0 0 16px;font-weight:700}
   .pausecard .actions{margin-bottom:12px}
+  .prow{display:grid;grid-template-columns:auto 1fr 5ch;align-items:center;gap:12px;margin:0 0 18px}
+  .prow label{font-family:var(--display);text-transform:uppercase;letter-spacing:.12em;font-size:13px;color:var(--lav)}
+  .prow input[type=range]{width:100%;accent-color:var(--amber);background:transparent}
+  .prow output{font-family:var(--display);font-size:17px;color:var(--grid);text-align:right;font-variant-numeric:tabular-nums}
 
   @media (prefers-reduced-motion: reduce){ *{transition:none !important} }
 </style>
@@ -182,6 +186,11 @@
         <div class="row"><label for="s-tsz">Target size</label>
           <input type="range" id="s-tsz" min="0.5" max="1.25" step="0.05"><output id="o-tsz"></output></div>
 
+        <h2>Audio</h2>
+        <div class="row"><label for="s-vol">Phaser</label>
+          <input type="range" id="s-vol" min="0" max="1" step="0.05"><output id="o-vol"></output></div>
+        <p class="hint">Firing volume — bolt, beam and recharge. Also on the pause menu, mid-drill.</p>
+
         <h2>Beam</h2>
         <div class="row"><label for="s-bri">Brightness</label>
           <input type="range" id="s-bri" min="0.3" max="1" step="0.05"><output id="o-bri"></output></div>
@@ -219,11 +228,16 @@
   <div class="pausecard">
     <p class="eyebrow">Holodeck</p>
     <h2>Program suspended</h2>
+    <div class="prow">
+      <label for="p-vol">Phaser volume</label>
+      <input type="range" id="p-vol" min="0" max="1" step="0.05">
+      <output id="p-volout"></output>
+    </div>
     <div class="actions">
       <button class="lcars" id="btn-resume">Resume</button>
       <button class="lcars alt" id="btn-quit">Main menu</button>
     </div>
-    <p class="footnote">Desktop: P pauses. Headset: hold A / X 0.6&thinsp;s to pause; trigger resumes, a fresh A / X press returns here.</p>
+    <p class="footnote">Desktop: P pauses. Headset: hold A / X 0.6&thinsp;s to pause; trigger resumes, a fresh A / X press returns here, and the thumbstick sets phaser volume.</p>
   </div>
 </div>
 
@@ -327,30 +341,35 @@ const TUNE = {
 const AudioKit = (() => {
   let ctx = null, master = null, humOsc = null, humGain = null, humPan = null;
   let beamOsc = null, beamGain = null;
+  let phaserBus = null, phaserVol = 0.45;   // the phaser was shouting over everything; start it low
   const ready = () => { if (!ctx) { try {
       ctx = new (window.AudioContext || window.webkitAudioContext)();
       master = ctx.createGain(); master.gain.value = 0.5; master.connect(ctx.destination);
+      phaserBus = ctx.createGain(); phaserBus.gain.value = phaserVol; phaserBus.connect(master);
     } catch (e) { /* no audio — play on */ } } if (ctx && ctx.state === 'suspended') ctx.resume(); return !!ctx; };
   const env = (g, t, a, peak, d) => { g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + d); };
-  const blip = (type, f0, f1, dur, peak, when = 0) => { if (!ready()) return; const t = ctx.currentTime + when;
+  const blip = (type, f0, f1, dur, peak, when = 0, bus) => { if (!ready()) return; const t = ctx.currentTime + when;
     const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type;
     o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(f1, 1), t + dur);
-    env(g, t, 0.005, peak, dur); o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.05); };
+    env(g, t, 0.005, peak, dur); o.connect(g); g.connect(bus || master); o.start(t); o.stop(t + dur + 0.05); };
   return {
     unlock: ready,
-    phaserBolt(){ blip('sawtooth', 1400, 320, 0.16, 0.22); blip('sine', 2200, 500, 0.10, 0.10); },
+    setPhaserVolume(v) { phaserVol = Math.max(0, Math.min(1, v));
+      if (phaserBus) phaserBus.gain.value = phaserVol; },
+    getPhaserVolume() { return phaserVol; },
+    phaserBolt(){ blip('sawtooth', 1400, 320, 0.16, 0.22, 0, phaserBus); blip('sine', 2200, 500, 0.10, 0.10, 0, phaserBus); },
     beamStart(){ if (!ready()) return; this.beamStop(); const t = ctx.currentTime;
       beamOsc = ctx.createOscillator(); beamGain = ctx.createGain();
       const lfo = ctx.createOscillator(), lg = ctx.createGain();
       beamOsc.type = 'sawtooth'; beamOsc.frequency.value = 660; // heavier than the tap bolt — it's a wide beam
       lfo.frequency.value = 19; lg.gain.value = 75; lfo.connect(lg); lg.connect(beamOsc.frequency);
       beamGain.gain.setValueAtTime(0.0001, t); beamGain.gain.linearRampToValueAtTime(0.19, t + 0.05);
-      beamOsc.connect(beamGain); beamGain.connect(master); beamOsc.start(t); lfo.start(t);
+      beamOsc.connect(beamGain); beamGain.connect(phaserBus || master); beamOsc.start(t); lfo.start(t);
       beamOsc._lfo = lfo; },
     beamStop(){ if (beamOsc && ctx) { const t = ctx.currentTime; beamGain.gain.cancelScheduledValues(t);
       beamGain.gain.setValueAtTime(beamGain.gain.value, t); beamGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
       beamOsc.stop(t + 0.15); beamOsc._lfo.stop(t + 0.15); beamOsc = null; } },
-    recharge(){ blip('sine', 300, 900, 0.35, 0.07); },
+    recharge(){ blip('sine', 300, 900, 0.35, 0.07, 0, phaserBus); },
     chime(){ blip('sine', 1180, 1180, 0.09, 0.16); blip('sine', 1570, 1570, 0.09, 0.16, 0.11); },
     feintOff(){ blip('sine', 900, 400, 0.12, 0.08); },
     stunFire(){ blip('square', 240, 90, 0.28, 0.20); },
@@ -1135,21 +1154,33 @@ const holoArch = (() => {
 })();
 
 const _pfwd = new THREE.Vector3(), _phead = new THREE.Vector3();
-function showPausePanel() {
+function drawPauseCard() {
   const c = pausePanel.ctx, W = pausePanel.cv.width, H = pausePanel.cv.height;
   c.clearRect(0, 0, W, H);
   c.fillStyle = 'rgba(12,12,19,0.94)'; roundRect(c, 0, 0, W, H, 34); c.fill();
   c.fillStyle = '#ff9c00'; roundRect(c, 22, 22, 46, H - 44, 22); c.fill();
   const dsp = (px, w) => (w || 600) + ' ' + px + 'px Antonio, "Arial Narrow", sans-serif';
   c.textBaseline = 'top';
-  c.fillStyle = '#f2c14e'; c.font = dsp(64, 700); c.fillText('PROGRAM SUSPENDED', 110, 48);
-  c.fillStyle = '#e8e4d8'; c.font = dsp(40, 400);
-  c.fillText('TRIGGER — RESUME', 110, 160);
-  c.fillText('A / X (FRESH PRESS) — MAIN MENU', 110, 222);
-  c.fillStyle = '#8d8a7b'; c.font = dsp(30, 400);
+  c.fillStyle = '#f2c14e'; c.font = dsp(56, 700); c.fillText('PROGRAM SUSPENDED', 110, 40);
+  c.fillStyle = '#e8e4d8'; c.font = dsp(34, 400);
+  c.fillText('TRIGGER — RESUME', 110, 128);
+  c.fillText('A / X (FRESH PRESS) — MAIN MENU', 110, 174);
+  // phaser volume, adjustable right here with the stick
+  const vol = AudioKit.getPhaserVolume();
+  c.fillStyle = '#cc99cc'; c.font = dsp(30, 400);
+  c.fillText('◄ STICK ►   PHASER VOLUME', 110, 244);
+  const bx = 110, by = 288, bw = 420, bh = 22;
+  c.fillStyle = '#232330'; roundRect(c, bx, by, bw, bh, 11); c.fill();
+  if (vol > 0) { c.fillStyle = '#f2c14e'; roundRect(c, bx, by, Math.max(bh, bw * vol), bh, 11); c.fill(); }
+  c.fillStyle = '#f2c14e'; c.font = dsp(34, 600);
+  c.fillText(vol === 0 ? 'MUTED' : Math.round(vol * 100) + '%', bx + bw + 20, by - 6);
+  c.fillStyle = '#8d8a7b'; c.font = dsp(28, 400);
   c.fillText('SCORE ' + game.score + '   ·   ' +
-    (game.program === 'velocity' ? 'STRIKES ' + game.strikes : 'WAVE ' + game.wave), 110, 300);
+    (game.program === 'velocity' ? 'STRIKES ' + game.strikes : 'WAVE ' + game.wave), 110, 330);
   pausePanel.tex.needsUpdate = true;
+}
+function showPausePanel() {
+  drawPauseCard();
   camera.getWorldPosition(_phead);
   camera.getWorldDirection(_pfwd); _pfwd.y *= 0.3;
   if (_pfwd.lengthSq() < 0.01) _pfwd.set(0, 0, -1);
@@ -1198,6 +1229,7 @@ function setPause(on) {
   if (on) {
     AudioKit.beamStop();
     activePhasers.forEach(p => { p.userData.holding = false; p.userData.beaming = false; });
+    setPhaserVol(SETTINGS.phaserVol, true);                    // sync both controls, silently
     if (game.mode === 'desk') { pauseEl.hidden = false; try { document.exitPointerLock(); } catch (e) {} }
     else showPausePanel();                                   // in VR the card appears down your gaze
     AudioKit.pauseTone();
@@ -1211,6 +1243,18 @@ function setPause(on) {
   hudDirty = true; drawHUD();
 }
 function togglePause() { setPause(!game.paused); }
+/* Phaser volume, settable from the pause menu on either platform. */
+function setPhaserVol(v, quiet) {
+  SETTINGS.phaserVol = Math.max(0, Math.min(1, Math.round(v * 20) / 20));
+  AudioKit.setPhaserVolume(SETTINGS.phaserVol);
+  saveSettings();
+  const s = document.getElementById('s-vol'), o = document.getElementById('o-vol');
+  if (s) { s.value = SETTINGS.phaserVol; o.textContent = SETTINGS.phaserVol === 0 ? 'muted' : Math.round(SETTINGS.phaserVol * 100) + '%'; }
+  const ps = document.getElementById('p-vol'), po = document.getElementById('p-volout');
+  if (ps) { ps.value = SETTINGS.phaserVol; po.textContent = SETTINGS.phaserVol === 0 ? 'MUTED' : Math.round(SETTINGS.phaserVol * 100) + '%'; }
+  if (game.paused && game.mode !== 'desk') drawPauseCard();   // redraw only — never move the card
+  if (!quiet) AudioKit.phaserBolt();                          // hear what you just set
+}
 function quitToMenu() {
   game.paused = false; game.running = false; game.over = false;
   AudioKit.beamStop(); AudioKit.humStop();
@@ -1365,6 +1409,10 @@ function pollHandButtons() {
       if (lower && !hand.prevLower) quitToMenu();               // a FRESH A/X press ends the program
       if (upper && !hand.prevUpper) togglePause();              // any fire key resumes
       hand.lowerT = 0; hand.lowerFired = true;                  // the press that paused us is spent
+      const pAxP = hand.prevAx === undefined ? 0 : hand.prevAx; // stick sets phaser volume on the card
+      if (ax > 0.6 && pAxP <= 0.6) setPhaserVol(SETTINGS.phaserVol + 0.05);
+      if (ax < -0.6 && pAxP >= -0.6) setPhaserVol(SETTINGS.phaserVol - 0.05);
+      hand.prevAx = ax;
     } else {
       // A/X: tap cycles the weapon, holding 0.6 s calls the pause — a binding every controller has
       if (lower && !hand.prevLower) { hand.lowerT = perf; hand.lowerFired = false; }
@@ -1526,7 +1574,7 @@ function deskTick(dt) {
 /* ───────────────────── settings ─────────────────────
    The dials worth arguing about live here, not in the code. Saved per browser. */
 const DEFAULTS = { telegraph: 0.55, assist: 0, targetScale: 0.75, agility: 1.0, brightness: 0.72,
-                   targetHP: 3, fleeSpeed: 3.4, discSpeed: 3.0, courtSize: 3.4,
+                   targetHP: 3, fleeSpeed: 3.4, discSpeed: 3.0, courtSize: 3.4, phaserVol: 0.45,
                    weapons: { fc: true, tng: true, batleth: true, none: true } };
 const SETTINGS = JSON.parse(JSON.stringify(DEFAULTS));
 function loadSettings() {
@@ -1553,6 +1601,7 @@ function applySettings() {
   TUNE.discSpeed = SETTINGS.discSpeed;
   TUNE.courtX = TUNE.courtZ = SETTINGS.courtSize;
   rebuildCourtGrid();
+  AudioKit.setPhaserVolume(SETTINGS.phaserVol);
   targets.forEach(t => { t.userData.hpMax = TUNE.targetHP;
     t.userData.hp = Math.min(t.userData.hp, TUNE.targetHP); });
 }
@@ -1744,6 +1793,7 @@ function targetsTick(dt) {
 const lobbyEl = document.getElementById('lobby'), hudEl = document.getElementById('hud');
 const pauseEl = document.getElementById('pause');
 document.getElementById('btn-resume').addEventListener('click', () => setPause(false));
+document.getElementById('p-vol').addEventListener('input', e => setPhaserVol(Number(e.target.value)));
 document.getElementById('btn-quit').addEventListener('click', quitToMenu);
 const toastEl = document.getElementById('toast');
 let toastTimer = null;
@@ -1894,6 +1944,7 @@ const CONTROLS = [
   { id: 's-flee', out: 'o-flee', key: 'fleeSpeed', fmt: v => v === 0 ? 'holds still' : v.toFixed(1) + ' m/s' },
   { id: 's-disc', out: 'o-disc', key: 'discSpeed', fmt: v => v.toFixed(2) + ' m/s' },
   { id: 's-court', out: 'o-court', key: 'courtSize', fmt: v => '±' + v.toFixed(1) + ' m' },
+  { id: 's-vol', out: 'o-vol', key: 'phaserVol', fmt: v => v === 0 ? 'muted' : Math.round(v * 100) + '%' },
 ];
 const RACK_BOXES = [ { id: 'w-fc', key: 'fc' }, { id: 'w-tng', key: 'tng' },
                      { id: 'w-bat', key: 'batleth' }, { id: 'w-none', key: 'none' } ];

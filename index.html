@@ -291,7 +291,6 @@ const TUNE = {
   // — velocity (VOY) —
   discRadius: 0.10,        // m — the canon disc is about eight inches
   discSpeed: 3.0,          // m/s serve
-  discImpulse: 2.2,        // m/s of shove a phaser hit adds along the shot (scaled by power)
   discSpeedMax: 11.0,
   courtX: 3.4, courtZ: 3.4, courtY: 3.0,       // m half-extents / height of the court
   ptsDiscStrike: 50,
@@ -352,6 +351,8 @@ const AudioKit = (() => {
     boltDown(){ blip('triangle', 1200, 3200, 0.12, 0.2); },
     chip(){ blip('square', 1800, 900, 0.08, 0.14); },
     serve(){ blip('sine', 400, 1200, 0.22, 0.13); },
+    pauseTone(){ blip('sine', 700, 700, 0.12, 0.14); blip('sine', 460, 460, 0.16, 0.14, 0.14); },
+    resumeTone(){ blip('sine', 460, 460, 0.10, 0.12); blip('sine', 720, 720, 0.14, 0.12, 0.11); },
     wallHit(){ blip('sine', 520, 300, 0.07, 0.10); },
     discHit(){ blip('triangle', 1500, 700, 0.11, 0.20); blip('sine', 2600, 1600, 0.08, 0.10); },
     clang(){ blip('square', 2400, 1500, 0.10, 0.18); blip('triangle', 5100, 3400, 0.07, 0.09, 0.01); },
@@ -447,11 +448,11 @@ function buildPhaser() {
   const brushed  = new THREE.MeshStandardMaterial({ color: 0x8a8f99, metalness: 0.9, roughness: 0.3 });  brushed.name  = 'Mat_BrushedSteel';
   const amber    = new THREE.MeshBasicMaterial({ color: 0xffb347 }); amber.name = 'Mat_EmitterAmber';
   const g = new THREE.Group(); g.name = 'Phaser_Type2_FirstContact';
-  const m = new THREE.Group(); m.name = 'PhaserModel'; m.rotation.x = 0.35; g.add(m); // barrel tilts UP off the handle
+  const m = new THREE.Group(); m.name = 'PhaserModel'; g.add(m); // barrel runs dead along the pointer
   const body = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.045, 0.17), gunmetal);
   body.name = 'PhaserBody'; body.position.set(0, 0.015, -0.03); m.add(body);
   const grip = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.09, 0.045), gunmetal);
-  grip.name = 'PhaserGrip'; grip.position.set(0, -0.045, 0.035); grip.rotation.x = 0.35; m.add(grip);
+  grip.name = 'PhaserGrip'; grip.position.set(0, -0.040, 0.048); grip.rotation.x = -0.5; m.add(grip); // raked back ≈119° off the barrel
   const emitter = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.014, 0.05, 16), brushed);
   emitter.name = 'PhaserEmitter'; emitter.rotation.x = Math.PI / 2; emitter.position.set(0, 0.028, -0.125); m.add(emitter);
   const tip = new THREE.Mesh(new THREE.SphereGeometry(0.008, 12, 12), amber);
@@ -791,20 +792,23 @@ function velocityLaunch() {
   AudioKit.serve();
 }
 const _dn = new THREE.Vector3();
+/* A blast is a wall the disc slams into: elastic bounce, speed conserved. */
 function onDiscStruck(dir, power) {
   _dn.copy(dir).normalize();
-  const closing = VEL.v.dot(_dn);        // negative while the disc is coming at you
-  if (closing < 0) VEL.v.addScaledVector(_dn, -1.7 * closing);   // the blow kills its approach and bounces it
-  VEL.v.addScaledVector(_dn, TUNE.discImpulse * (0.6 + 0.08 * (power || 5))); // and shoves it down the shot line
-  VEL.v.x += (Math.random() - 0.5) * 0.3;                        // a touch of scatter
-  VEL.v.y += (Math.random() - 0.5) * 0.25;
-  VEL.v.z += (Math.random() - 0.5) * 0.3;
-  const spd = VEL.v.length() || 0.001;
-  const outward = VEL.v.dot(_dn), least = spd * 0.3;
+  const pre = Math.max(0.8, VEL.v.length());     // a collision keeps its energy
+  const closing = VEL.v.dot(_dn);                // negative while the disc is coming at you
+  if (closing < 0) VEL.v.addScaledVector(_dn, -2 * closing);  // clean rebound off the blast
+  else VEL.v.addScaledVector(_dn, 0.8);                       // caught from behind: shoved along
+  VEL.v.x += (Math.random() - 0.5) * 0.2;                     // a touch of scatter
+  VEL.v.y += (Math.random() - 0.5) * 0.15;
+  VEL.v.z += (Math.random() - 0.5) * 0.2;
+  const outward = VEL.v.dot(_dn), least = pre * 0.25;
   if (outward < least) VEL.v.addScaledVector(_dn, least - outward); // a hit always sends it away
-  const capped = Math.min(TUNE.discSpeedMax, VEL.v.length());
-  VEL.v.multiplyScalar(capped / (VEL.v.length() || 0.001));
-  VEL.speed = capped;                     // the rally keeps whatever pace the blows have built
+  VEL.v.normalize().multiplyScalar(Math.min(TUNE.discSpeedMax, pre));
+  VEL.speed = VEL.v.length();
+  registerDiscStrike();
+}
+function registerDiscStrike() {
   // a short streak along the new heading, so you can read where it went
   flashLine(VEL.disc.position.clone(),
             VEL.disc.position.clone().addScaledVector(VEL.v, 0.14), 0x9fe8ff, 0.2);
@@ -813,10 +817,31 @@ function onDiscStruck(dir, power) {
   addScore(TUNE.ptsDiscStrike); bumpStreak();
   AudioKit.discHit(); popEffect(VEL.disc.position, 0x9fe8ff);
   if (VEL.strikes % TUNE.discStrikesPerLevel === 0) {
-    game.wave++; AudioKit.ackBeep(); AudioKit.say('Velocity. Level ' + game.wave + '.');
+    game.wave++;
+    VEL.speed = Math.min(TUNE.discSpeedMax, VEL.speed * 1.12);  // the LEVEL raises the pace, not each hit
+    VEL.v.normalize().multiplyScalar(VEL.speed);
+    AudioKit.ackBeep(); AudioKit.say('Velocity. Level ' + game.wave + '.');
     toast('SPEED ' + game.wave);
   } else toast('STRIKE +' + TUNE.ptsDiscStrike);
   hudDirty = true;
+}
+/* The bat'leth is a moving wall: the disc rebounds off the blade, carrying the swing. */
+const _bn = new THREE.Vector3(), _brel = new THREE.Vector3();
+function discBladeHit(point, bladeVel) {
+  if (perf - (VEL.lastBladeHit ?? -9) < 0.25) return; // ?? — a timestamp of 0 is still a timestamp
+  VEL.lastBladeHit = perf;
+  _bn.copy(VEL.disc.position).sub(point);
+  if (_bn.lengthSq() < 1e-6) _bn.set(0, 1, 0);
+  _bn.normalize();
+  _brel.copy(VEL.v).sub(bladeVel);
+  const closing = _brel.dot(_bn);
+  if (closing < 0) VEL.v.addScaledVector(_bn, -1.9 * closing);  // rebound off the moving blade
+  else VEL.v.addScaledVector(_bn, Math.max(0.8, bladeVel.length() * 0.5));
+  const spd = Math.min(TUNE.discSpeedMax, Math.max(1.0, VEL.v.length()));
+  VEL.v.normalize().multiplyScalar(spd);
+  VEL.speed = spd;
+  AudioKit.clang();
+  registerDiscStrike();
 }
 function velocityTick(dt) {
   const d = VEL.disc;
@@ -896,7 +921,7 @@ function onRemoteTagged() {
 }
 
 function onRemoteChipped() {
-  if (perf - (remote.lastChip || -9) < TUNE.chipCooldown) return;
+  if (perf - (remote.lastChip ?? -9) < TUNE.chipCooldown) return;
   remote.lastChip = perf;
   popEffect(remote.pos, 0xff9c00); AudioKit.chip();
   addScore(TUNE.ptsRemoteChip); hudDirty = true;
@@ -1045,6 +1070,41 @@ function drawHUD() {
   }
   worldHUD.tex.needsUpdate = true;
 }
+/* The VR pause card — spawns 1.7 m down your gaze, whichever way you're facing. */
+const pausePanel = (() => {
+  const cv = document.createElement('canvas'); cv.width = 768; cv.height = 384;
+  const tex = new THREE.CanvasTexture(cv);
+  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true }); mat.name = 'Mat_PauseCard';
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 0.575), mat);
+  mesh.name = 'PauseMenu'; mesh.visible = false; scene.add(mesh);
+  return { cv, ctx: cv.getContext('2d'), tex, mesh };
+})();
+const _pfwd = new THREE.Vector3(), _phead = new THREE.Vector3();
+function showPausePanel() {
+  const c = pausePanel.ctx, W = pausePanel.cv.width, H = pausePanel.cv.height;
+  c.clearRect(0, 0, W, H);
+  c.fillStyle = 'rgba(12,12,19,0.94)'; roundRect(c, 0, 0, W, H, 34); c.fill();
+  c.fillStyle = '#ff9c00'; roundRect(c, 22, 22, 46, H - 44, 22); c.fill();
+  const dsp = (px, w) => (w || 600) + ' ' + px + 'px Antonio, "Arial Narrow", sans-serif';
+  c.textBaseline = 'top';
+  c.fillStyle = '#f2c14e'; c.font = dsp(64, 700); c.fillText('PROGRAM SUSPENDED', 110, 48);
+  c.fillStyle = '#e8e4d8'; c.font = dsp(40, 400);
+  c.fillText('TRIGGER — RESUME', 110, 160);
+  c.fillText('A / X — MAIN MENU', 110, 222);
+  c.fillStyle = '#8d8a7b'; c.font = dsp(30, 400);
+  c.fillText('SCORE ' + game.score + '   ·   ' +
+    (game.program === 'velocity' ? 'STRIKES ' + game.strikes : 'WAVE ' + game.wave), 110, 300);
+  pausePanel.tex.needsUpdate = true;
+  camera.getWorldPosition(_phead);
+  camera.getWorldDirection(_pfwd); _pfwd.y *= 0.3;
+  if (_pfwd.lengthSq() < 0.01) _pfwd.set(0, 0, -1);
+  _pfwd.normalize();
+  pausePanel.mesh.position.copy(_phead).addScaledVector(_pfwd, 1.7);
+  pausePanel.mesh.position.y = Math.max(0.9, Math.min(2.3, pausePanel.mesh.position.y));
+  pausePanel.mesh.lookAt(_phead);
+  pausePanel.mesh.visible = true;
+}
+
 function roundRect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y);
   c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
   c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
@@ -1079,10 +1139,13 @@ function setPause(on) {
     AudioKit.beamStop();
     activePhasers.forEach(p => { p.userData.holding = false; p.userData.beaming = false; });
     if (game.mode === 'desk') { pauseEl.hidden = false; try { document.exitPointerLock(); } catch (e) {} }
-    AudioKit.ackBeep();
+    else showPausePanel();                                   // in VR the card appears down your gaze
+    AudioKit.pauseTone();
   } else {
     pauseEl.hidden = true;
+    pausePanel.mesh.visible = false;
     if (game.mode === 'desk') lockPointer(renderer.domElement);
+    AudioKit.resumeTone();
   }
   hudDirty = true; drawHUD();
 }
@@ -1255,7 +1318,7 @@ function pollHandButtons() {
 }
 
 /* ───────────────────── bat'leth combat ───────────────────── */
-const _bw = new THREE.Vector3();
+const _bw = new THREE.Vector3(), _bv = new THREE.Vector3();
 function deflectBolt(bolt, blade) {
   bolt.userData.friendly = true;
   bolt.material = bolt.material.clone(); bolt.material.color.setHex(0xff3040); bolt.material.name = 'Mat_ReturnedBolt';
@@ -1279,6 +1342,15 @@ function bladeTick(b, dt) {
   for (let i = 0; i < u.samples.length; i++) {
     u.samples[i].getWorldPosition(_bw);
     const speed = u.prevValid ? _bw.distanceTo(u.prev[i]) / dt : 0;
+    if (game.program === 'velocity') {
+      if (VEL.live && VEL.disc.position.distanceTo(_bw) < TUNE.discRadius + 0.14 * TUNE.bladeScale) {
+        _bv.copy(_bw).sub(u.prev[i]).multiplyScalar(u.prevValid ? 1 / dt : 0);
+        discBladeHit(_bw, _bv);
+        haptic(b, 0.8, 50);
+      }
+      u.prev[i].copy(_bw);
+      continue;                                            // no targets or bolts on the court
+    }
     for (let j = stunBolts.length - 1; j >= 0; j--) {      // a block deflects even when still
       const bolt = stunBolts[j];
       if (!bolt.userData.friendly && bolt.position.distanceTo(_bw) < TUNE.bladeDeflectRadius * TUNE.bladeScale) deflectBolt(bolt, b);

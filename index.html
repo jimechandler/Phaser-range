@@ -95,7 +95,12 @@
   .pip{width:14px;height:14px;border-radius:50%;background:var(--grid);box-shadow:0 0 8px rgba(242,193,78,.7)}
   .pip.lost{background:var(--edge);box-shadow:none}
   #reticle{position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;
-    border:1.5px solid var(--grid);opacity:.85}
+    border:1.5px solid var(--grid);opacity:.85;transition:transform .1s,border-color .1s}
+  #reticle.hit{transform:scale(1.9);border-color:#fff}
+  #vignette{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .5s;
+    background:radial-gradient(ellipse at center, transparent 52%, rgba(229,72,77,.55) 100%)}
+  #vignette.on{opacity:1;transition:opacity .05s}
+  #h-weap{font-size:14px !important;letter-spacing:.08em;padding-top:8px}
   #beammeter{position:absolute;left:50%;top:calc(50% + 22px);width:64px;height:4px;margin-left:-32px;
     border-radius:2px;background:var(--edge);overflow:hidden}
   #beammeter i{display:block;height:100%;width:100%;background:var(--amber);transform-origin:left}
@@ -200,9 +205,9 @@
         <dt>Thumbstick</dt><dd>Flick right to raise the power setting, left to lower it &mdash; ten detents, stun to kill, the lamp runs green to red (desktop: mouse wheel)</dd>
         <dt>Your body</dt><dd>Dodge stun bolts physically — sidestep, duck</dd>
         <dt>Bat'leth</dt><dd>One blade, either hand &mdash; take it in the other hand to pass it, or hold it in both for a two-handed grip. Deflects stun bolts even held still; a returned bolt that hits the remote pays 200</dd>
-        <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD step · Shift duck · B or 1/2/3 to change weapon</dd>
+        <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD roams the whole room · Shift sprint · <b>Space dash</b> (dodge!) · C duck · wheel sets power · B or 1/2/3 weapon · P pause</dd>
       </dl>
-      <p class="footnote">M0.8 feel prototype — telegraph timing, phaser feel, and a first bat'leth. On Quest, open this
+      <p class="footnote">M0.12 feel prototype — telegraph timing, phaser feel, and a first bat'leth. On Quest, open this
         page in the headset browser. If the Enter button stays unavailable inside an embedded viewer,
         open the page in its own tab.</p>
       <p class="footnote" id="diag" style="font-family:monospace;font-size:11px;color:#6a6a5c;line-height:1.6"></p>
@@ -228,7 +233,9 @@
     <div class="stat"><div class="lab">Streak</div><div class="val" id="h-streak">0</div></div>
     <div class="stat"><div class="lab" id="lab-wave">Wave</div><div class="val" id="h-wave">1</div></div>
     <div class="stat"><div class="lab">Tolerance</div><div id="pips"><span class="pip"></span><span class="pip"></span><span class="pip"></span></div></div>
+    <div class="stat"><div class="lab">Weapon</div><div class="val" id="h-weap">—</div></div>
   </div>
+  <div id="vignette"></div>
   <div id="reticle"></div>
   <div id="beammeter"><i id="beamfill"></i></div>
   <div id="toast"></div>
@@ -372,10 +379,7 @@ const AudioKit = (() => {
     humUpdate(pan, dist){ if (!humGain) return; humGain.gain.value = Math.min(0.09, 0.28 / Math.max(dist, 1.2));
       if (humPan.pan) humPan.pan.value = Math.max(-1, Math.min(1, pan)); },
     humStop(){ if (humOsc) { humOsc.stop(); humOsc._lfo.stop(); humOsc = null; humGain = null; } },
-    say(text){ try { if (!window.speechSynthesis) return; const u = new SpeechSynthesisUtterance(text);
-      u.rate = 0.95; u.pitch = 1.0; u.volume = 0.9;
-      const v = speechSynthesis.getVoices().find(v => /female|Samantha|Zira|Google US English/i.test(v.name + v.voiceURI));
-      if (v) u.voice = v; speechSynthesis.speak(u); } catch (e) {} },
+
   };
 })();
 
@@ -669,7 +673,8 @@ function spawnTarget() {
   const r = 1.4 + Math.random() * 3.0; // near ones are in bat'leth reach from the stage edge
   m.position.set(Math.cos(a) * r, 0.9 + Math.random() * 1.6, Math.sin(a) * r);
   m.userData = { hpMax: TUNE.targetHP, hp: TUNE.targetHP, pulse: Math.random() * Math.PI,
-    vel: new THREE.Vector3(), goal: new THREE.Vector3(), goalT: 0, spooked: 0, flash: 0 };
+    vel: new THREE.Vector3(), goal: new THREE.Vector3(), goalT: 0, spooked: 0, flash: 0,
+    fleeDir: new THREE.Vector3(), fleeCommit: 0 };
   targetGoal(m.userData);
   m.scale.setScalar(TUNE.targetScale);
   scene.add(m); targets.push(m);
@@ -836,7 +841,7 @@ function registerDiscStrike() {
     game.wave++;
     VEL.speed = Math.min(TUNE.discSpeedMax, VEL.speed * 1.12);  // the LEVEL raises the pace, not each hit
     VEL.v.normalize().multiplyScalar(VEL.speed);
-    AudioKit.ackBeep(); AudioKit.say('Velocity. Level ' + game.wave + '.');
+    AudioKit.ackBeep();
     toast('SPEED ' + game.wave);
   } else toast('STRIKE +' + TUNE.ptsDiscStrike);
   hudDirty = true;
@@ -924,7 +929,7 @@ function onTargetPop(idx, pts) {
   game.pops++; game.popsThisWave++; addScore(pts || TUNE.ptsTarget); bumpStreak();
   if (game.popsThisWave >= TUNE.waveEvery) {
     game.popsThisWave = 0; game.wave++; hudDirty = true;
-    AudioKit.ackBeep(); AudioKit.say('Level ' + game.wave + '.'); toast('WAVE ' + game.wave);
+    AudioKit.ackBeep(); toast('WAVE ' + game.wave);
   }
 }
 
@@ -950,8 +955,9 @@ function onRemoteChipped() {
 function onPlayerHit() {
   game.pips--; game.streak = 0; hudDirty = true;
   AudioKit.hit(); flashGrid(0.55);
+  if (game.mode === 'desk') showVignette();
   if (game.pips <= 0) endProgram();
-  else { AudioKit.say(game.pips === 1 ? 'Training tolerance critical.' : 'Tolerance exceeded.'); toast('HIT — ' + game.pips + ' REMAINING'); }
+  else toast('HIT — ' + game.pips + ' REMAINING');
 }
 
 function onCleanDodge() { game.dodges++; addScore(TUNE.ptsDodge); bumpStreak(); }
@@ -1230,7 +1236,7 @@ function changePower(w, delta) {
   const u = w.userData; if (!u.isGun) return;
   const next = Math.max(1, Math.min(10, u.power + delta));
   if (next === u.power) return;
-  u.power = next; updatePowerVisual(w);
+  u.power = next; updatePowerVisual(w); hudDirty = true;
   AudioKit.unlock();
   if (typeof AudioKit.chip === 'function') blipPower(next);
   haptic(w, 0.25, 25);
@@ -1251,6 +1257,7 @@ function cycleWeapon(hand, dir) {
     if (w.userData.samples) w.userData.prevValid = false;
   });
   AudioKit.ackBeep(); toast(hand.weapons[hand.idx].userData.label);
+  hudDirty = true;
 }
 function handWeapon(hand) { return hand.weapons[hand.idx]; }
 function handFire(hand, down, src) {
@@ -1423,7 +1430,8 @@ function bladeTick(b, dt) {
 }
 
 /* ───────────────────── desktop rig ───────────────────── */
-const desk = { yaw: 0, pitch: 0, keys: {}, phaser: null, locked: false };
+const desk = { yaw: 0, pitch: 0, keys: {}, phaser: null, locked: false,
+               dashVel: new THREE.Vector3(), dashCd: 0, walk: 0 };
 function lockPointer(el) { try { const r = el.requestPointerLock(); if (r && r.catch) r.catch(() => {}); } catch (e) {} }
 function setupDesk() {
   if (desk.phaser) return;
@@ -1438,6 +1446,7 @@ function setupDesk() {
   camera.add(bl); desk.batleth = bl; activeBlades.push(bl);
   const none = buildEmptyHand(); camera.add(none);
   desk.hand = { all: { fc: p, tng: t2, batleth: bl, none }, weapons: [], idx: 0, desk: true };
+  [p, t2, bl].forEach(w => { w.userData.baseY = w.position.y; w.userData.baseX = w.position.x; });
   updatePowerVisual(p); updatePowerVisual(t2);
   rebuildRacks();
   const cv = renderer.domElement;
@@ -1457,12 +1466,26 @@ function setupDesk() {
   document.addEventListener('keydown', e => { desk.keys[e.code] = true;
     if (e.code === 'KeyP' && game.mode === 'desk') { togglePause(); return; }
     if (game.mode !== 'desk' || !desk.hand || game.paused) return;
+    if (e.code === 'Space' && desk.dashCd <= 0 && game.running) {
+      deskDashDir(desk.dashVel).multiplyScalar(6.5); desk.dashCd = 1.2; AudioKit.feintOff();
+    }
     if (e.code === 'KeyB' || e.code === 'KeyQ') cycleWeapon(desk.hand, 1);
     if (e.code === 'Digit1' || e.code === 'Digit2' || e.code === 'Digit3') {
       const want = Number(e.code.slice(5)) - 1;
       if (want !== desk.hand.idx) cycleWeapon(desk.hand, want - desk.hand.idx);
     } });
   document.addEventListener('keyup', e => { desk.keys[e.code] = false; });
+}
+function deskDashDir(out) {
+  const f = out.set(-Math.sin(desk.yaw), 0, -Math.cos(desk.yaw));
+  const rx = -f.z, rz = f.x;
+  let x = 0, z = 0;
+  if (desk.keys.KeyW) { x += f.x; z += f.z; }
+  if (desk.keys.KeyS) { x -= f.x; z -= f.z; }
+  if (desk.keys.KeyD) { x += rx; z += rz; }
+  if (desk.keys.KeyA) { x -= rx; z -= rz; }
+  if (x === 0 && z === 0) { x = -f.x; z = -f.z; }   // no direction held: dash backward
+  return out.set(x, 0, z).normalize();
 }
 function deskTick(dt) {
   camera.rotation.set(desk.pitch, desk.yaw, 0, 'YXZ');
@@ -1471,11 +1494,33 @@ function deskTick(dt) {
   const v = new THREE.Vector3();
   if (desk.keys.KeyW) v.add(f); if (desk.keys.KeyS) v.sub(f);
   if (desk.keys.KeyD) v.add(r); if (desk.keys.KeyA) v.sub(r);
-  if (v.lengthSq() > 0) { v.normalize().multiplyScalar(1.8 * dt); playerRig.position.add(v);
-    const flat = new THREE.Vector2(playerRig.position.x, playerRig.position.z);
-    if (flat.length() > 1.3) { flat.normalize().multiplyScalar(1.3); playerRig.position.x = flat.x; playerRig.position.z = flat.y; } }
-  const duck = desk.keys.ShiftLeft || desk.keys.ShiftRight;
+  const moving = v.lengthSq() > 0;
+  const sprint = desk.keys.ShiftLeft || desk.keys.ShiftRight;
+  if (moving && !game.paused) { v.normalize().multiplyScalar((sprint ? 4.6 : 3.0) * dt); playerRig.position.add(v); }
+  if (desk.dashCd > 0) desk.dashCd -= dt;
+  if (desk.dashVel.lengthSq() > 0.01 && !game.paused) {   // the dash carries you, then bleeds off
+    playerRig.position.addScaledVector(desk.dashVel, dt);
+    desk.dashVel.multiplyScalar(Math.max(0, 1 - dt * 7));
+  }
+  // roam the whole room, not just the stage
+  if (game.program === 'velocity') {
+    const lim = TUNE.courtX - 0.35;
+    playerRig.position.x = Math.max(-lim, Math.min(lim, playerRig.position.x));
+    playerRig.position.z = Math.max(-lim, Math.min(lim, playerRig.position.z));
+  } else {
+    const fr = Math.hypot(playerRig.position.x, playerRig.position.z);
+    const rmax = TUNE.arenaRMax - 0.4;
+    if (fr > rmax) { playerRig.position.x *= rmax / fr; playerRig.position.z *= rmax / fr; }
+  }
+  const duck = desk.keys.ControlLeft || desk.keys.KeyC;
   camera.position.y += ((duck ? 1.05 : 1.6) - camera.position.y) * Math.min(1, dt * 10);
+  // viewmodel bob while on the move
+  desk.walk = moving ? desk.walk + dt * (sprint ? 11 : 8) : 0;
+  const w = desk.hand && desk.hand.weapons.length ? handWeapon(desk.hand) : null;
+  if (w && w.userData.baseY !== undefined) {
+    w.position.y = w.userData.baseY + (moving ? Math.sin(desk.walk) * 0.008 : 0);
+    w.position.x = w.userData.baseX + (moving ? Math.cos(desk.walk * 0.5) * 0.005 : 0);
+  }
 }
 
 /* ───────────────────── settings ─────────────────────
@@ -1637,6 +1682,7 @@ function targetsTick(dt) {
     if (u.flash > 0) u.flash -= dt;
     if (u.chipMuted > 0) u.chipMuted -= dt;
     if (u.spooked > 0) u.spooked -= dt;
+    if (u.fleeCommit > 0) u.fleeCommit -= dt;
 
     // where it wants to be
     u.goalT -= dt;
@@ -1653,10 +1699,14 @@ function targetsTick(dt) {
         const perpSq = Math.max(0, _perp.lengthSq() - along * along);
         const rad = TUNE.targetFleeRadius + targetRadius();
         if (perpSq < rad * rad) {
-          _perp.addScaledVector(aimD, -along);              // its offset from the aim line
-          if (_perp.lengthSq() < 1e-4) _perp.set(Math.random() - 0.5, 0.4, Math.random() - 0.5);
-          _perp.normalize();
-          _tv.copy(_perp).addScaledVector(aimD, 0.2).normalize();
+          if (u.fleeCommit <= 0) {                          // pick ONE escape line and hold it —
+            _perp.addScaledVector(aimD, -along);            // recomputing per frame made them judder
+            if (_perp.lengthSq() < 1e-4) _perp.set(Math.random() - 0.5, 0.4, Math.random() - 0.5);
+            _perp.normalize();
+            u.fleeDir.copy(_perp).addScaledVector(aimD, 0.2).normalize();
+            u.fleeCommit = 0.45;
+          }
+          _tv.copy(u.fleeDir);
           speed = TUNE.targetFleeSpeed * hot;
           u.spooked = 0.55;
         }
@@ -1727,17 +1777,12 @@ function startProgram(mode) {
     lockPointer(renderer.domElement); }
   resetGame(); flashGrid(0.5);
   AudioKit.ackBeep();
-  AudioKit.say(game.program === 'velocity'
-    ? 'Program running. Velocity, level one.'
-    : 'Program running. Phaser range, level one.');
 }
 
 let endedAt = 0;
 function endProgram() {
   game.running = false; game.over = true; endedAt = gt;
   AudioKit.beamStop(); AudioKit.endChime(); flashGrid(0.7); hudDirty = true;
-  const acc = game.shots ? Math.round(100 * game.hits / game.shots) : 0;
-  AudioKit.say('Program complete. Wave ' + game.wave + '. Accuracy, ' + acc + ' percent.');
   toast('PROGRAM COMPLETE — SCORE ' + game.score);
 }
 function tryRestart() { if (game.over && gt - endedAt > 1.5) { resetGame(); flashGrid(0.4); AudioKit.ackBeep(); toast('PROGRAM RESTARTED'); } }
@@ -1882,6 +1927,19 @@ document.getElementById('btn-reset').addEventListener('click', () => {
 });
 syncSettingsUI();
 
+/* damage vignette + hitmarker */
+let _vigT = null, _retT = null, lastHits = 0;
+function showVignette() {
+  const el = document.getElementById('vignette');
+  el.classList.add('on'); clearTimeout(_vigT);
+  _vigT = setTimeout(() => el.classList.remove('on'), 200);
+}
+const reticleEl = document.getElementById('reticle');
+function reticlePulse() {
+  reticleEl.classList.add('hit'); clearTimeout(_retT);
+  _retT = setTimeout(() => reticleEl.classList.remove('hit'), 110);
+}
+
 /* desktop DOM HUD mirrors */
 const hScore = document.getElementById('h-score'), hStreak = document.getElementById('h-streak'),
       hWave = document.getElementById('h-wave'), beamFill = document.getElementById('beamfill'),
@@ -1889,6 +1947,10 @@ const hScore = document.getElementById('h-score'), hStreak = document.getElement
 function drawDomHud() {
   hScore.textContent = game.score; hStreak.textContent = game.streak; hWave.textContent = game.wave;
   document.getElementById('lab-wave').textContent = game.program === 'velocity' ? 'Speed' : 'Wave';
+  const w = desk.hand && desk.hand.weapons.length ? handWeapon(desk.hand) : null;
+  document.getElementById('h-weap').textContent = !w ? '—'
+    : (w.userData.label || 'BLADE').replace('PHASER · ', '') +
+      (w.userData.isGun ? ' · PWR ' + w.userData.power : '');
   pipEls.forEach((el, i) => el.classList.toggle('lost', i >= game.pips));
 }
 
@@ -1932,6 +1994,10 @@ renderer.setAnimationLoop((time) => {
   hudClock += dt;
   if ((hudDirty && hudClock > 0.1) || game.over && hudClock > 0.5) {
     drawHUD(); if (game.mode === 'desk') drawDomHud(); hudDirty = false; hudClock = 0;
+  }
+  if (game.mode === 'desk' && game.hits !== lastHits) {
+    if (game.hits > lastHits) reticlePulse();
+    lastHits = game.hits;
   }
   if (game.mode === 'desk' && (beamRecharging || beamCharge < 1)) beamFill.style.transform = 'scaleX(' + beamCharge + ')';
   else if (game.mode === 'desk') beamFill.style.transform = 'scaleX(1)';

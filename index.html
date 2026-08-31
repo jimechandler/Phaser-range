@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phaser Range</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;600;700&family=Titillium+Web:wght@300;400;600&display=swap">
+<style>
+  /* Phaser Range — single committed theme: the holodeck void.
+     Palette: void #07070c · grid-gold #f2c14e · LCARS amber #ff9c00 ·
+     lavender #cc99cc · pale blue #99ccff · alert #e5484d · warm ink #e8e4d8 */
+  :root{
+    --void:#07070c; --panel:#0c0c13; --edge:#1c1c28;
+    --grid:#f2c14e; --amber:#ff9c00; --lav:#cc99cc; --pale:#99ccff;
+    --alert:#e5484d; --ink:#e8e4d8; --dim:#8d8a7b;
+    --display:'Antonio', 'Arial Narrow', sans-serif;
+    --body:'Titillium Web', 'Segoe UI', sans-serif;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  html,body{height:100%}
+  body{margin:0;background:var(--void);color:var(--ink);font-family:var(--body);overflow:hidden}
+  canvas{display:block}
+
+  /* ——— Lobby: the arch ——— */
+  #lobby{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at 50% 120%, #101018 0%, var(--void) 60%);z-index:20;padding:24px}
+  .arch{display:flex;gap:14px;max-width:680px;width:100%}
+  .rail{display:flex;flex-direction:column;gap:6px;width:64px;flex:none}
+  .rail span{display:block;border-radius:20px 0 0 20px}
+  .rail .b1{height:120px;background:var(--amber)}
+  .rail .b2{height:34px;background:var(--lav)}
+  .rail .b3{height:70px;background:var(--pale)}
+  .rail .b4{flex:1;min-height:40px;background:var(--grid)}
+  .rail .b5{height:26px;background:var(--alert)}
+  .arch-body{flex:1;border-top:3px solid var(--amber);border-bottom:3px solid var(--amber);
+    padding:22px 8px 22px 22px;min-width:0}
+  .eyebrow{font-family:var(--display);letter-spacing:.28em;font-size:13px;color:var(--lav);
+    text-transform:uppercase;margin:0 0 6px}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(44px,9vw,72px);line-height:.95;
+    margin:0 0 14px;color:var(--grid);text-transform:uppercase;letter-spacing:.01em;text-wrap:balance}
+  .brief{max-width:52ch;font-size:15.5px;font-weight:300;line-height:1.55;color:var(--ink);margin:0 0 18px}
+  .brief b{color:var(--pale);font-weight:600}
+  #xrstatus{font-family:var(--display);text-transform:uppercase;letter-spacing:.18em;font-size:12px;
+    color:var(--dim);margin:0 0 16px}
+  #xrstatus.ok{color:var(--grid)}
+  .actions{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+  button.lcars,a.lcars{font-family:var(--display);text-transform:uppercase;letter-spacing:.12em;
+    font-size:20px;font-weight:600;border:none;cursor:pointer;border-radius:26px;
+    padding:16px 30px;background:var(--amber);color:#140b00;transition:filter .12s;
+    display:inline-block;text-decoration:none;text-align:center}
+  button.lcars:hover,a.lcars:hover,button.lcars:focus-visible,a.lcars:focus-visible{filter:brightness(1.18)}
+  button.lcars:focus-visible,a.lcars:focus-visible{outline:2px solid var(--pale);outline-offset:3px}
+  button.lcars.alt,a.lcars.alt{background:transparent;color:var(--pale);box-shadow:inset 0 0 0 2px var(--pale)}
+  button.lcars:disabled{background:var(--edge);color:var(--dim);cursor:default}
+  .legend{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13.5px;color:var(--dim);max-width:52ch}
+  .legend dt{font-family:var(--display);text-transform:uppercase;letter-spacing:.14em;color:var(--lav);font-size:12px;padding-top:1px}
+  .legend dd{margin:0}
+  .footnote{margin-top:16px;font-size:12px;color:var(--dim);max-width:52ch;line-height:1.5}
+
+  /* ——— Desktop HUD ——— */
+  #hud{position:fixed;inset:0;pointer-events:none;display:none;z-index:10;font-variant-numeric:tabular-nums}
+  #hud .top{position:absolute;top:14px;left:50%;transform:translateX(-50%);display:flex;gap:26px;align-items:center;
+    background:rgba(12,12,19,.72);border:1px solid var(--edge);border-radius:22px;padding:8px 24px}
+  .stat{text-align:center}
+  .stat .lab{font-family:var(--display);text-transform:uppercase;letter-spacing:.2em;font-size:10px;color:var(--lav)}
+  .stat .val{font-family:var(--display);font-size:26px;color:var(--grid);line-height:1.05}
+  #pips{display:flex;gap:6px;align-items:center}
+  .pip{width:14px;height:14px;border-radius:50%;background:var(--grid);box-shadow:0 0 8px rgba(242,193,78,.7)}
+  .pip.lost{background:var(--edge);box-shadow:none}
+  #reticle{position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;
+    border:1.5px solid var(--grid);opacity:.85}
+  #beammeter{position:absolute;left:50%;top:calc(50% + 22px);width:64px;height:4px;margin-left:-32px;
+    border-radius:2px;background:var(--edge);overflow:hidden}
+  #beammeter i{display:block;height:100%;width:100%;background:var(--amber);transform-origin:left}
+  #toast{position:absolute;bottom:12vh;left:50%;transform:translateX(-50%);
+    font-family:var(--display);text-transform:uppercase;letter-spacing:.24em;font-size:15px;
+    color:var(--pale);opacity:0;transition:opacity .3s}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important} }
+</style>
+</head>
+<body>
+
+<div id="lobby">
+  <div class="arch">
+    <div class="rail" aria-hidden="true"><span class="b1"></span><span class="b2"></span><span class="b3"></span><span class="b4"></span><span class="b5"></span></div>
+    <div class="arch-body">
+      <p class="eyebrow">Holodeck · Recreational Program</p>
+      <h1>Phaser Range</h1>
+      <p class="brief">A circular stage in a dark void. Light-targets drift through the black — pop them.
+        A <b>training remote</b> orbits you: when its emitter glows and chimes, a stun bolt follows —
+        <b>step aside or duck</b>, or shoot the bolt out of the air. The instant it fires, the remote
+        flares white: <b>tag it then</b> for the big score. You can hit it any time to make it flinch —
+        counter-fire during the glow <b>breaks its attack</b>. Or squeeze the grip button for a
+        <b>bat'leth</b> and bat its bolts straight back at it. Three hits ends the program.</p>
+      <p id="xrstatus">Checking headset support&hellip;</p>
+      <div class="actions">
+        <button class="lcars" id="btn-vr" disabled>Enter the range</button>
+        <a class="lcars alt" id="btn-pop" target="_blank" rel="noopener" hidden>Open standalone</a>
+        <button class="lcars alt" id="btn-desk">Desktop drill</button>
+      </div>
+      <dl class="legend">
+        <dt>Trigger tap</dt><dd>Phaser bolt — generous aim, always ready</dd>
+        <dt>Trigger hold</dt><dd>Sustained beam, sweeps targets, then recharges</dd>
+        <dt>Your body</dt><dd>Dodge stun bolts physically — sidestep, duck</dd>
+        <dt>Grip button</dt><dd>Swap phaser &harr; bat'leth &mdash; the blade deflects stun bolts; a returned bolt that hits the remote pays 200</dd>
+        <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD step · Shift duck · B swaps weapon</dd>
+      </dl>
+      <p class="footnote">M0.2 feel prototype — telegraph timing, phaser feel, and a first bat'leth. On Quest, open this
+        page in the headset browser. If the Enter button stays unavailable inside an embedded viewer,
+        open the page in its own tab.</p>
+      <p class="footnote" id="diag" style="font-family:monospace;font-size:11px;color:#6a6a5c;line-height:1.6"></p>
+    </div>
+  </div>
+</div>
+
+<div id="hud">
+  <div class="top">
+    <div class="stat"><div class="lab">Score</div><div class="val" id="h-score">0</div></div>
+    <div class="stat"><div class="lab">Streak</div><div class="val" id="h-streak">0</div></div>
+    <div class="stat"><div class="lab">Wave</div><div class="val" id="h-wave">1</div></div>
+    <div class="stat"><div class="lab">Tolerance</div><div id="pips"><span class="pip"></span><span class="pip"></span><span class="pip"></span></div></div>
+  </div>
+  <div id="reticle"></div>
+  <div id="beammeter"><i id="beamfill"></i></div>
+  <div id="toast"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// Primary CDN missed — pull the engine from the backup before anything else runs.
+if (!window.THREE) document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"><\/script>');
+</script>
+<script>
+if (!window.THREE) document.getElementById('xrstatus').textContent =
+  'The 3D engine failed to load — check the internet connection and reload this page.';
+</script>
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════════════
+   PHASER RANGE — M0+ feel prototype
+   All the numbers worth tuning live in TUNE. Everything the GDD says
+   should be readable in silhouette is driven from here.
+   ═══════════════════════════════════════════════════════════════════ */
+const TUNE = {
+  // — training remote —
+  remoteStalkMin: 2.0, remoteStalkMax: 3.6,   // s between attacks
+  telegraph: 0.55,                             // s of glow+chime before firing (playtest: 0.6 felt slow)
+  telegraphFloor: 0.40,                        // wave ramp never goes below this in M0
+  boltSpeed: 3.4,                              // m/s stun bolt (dodgeable)
+  boltSpeedRamp: 0.05,                         // +5% per wave
+  vulnWindow: 1.25,                            // s the remote is tappable after firing
+  remoteOrbitMin: 2.6, remoteOrbitMax: 4.0,    // m from stage centre
+  remoteHMin: 1.0, remoteHMax: 2.2,            // m height band
+  remoteSpeed: 1.5,                            // m/s repositioning speed
+  // — phaser —
+  boltCone: 5.0,           // ° aim-assist half-angle vs light-targets
+  boltConeRemote: 4.0,     // ° vs remote
+  boltConeBolt: 6.0,       // ° vs incoming stun bolts (generous — canon "shoot it out of the air")
+  beamMax: 1.0,            // s of sustained beam
+  beamRecharge: 1.6,       // s to refill after any beam use
+  beamCone: 2.6,           // ° beam sweep half-angle
+  holdThreshold: 0.14,     // s trigger held before tap becomes beam
+  // — light-targets —
+  targetsBase: 2, targetsMaxCap: 4,            // concurrent spheres, wave-ramped
+  targetRespawn: 1.1,                          // s
+  targetDriftSpeed: 0.5, targetDartSpeed: 2.2, // m/s
+  targetDartChance: 0.012,                     // per frame-ish
+  // — player / scoring —
+  headHitRadius: 0.30,     // m — stun bolt vs head
+  pips: 3,
+  ptsTarget: 25, ptsBoltDown: 40, ptsRemoteTag: 150, ptsDodge: 10,
+  ptsRemoteChip: 25,       // hitting the remote outside its window (makes it flinch; cancels a telegraph)
+  chipCooldown: 0.4,       // s between chips registering
+  // — bat'leth —
+  ptsMeleePop: 35, ptsDeflect: 50, ptsReturn: 200,
+  bladeSwingSpeed: 1.2,    // m/s blade speed needed to pop a target (desktop: 0.8)
+  bladePopRadius: 0.16, bladeDeflectRadius: 0.22,
+  deflectSpeedBoost: 1.6,  // returned bolts fly this much faster
+  waveEvery: 8,            // target pops per wave
+  stageRadius: 1.0,        // m — the canon 2 m circle
+};
+
+/* ─── tiny synth: every sound in the range is WebAudio, no assets ─── */
+const AudioKit = (() => {
+  let ctx = null, master = null, humOsc = null, humGain = null, humPan = null;
+  let beamOsc = null, beamGain = null;
+  const ready = () => { if (!ctx) { try {
+      ctx = new (window.AudioContext || window.webkitAudioContext)();
+      master = ctx.createGain(); master.gain.value = 0.5; master.connect(ctx.destination);
+    } catch (e) { /* no audio — play on */ } } if (ctx && ctx.state === 'suspended') ctx.resume(); return !!ctx; };
+  const env = (g, t, a, peak, d) => { g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + d); };
+  const blip = (type, f0, f1, dur, peak, when = 0) => { if (!ready()) return; const t = ctx.currentTime + when;
+    const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type;
+    o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(f1, 1), t + dur);
+    env(g, t, 0.005, peak, dur); o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.05); };
+  return {
+    unlock: ready,
+    phaserBolt(){ blip('sawtooth', 1400, 320, 0.16, 0.22); blip('sine', 2200, 500, 0.10, 0.10); },
+    beamStart(){ if (!ready()) return; this.beamStop(); const t = ctx.currentTime;
+      beamOsc = ctx.createOscillator(); beamGain = ctx.createGain();
+      const lfo = ctx.createOscillator(), lg = ctx.createGain();
+      beamOsc.type = 'sawtooth'; beamOsc.frequency.value = 880;
+      lfo.frequency.value = 22; lg.gain.value = 60; lfo.connect(lg); lg.connect(beamOsc.frequency);
+      beamGain.gain.setValueAtTime(0.0001, t); beamGain.gain.linearRampToValueAtTime(0.16, t + 0.05);
+      beamOsc.connect(beamGain); beamGain.connect(master); beamOsc.start(t); lfo.start(t);
+      beamOsc._lfo = lfo; },
+    beamStop(){ if (beamOsc && ctx) { const t = ctx.currentTime; beamGain.gain.cancelScheduledValues(t);
+      beamGain.gain.setValueAtTime(beamGain.gain.value, t); beamGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
+      beamOsc.stop(t + 0.15); beamOsc._lfo.stop(t + 0.15); beamOsc = null; } },
+    recharge(){ blip('sine', 300, 900, 0.35, 0.07); },
+    chime(){ blip('sine', 1180, 1180, 0.09, 0.16); blip('sine', 1570, 1570, 0.09, 0.16, 0.11); },
+    feintOff(){ blip('sine', 900, 400, 0.12, 0.08); },
+    stunFire(){ blip('square', 240, 90, 0.28, 0.20); },
+    vulnFlare(){ blip('triangle', 700, 1900, 0.22, 0.12); },
+    remoteTag(){ blip('triangle', 500, 2400, 0.30, 0.22); blip('sine', 2600, 2600, 0.15, 0.12, 0.1); },
+    pop(){ blip('triangle', 900, 2400, 0.09, 0.18); blip('square', 300, 150, 0.06, 0.06); },
+    boltDown(){ blip('triangle', 1200, 3200, 0.12, 0.2); },
+    chip(){ blip('square', 1800, 900, 0.08, 0.14); },
+    clang(){ blip('square', 2400, 1500, 0.10, 0.18); blip('triangle', 5100, 3400, 0.07, 0.09, 0.01); },
+    deflect(){ this.clang(); blip('triangle', 800, 2600, 0.15, 0.12, 0.05); },
+    hit(){ blip('sawtooth', 160, 60, 0.45, 0.30); blip('square', 90, 60, 0.4, 0.15); },
+    ackBeep(){ blip('sine', 660, 660, 0.07, 0.1); blip('sine', 880, 880, 0.07, 0.1, 0.09); },
+    endChime(){ [523, 392, 330].forEach((f, i) => blip('sine', f, f, 0.25, 0.12, i * 0.18)); },
+    humStart(){ if (!ready() || humOsc) return; humOsc = ctx.createOscillator(); humGain = ctx.createGain();
+      humPan = (ctx.createStereoPanner ? ctx.createStereoPanner() : ctx.createGain());
+      const lfo = ctx.createOscillator(), lg = ctx.createGain();
+      humOsc.type = 'triangle'; humOsc.frequency.value = 96;
+      lfo.frequency.value = 7; lg.gain.value = 5; lfo.connect(lg); lg.connect(humOsc.frequency);
+      humGain.gain.value = 0.0; humOsc.connect(humGain); humGain.connect(humPan); humPan.connect(master);
+      humOsc.start(); lfo.start(); humOsc._lfo = lfo; },
+    humUpdate(pan, dist){ if (!humGain) return; humGain.gain.value = Math.min(0.09, 0.28 / Math.max(dist, 1.2));
+      if (humPan.pan) humPan.pan.value = Math.max(-1, Math.min(1, pan)); },
+    humStop(){ if (humOsc) { humOsc.stop(); humOsc._lfo.stop(); humOsc = null; humGain = null; } },
+    say(text){ try { if (!window.speechSynthesis) return; const u = new SpeechSynthesisUtterance(text);
+      u.rate = 0.95; u.pitch = 1.0; u.volume = 0.9;
+      const v = speechSynthesis.getVoices().find(v => /female|Samantha|Zira|Google US English/i.test(v.name + v.voiceURI));
+      if (v) u.voice = v; speechSynthesis.speak(u); } catch (e) {} },
+  };
+})();
+
+/* ─────────────────────────── scene ─────────────────────────── */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x07070c);
+scene.fog = new THREE.FogExp2(0x07070c, 0.055);
+
+const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.05, 60);
+camera.position.set(0, 1.6, 0);
+const playerRig = new THREE.Group(); playerRig.name = 'PlayerRig';
+playerRig.add(camera); scene.add(playerRig);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.xr.enabled = true;
+document.body.appendChild(renderer.domElement);
+addEventListener('resize', () => { if (renderer.xr.isPresenting) return;
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight); });
+
+scene.add(new THREE.HemisphereLight(0x8890b0, 0x0a0a10, 0.6));
+const keyLight = new THREE.DirectionalLight(0xfff2d0, 0.5); keyLight.name = 'KeyLight';
+keyLight.position.set(2, 4, 1); scene.add(keyLight);
+
+/* — the stage: canon 2 m circle, gold ring in the void — */
+const stage = new THREE.Group(); stage.name = 'Stage';
+{
+  const ringGeo = new THREE.RingGeometry(TUNE.stageRadius - 0.04, TUNE.stageRadius, 72);
+  const ring = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0xf2c14e, side: THREE.DoubleSide }));
+  ring.rotation.x = -Math.PI / 2; ring.position.y = 0.002; ring.name = 'StageRing'; stage.add(ring);
+  const disc = new THREE.Mesh(new THREE.CircleGeometry(TUNE.stageRadius - 0.04, 72),
+    new THREE.MeshBasicMaterial({ color: 0x101016 }));
+  disc.rotation.x = -Math.PI / 2; disc.name = 'StageFloor'; stage.add(disc);
+  for (let i = 1; i <= 3; i++) { // faint guide rings out into the dark
+    const g = new THREE.Mesh(new THREE.RingGeometry(TUNE.stageRadius + i * 1.2, TUNE.stageRadius + i * 1.2 + 0.012, 72),
+      new THREE.MeshBasicMaterial({ color: 0xf2c14e, transparent: true, opacity: 0.10 - i * 0.025, side: THREE.DoubleSide }));
+    g.rotation.x = -Math.PI / 2; g.position.y = 0.001; g.name = 'GuideRing' + i; stage.add(g);
+  }
+}
+scene.add(stage);
+
+/* — holodeck grid: invisible until program events flash it — */
+const holoGrid = new THREE.Group(); holoGrid.name = 'HolodeckGrid';
+{
+  const mat = new THREE.LineBasicMaterial({ color: 0xf2c14e, transparent: true, opacity: 0 });
+  const size = 14, h = 5, step = 1.4, pts = [];
+  for (let x = -size / 2; x <= size / 2; x += step) {
+    pts.push(x, 0, -size / 2, x, 0, size / 2, x, h, -size / 2, x, h, size / 2,
+             x, 0, -size / 2, x, h, -size / 2, x, 0, size / 2, x, h, size / 2);
+    pts.push(-size / 2, 0, x, size / 2, 0, x, -size / 2, h, x, size / 2, h, x,
+             -size / 2, 0, x, -size / 2, h, x, size / 2, 0, x, size / 2, h, x);
+  }
+  for (let y = 0; y <= h; y += step) {
+    pts.push(-size / 2, y, -size / 2, size / 2, y, -size / 2, size / 2, y, -size / 2, size / 2, y, size / 2,
+             size / 2, y, size / 2, -size / 2, y, size / 2, -size / 2, y, size / 2, -size / 2, y, -size / 2);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+  const lines = new THREE.LineSegments(geo, mat); lines.name = 'GridLines';
+  holoGrid.add(lines); holoGrid.userData.mat = mat;
+}
+scene.add(holoGrid);
+let gridFlash = 0;
+function flashGrid(strength) { gridFlash = Math.max(gridFlash, strength); }
+
+/* — the phaser: First Contact Type 2, boxy hero prop, built procedurally —
+     (materials named & colored: gunmetal body, brushed emitter, amber tip) */
+function buildPhaser() {
+  const gunmetal = new THREE.MeshStandardMaterial({ color: 0x3a3d44, metalness: 0.7, roughness: 0.45 }); gunmetal.name = 'Mat_Gunmetal';
+  const brushed  = new THREE.MeshStandardMaterial({ color: 0x8a8f99, metalness: 0.9, roughness: 0.3 });  brushed.name  = 'Mat_BrushedSteel';
+  const amber    = new THREE.MeshBasicMaterial({ color: 0xffb347 }); amber.name = 'Mat_EmitterAmber';
+  const g = new THREE.Group(); g.name = 'Phaser_Type2';
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.045, 0.17), gunmetal);
+  body.name = 'PhaserBody'; body.position.set(0, 0.015, -0.03); g.add(body);
+  const grip = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.09, 0.045), gunmetal);
+  grip.name = 'PhaserGrip'; grip.position.set(0, -0.045, 0.035); grip.rotation.x = 0.35; g.add(grip);
+  const emitter = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.014, 0.05, 16), brushed);
+  emitter.name = 'PhaserEmitter'; emitter.rotation.x = Math.PI / 2; emitter.position.set(0, 0.028, -0.125); g.add(emitter);
+  const tip = new THREE.Mesh(new THREE.SphereGeometry(0.008, 12, 12), amber);
+  tip.name = 'PhaserTip'; tip.position.set(0, 0.028, -0.152); g.add(tip);
+  const muzzle = new THREE.Object3D(); muzzle.name = 'Muzzle';
+  muzzle.position.copy(tip.position); g.add(muzzle);
+  g.userData.muzzle = muzzle; g.userData.tip = tip;
+  return g;
+}
+
+/* — the bat'leth: crescent blade, four points, three handholds —
+     (materials named & colored: brushed blade steel, dark leather wraps) */
+function buildBatleth() {
+  const steel = new THREE.MeshStandardMaterial({ color: 0xb9bec8, metalness: 0.9, roughness: 0.35 }); steel.name = 'Mat_BladeSteel';
+  const wrap  = new THREE.MeshStandardMaterial({ color: 0x2a2024, metalness: 0.1, roughness: 0.9 });  wrap.name  = 'Mat_HandleWrap';
+  const g = new THREE.Group(); g.name = 'Batleth';
+  const inner = new THREE.Group(); inner.name = 'BatlethBladeAssembly'; // authored flat in XY, laid horizontal below
+  const s = new THREE.Shape();
+  s.moveTo(-0.54, 0.02);
+  s.quadraticCurveTo(0, -0.16, 0.54, 0.02);   // leading edge bows away — tips are two of the four points
+  s.quadraticCurveTo(0, -0.05, -0.54, 0.02);  // trailing edge
+  const blade = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth: 0.012, bevelEnabled: false }), steel);
+  blade.name = 'BatlethBlade'; blade.position.z = -0.006; inner.add(blade);
+  [-0.19, 0.19].forEach((x, i) => {           // the two mid spikes
+    const spike = new THREE.Mesh(new THREE.ConeGeometry(0.016, 0.09, 8), steel);
+    spike.name = 'BatlethSpike' + (i + 1);
+    spike.rotation.z = Math.PI; spike.position.set(x, -0.095, 0); inner.add(spike);
+  });
+  [-0.30, 0, 0.30].forEach((x, i) => {        // three handholds on the trailing edge
+    const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.11, 10), wrap);
+    grip.name = 'BatlethGrip' + (i + 1);
+    grip.rotation.z = Math.PI / 2; grip.position.set(x, 0.045, 0); inner.add(grip);
+  });
+  const samples = [];                          // collision samples along the leading edge
+  for (let i = 0; i <= 8; i++) {
+    const t = i / 8, mt = 1 - t;
+    const x = mt * mt * -0.54 + t * t * 0.54;
+    const y = mt * mt * 0.02 + 2 * mt * t * -0.16 + t * t * 0.02;
+    const o = new THREE.Object3D(); o.name = 'BladeSample' + i; o.position.set(x, y - 0.015, 0);
+    inner.add(o); samples.push(o);
+  }
+  inner.rotation.x = Math.PI / 2;              // lie flat: leading edge points away, handholds toward you
+  g.add(inner);
+  g.userData.samples = samples;
+  g.userData.prev = samples.map(() => new THREE.Vector3());
+  g.userData.prevValid = false;
+  return g;
+}
+</script>
+<script>
+/* ───────────────────── training remote ───────────────────── */
+const remote = (() => {
+  const chrome = new THREE.MeshStandardMaterial({ color: 0xc8ccd4, metalness: 0.95, roughness: 0.25 }); chrome.name = 'Mat_ChromeDisc';
+  const dark   = new THREE.MeshStandardMaterial({ color: 0x22242a, metalness: 0.6, roughness: 0.5 });  dark.name = 'Mat_DiscUnderside';
+  const emitMat = new THREE.MeshBasicMaterial({ color: 0x334, transparent: true }); emitMat.name = 'Mat_RemoteEmitter';
+  const g = new THREE.Group(); g.name = 'TrainingRemote';
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.13, 0.05, 28), chrome);
+  disc.name = 'RemoteDisc'; g.add(disc);
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(0.09, 20, 14, 0, Math.PI * 2, 0, Math.PI / 2), chrome);
+  dome.name = 'RemoteDome'; dome.position.y = 0.02; g.add(dome);
+  const under = new THREE.Mesh(new THREE.SphereGeometry(0.07, 16, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), dark);
+  under.name = 'RemoteUnderside'; under.position.y = -0.02; g.add(under);
+  const eye = new THREE.Mesh(new THREE.SphereGeometry(0.028, 14, 14), emitMat);
+  eye.name = 'RemoteEye'; eye.position.set(0, 0.0, 0.15); g.add(eye); // +Z faces the player after lookAt
+  const glow = new THREE.PointLight(0xff5533, 0, 3); glow.name = 'RemoteGlow';
+  glow.position.copy(eye.position); g.add(glow);
+  scene.add(g);
+  return { g, eye, eyeMat: emitMat, glow, chrome,
+    state: 'stalk', timer: 0, from: new THREE.Vector3(0, 1.6, -3), to: new THREE.Vector3(),
+    pos: new THREE.Vector3(0, 1.6, -3), t: 0, travel: 1 };
+})();
+
+function remotePickWaypoint() {
+  const a = Math.random() * Math.PI * 2;
+  const r = TUNE.remoteOrbitMin + Math.random() * (TUNE.remoteOrbitMax - TUNE.remoteOrbitMin);
+  const h = TUNE.remoteHMin + Math.random() * (TUNE.remoteHMax - TUNE.remoteHMin);
+  remote.from.copy(remote.pos); remote.to.set(Math.cos(a) * r, h, Math.sin(a) * r);
+  remote.travel = Math.max(0.6, remote.from.distanceTo(remote.to) / TUNE.remoteSpeed);
+  remote.t = 0;
+}
+
+/* ───────────────────── projectiles & targets ───────────────────── */
+const stunBolts = [];   // remote → player
+const boltPool = [];
+function spawnStunBolt(from, at, speed) {
+  const mat = new THREE.MeshBasicMaterial({ color: 0xff5533 }); mat.name = 'Mat_StunBolt';
+  const m = boltPool.pop() || new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 10), mat);
+  m.name = 'StunBolt'; m.position.copy(from);
+  m.material.color.setHex(0xff5533); // pooled meshes may come back from a deflected life
+  m.userData.vel = at.clone().sub(from).normalize().multiplyScalar(speed);
+  m.userData.friendly = false;
+  m.userData.alive = 0; m.visible = true; scene.add(m); stunBolts.push(m);
+}
+
+const TARGET_COLORS = [0x53d3e0, 0xe060c8, 0x7de07a, 0xf2c14e];
+const targets = [];
+let targetRespawnQueue = [];
+function spawnTarget() {
+  const color = TARGET_COLORS[Math.floor(Math.random() * TARGET_COLORS.length)];
+  const mat = new THREE.MeshBasicMaterial({ color }); mat.name = 'Mat_LightTarget';
+  const m = new THREE.Mesh(new THREE.SphereGeometry(0.11, 16, 16), mat);
+  m.name = 'LightTarget';
+  const a = Math.random() * Math.PI * 2;
+  const r = 1.4 + Math.random() * 3.0; // near ones are in bat'leth reach from the stage edge
+  m.position.set(Math.cos(a) * r, 0.9 + Math.random() * 1.6, Math.sin(a) * r);
+  m.userData = { phase: Math.random() * 10, base: m.position.clone(),
+    dart: null, dartT: 0, pulse: Math.random() * Math.PI };
+  scene.add(m); targets.push(m);
+}
+
+/* shot flash lines (both tap-bolts and beams reuse these) */
+const shotFlashes = [];
+function flashLine(from, to, color, life, width) {
+  const geo = new THREE.BufferGeometry().setFromPoints([from, to]);
+  const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.95 }); mat.name = 'Mat_PhaserBeam';
+  const line = new THREE.Line(geo, mat); line.name = 'PhaserBeamFlash';
+  scene.add(line); shotFlashes.push({ line, life, max: life });
+  const core = new THREE.Mesh(new THREE.SphereGeometry(0.02, 8, 8), new THREE.MeshBasicMaterial({ color: 0xfff3d6 }));
+  core.name = 'MuzzleFlash'; core.position.copy(from); scene.add(core);
+  shotFlashes.push({ line: core, life: life * 0.6, max: life * 0.6 });
+}
+
+/* pop effect: brief expanding shell */
+const popFx = [];
+function popEffect(pos, color) {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 12),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9, wireframe: true }));
+  m.name = 'PopShell'; m.position.copy(pos); scene.add(m); popFx.push({ m, life: 0.35, max: 0.35 });
+}
+
+/* ───────────────────── game state ───────────────────── */
+const game = {
+  running: false, over: false, mode: null,           // 'vr' | 'desk'
+  score: 0, streak: 0, bestStreak: 0, wave: 1,
+  pips: TUNE.pips, shots: 0, hits: 0, pops: 0, tags: 0, dodges: 0,
+  popsThisWave: 0, startTime: 0,
+};
+function boltSpeedNow() { return TUNE.boltSpeed * Math.pow(1 + TUNE.boltSpeedRamp, game.wave - 1); }
+function telegraphNow() { return Math.max(TUNE.telegraphFloor, TUNE.telegraph - (game.wave - 1) * 0.03); }
+function targetsMaxNow() { return Math.min(TUNE.targetsMaxCap, TUNE.targetsBase + Math.floor((game.wave - 1) / 2)); }
+
+function addScore(n) { game.score += Math.round(n * (1 + Math.min(game.streak, 10) * 0.1)); hudDirty = true; }
+function bumpStreak() { game.streak++; game.bestStreak = Math.max(game.bestStreak, game.streak); hudDirty = true; }
+
+function onTargetPop(idx, pts) {
+  const t = targets[idx];
+  popEffect(t.position, t.material.color.getHex()); AudioKit.pop();
+  scene.remove(t); targets.splice(idx, 1);
+  targetRespawnQueue.push(TUNE.targetRespawn);
+  game.pops++; game.popsThisWave++; addScore(pts || TUNE.ptsTarget); bumpStreak();
+  if (game.popsThisWave >= TUNE.waveEvery) {
+    game.popsThisWave = 0; game.wave++; hudDirty = true;
+    AudioKit.ackBeep(); AudioKit.say('Level ' + game.wave + '.'); toast('WAVE ' + game.wave);
+  }
+}
+
+function onRemoteTagged() {
+  AudioKit.remoteTag(); popEffect(remote.pos, 0xfff3d6);
+  game.tags++; addScore(TUNE.ptsRemoteTag); bumpStreak();
+  toast('REMOTE TAGGED +' + TUNE.ptsRemoteTag);
+  remote.state = 'stalk'; remote.timer = TUNE.remoteStalkMax; remotePickWaypoint(); // interrupt its pattern
+}
+
+function onRemoteChipped() {
+  if (perf - (remote.lastChip || -9) < TUNE.chipCooldown) return;
+  remote.lastChip = perf;
+  popEffect(remote.pos, 0xff9c00); AudioKit.chip();
+  addScore(TUNE.ptsRemoteChip); hudDirty = true;
+  if (remote.state === 'telegraph') {           // counter-fire breaks its attack
+    remote.state = 'stalk'; remote.timer = TUNE.remoteStalkMin; remotePickWaypoint();
+    AudioKit.feintOff(); toast('ATTACK BROKEN +' + TUNE.ptsRemoteChip);
+  } else { remotePickWaypoint(); toast('REMOTE HIT +' + TUNE.ptsRemoteChip); }
+}
+
+function onPlayerHit() {
+  game.pips--; game.streak = 0; hudDirty = true;
+  AudioKit.hit(); flashGrid(0.55);
+  if (game.pips <= 0) endProgram();
+  else { AudioKit.say(game.pips === 1 ? 'Training tolerance critical.' : 'Tolerance exceeded.'); toast('HIT — ' + game.pips + ' REMAINING'); }
+}
+
+function onCleanDodge() { game.dodges++; addScore(TUNE.ptsDodge); bumpStreak(); }
+
+/* ───────────────────── firing ───────────────────── */
+const _rayO = new THREE.Vector3(), _rayD = new THREE.Vector3(), _toT = new THREE.Vector3();
+function coneHit(origin, dir, point, coneDeg, maxDist) {
+  _toT.copy(point).sub(origin); const d = _toT.length();
+  if (d < 0.05 || d > (maxDist || 40)) return -1;
+  const ang = _toT.normalize().angleTo(dir) * 180 / Math.PI;
+  return ang <= coneDeg ? d : -1;
+}
+
+const _vis = new THREE.Vector3();
+function getMuzzleRay(phaser, out0, outD) {
+  if (phaser.userData.useCameraRay) { // desktop: aim exactly down the reticle
+    camera.getWorldPosition(out0); camera.getWorldDirection(outD);
+  } else {
+    phaser.userData.muzzle.getWorldPosition(out0);
+    phaser.userData.muzzle.getWorldDirection(outD); outD.multiplyScalar(-1); // -Z forward
+  }
+  phaser.userData.muzzle.getWorldPosition(_vis); // beam visuals always leave the emitter
+}
+
+function fireBolt(phaser) {
+  if (!game.running) return;
+  getMuzzleRay(phaser, _rayO, _rayD);
+  game.shots++; AudioKit.phaserBolt(); haptic(phaser, 0.7, 40);
+  let bestD = Infinity, bestKind = null, bestIdx = -1, hitPoint = null;
+  targets.forEach((t, i) => { const d = coneHit(_rayO, _rayD, t.position, TUNE.boltCone);
+    if (d > 0 && d < bestD) { bestD = d; bestKind = 'target'; bestIdx = i; } });
+  stunBolts.forEach((b, i) => { const d = coneHit(_rayO, _rayD, b.position, TUNE.boltConeBolt);
+    if (d > 0 && d < bestD) { bestD = d; bestKind = 'bolt'; bestIdx = i; } });
+  { const d = coneHit(_rayO, _rayD, remote.pos, TUNE.boltConeRemote); // remote is a target any time now
+    if (d > 0 && d < bestD) { bestD = d; bestKind = (remote.state === 'vulnerable') ? 'remote' : 'chip'; } }
+  if (bestKind) { game.hits++; hitPoint = _rayO.clone().add(_rayD.clone().multiplyScalar(bestD)); }
+  const end = hitPoint || _rayO.clone().add(_rayD.clone().multiplyScalar(25));
+  flashLine(_vis.clone(), end, 0xff8033, 0.09);
+  if (bestKind === 'target') onTargetPop(bestIdx);
+  else if (bestKind === 'bolt') { const b = stunBolts[bestIdx];
+    popEffect(b.position, 0xff5533); AudioKit.boltDown(); despawnBolt(bestIdx);
+    addScore(TUNE.ptsBoltDown); bumpStreak(); toast('BOLT INTERCEPTED'); }
+  else if (bestKind === 'remote') onRemoteTagged();
+  else if (bestKind === 'chip') onRemoteChipped();
+  hudDirty = true;
+}
+
+function beamTick(phaser, dt) {
+  if (!game.running) return;
+  getMuzzleRay(phaser, _rayO, _rayD);
+  const end = _rayO.clone().add(_rayD.clone().multiplyScalar(25));
+  flashLine(_vis.clone(), end, 0xffb347, 0.05);
+  haptic(phaser, 0.25, 30);
+  for (let i = targets.length - 1; i >= 0; i--)
+    if (coneHit(_rayO, _rayD, targets[i].position, TUNE.beamCone) > 0) { game.hits++; game.shots++; onTargetPop(i); }
+  if (remote.state === 'vulnerable' && coneHit(_rayO, _rayD, remote.pos, TUNE.beamCone) > 0) { game.hits++; game.shots++; onRemoteTagged(); }
+}
+
+function despawnBolt(i) { const b = stunBolts[i]; scene.remove(b); b.visible = false; boltPool.push(b); stunBolts.splice(i, 1); }
+
+/* haptics (VR) */
+function haptic(phaser, intensity, ms) {
+  const src = phaser.userData.inputSource;
+  try { if (src && src.gamepad && src.gamepad.hapticActuators && src.gamepad.hapticActuators[0])
+    src.gamepad.hapticActuators[0].pulse(intensity, ms); } catch (e) {}
+}
+
+/* ───────────────────── in-world LCARS HUD ───────────────────── */
+let hudDirty = true;
+const worldHUD = (() => {
+  const cv = document.createElement('canvas'); cv.width = 1024; cv.height = 480;
+  const tex = new THREE.CanvasTexture(cv);
+  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true }); mat.name = 'Mat_HUDPanel';
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 0.8), mat);
+  mesh.name = 'ArchHUD'; mesh.position.set(0, 2.1, -3.4); scene.add(mesh);
+  return { cv, ctx: cv.getContext('2d'), tex, mesh };
+})();
+
+function drawHUD() {
+  const c = worldHUD.ctx, W = worldHUD.cv.width, H = worldHUD.cv.height;
+  c.clearRect(0, 0, W, H);
+  c.fillStyle = 'rgba(12,12,19,0.82)'; roundRect(c, 0, 0, W, H, 40); c.fill();
+  c.fillStyle = '#ff9c00'; roundRect(c, 24, 24, 60, H - 48, 28); c.fill();
+  const dsp = (px, w) => `${w || 600} ${px}px Antonio, "Arial Narrow", sans-serif`;
+  c.textBaseline = 'top';
+  const cols = [{ lab: 'SCORE', val: game.score }, { lab: 'STREAK', val: game.streak }, { lab: 'WAVE', val: game.wave }];
+  cols.forEach((col, i) => { const x = 140 + i * 250;
+    c.fillStyle = '#cc99cc'; c.font = dsp(34, 400); c.fillText(col.lab, x, 60);
+    c.fillStyle = '#f2c14e'; c.font = dsp(110, 700); c.fillText(String(col.val), x, 110); });
+  c.fillStyle = '#cc99cc'; c.font = dsp(34, 400); c.fillText('TOLERANCE', 140, 280);
+  for (let i = 0; i < TUNE.pips; i++) { c.beginPath(); c.arc(170 + i * 90, 375, 30, 0, Math.PI * 2);
+    c.fillStyle = i < game.pips ? '#f2c14e' : '#232330'; c.fill(); }
+  if (game.over) {
+    c.fillStyle = '#99ccff'; c.font = dsp(44, 600);
+    c.fillText('PROGRAM COMPLETE — PULL TRIGGER TO RESTART', 140, 400);
+  } else {
+    const acc = game.shots ? Math.round(100 * game.hits / game.shots) : 100;
+    c.fillStyle = '#8d8a7b'; c.font = dsp(38, 400);
+    c.fillText('ACCURACY ' + acc + '%', 480, 340);
+    c.fillText('TAGS ' + game.tags + '   DODGES ' + game.dodges, 480, 395);
+  }
+  worldHUD.tex.needsUpdate = true;
+}
+function roundRect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y);
+  c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
+  c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+</script>
+<script>
+/* ───────────────────── trigger / beam state ───────────────────── */
+let beamCharge = 1, beamRecharging = false;
+const activePhasers = [];
+
+function triggerDown(phaser) {
+  AudioKit.unlock();
+  if (game.over) { tryRestart(); return; }
+  if (!phaser.visible) return; // this hand is holding the bat'leth
+  phaser.userData.holding = true; phaser.userData.holdT = 0; phaser.userData.beaming = false;
+}
+function triggerUp(phaser) {
+  if (!phaser.userData.holding) return;
+  phaser.userData.holding = false;
+  if (phaser.userData.beaming) {
+    phaser.userData.beaming = false; AudioKit.beamStop();
+    beamRecharging = true;
+  } else if (!game.over) fireBolt(phaser);
+}
+function swapWeapon(rig) {
+  AudioKit.unlock();
+  if (rig.phaser.userData.holding) triggerUp(rig.phaser); // ends a live beam cleanly
+  const toBlade = rig.phaser.visible;
+  rig.phaser.visible = !toBlade; rig.batleth.visible = toBlade;
+  rig.batleth.userData.prevValid = false;
+  AudioKit.ackBeep(); toast(toBlade ? "BAT'LETH" : 'PHASER');
+}
+
+function phaserTick(phaser, dt) {
+  const u = phaser.userData;
+  if (!phaser.visible) return;
+  if (u.holding && !game.over) {
+    u.holdT += dt;
+    if (!u.beaming && u.holdT >= TUNE.holdThreshold && beamCharge > 0.05 && !beamRecharging) {
+      u.beaming = true; AudioKit.beamStart();
+    }
+    if (u.beaming) {
+      beamCharge -= dt / TUNE.beamMax;
+      beamTick(phaser, dt);
+      if (beamCharge <= 0) { beamCharge = 0; u.beaming = false; AudioKit.beamStop(); beamRecharging = true; haptic(phaser, 0.9, 80); }
+    }
+  }
+  if (beamRecharging) {
+    beamCharge += dt / TUNE.beamRecharge;
+    if (beamCharge >= 1) { beamCharge = 1; beamRecharging = false; AudioKit.recharge(); haptic(phaser, 0.3, 60); }
+  }
+  // amber tip breathes with charge
+  if (phaser.userData.tip) phaser.userData.tip.material.color.setHSL(0.09, 1.0, 0.35 + 0.35 * beamCharge);
+}
+
+/* ───────────────────── VR controllers ───────────────────── */
+const vrControllers = [];
+const activeBlades = [];
+for (let i = 0; i < 2; i++) {
+  const c = renderer.xr.getController(i); c.name = 'Controller' + i;
+  const phaser = buildPhaser(); phaser.rotation.x = -0.5; // pistol grip on Quest controller
+  const batleth = buildBatleth(); batleth.visible = false;
+  c.add(phaser); c.add(batleth);
+  activePhasers.push(phaser); activeBlades.push(batleth);
+  c.addEventListener('connected', e => { phaser.userData.inputSource = e.data; batleth.userData.inputSource = e.data; });
+  c.addEventListener('disconnected', () => { phaser.userData.inputSource = null; batleth.userData.inputSource = null; });
+  c.addEventListener('selectstart', () => triggerDown(phaser));
+  c.addEventListener('selectend', () => triggerUp(phaser));
+  c.addEventListener('squeezestart', () => swapWeapon({ phaser, batleth }));
+  playerRig.add(c); vrControllers.push(c);
+}
+
+/* ───────────────────── bat'leth combat ───────────────────── */
+const _bw = new THREE.Vector3();
+function deflectBolt(bolt, blade) {
+  bolt.userData.friendly = true;
+  bolt.material = bolt.material.clone(); bolt.material.color.setHex(0xffb347); bolt.material.name = 'Mat_ReturnedBolt';
+  const speed = bolt.userData.vel.length() * TUNE.deflectSpeedBoost;
+  bolt.userData.vel.copy(remote.pos).sub(bolt.position).normalize().multiplyScalar(speed);
+  bolt.userData.alive = 0;
+  AudioKit.deflect(); addScore(TUNE.ptsDeflect); bumpStreak(); game.dodges++;
+  toast('DEFLECTED +' + TUNE.ptsDeflect);
+  haptic(blade, 0.8, 60);
+}
+function returnHit() {
+  AudioKit.remoteTag(); popEffect(remote.pos, 0xfff3d6);
+  game.tags++; addScore(TUNE.ptsReturn); bumpStreak(); hudDirty = true;
+  toast('RETURN TO SENDER +' + TUNE.ptsReturn);
+  remote.state = 'stalk'; remote.timer = TUNE.remoteStalkMax; remotePickWaypoint();
+}
+function bladeTick(b, dt) {
+  const u = b.userData;
+  if (!b.visible || !game.running || dt <= 0) { u.prevValid = false; return; }
+  const minSpeed = game.mode === 'desk' ? 0.8 : TUNE.bladeSwingSpeed;
+  for (let i = 0; i < u.samples.length; i++) {
+    u.samples[i].getWorldPosition(_bw);
+    const speed = u.prevValid ? _bw.distanceTo(u.prev[i]) / dt : 0;
+    for (let j = stunBolts.length - 1; j >= 0; j--) {      // a block deflects even when still
+      const bolt = stunBolts[j];
+      if (!bolt.userData.friendly && bolt.position.distanceTo(_bw) < TUNE.bladeDeflectRadius) deflectBolt(bolt, b);
+    }
+    if (speed > minSpeed) for (let j = targets.length - 1; j >= 0; j--) {  // popping takes a real swing
+      if (targets[j].position.distanceTo(_bw) < TUNE.bladePopRadius) { game.shots++; game.hits++; onTargetPop(j, TUNE.ptsMeleePop); haptic(b, 0.5, 40); }
+    }
+    u.prev[i].copy(_bw);
+  }
+  u.prevValid = true;
+}
+
+/* ───────────────────── desktop rig ───────────────────── */
+const desk = { yaw: 0, pitch: 0, keys: {}, phaser: null, locked: false };
+function lockPointer(el) { try { const r = el.requestPointerLock(); if (r && r.catch) r.catch(() => {}); } catch (e) {} }
+function setupDesk() {
+  if (desk.phaser) return;
+  const p = buildPhaser(); p.name = 'Phaser_Desk';
+  p.position.set(0.22, -0.20, -0.42); p.userData.useCameraRay = true;
+  camera.add(p); desk.phaser = p; activePhasers.push(p);
+  const bl = buildBatleth(); bl.name = 'Batleth_Desk';
+  bl.position.set(0, -0.30, -0.55); bl.visible = false;
+  camera.add(bl); desk.batleth = bl; activeBlades.push(bl);
+  const cv = renderer.domElement;
+  cv.addEventListener('click', () => { if (game.mode === 'desk' && !desk.locked) lockPointer(cv); });
+  document.addEventListener('pointerlockchange', () => { desk.locked = document.pointerLockElement === cv; });
+  document.addEventListener('mousemove', e => { if (!desk.locked || game.mode !== 'desk') return;
+    desk.yaw -= e.movementX * 0.0022; desk.pitch -= e.movementY * 0.0022;
+    desk.pitch = Math.max(-1.35, Math.min(1.35, desk.pitch)); });
+  document.addEventListener('mousedown', e => { if (desk.locked && game.mode === 'desk' && e.button === 0) triggerDown(p); });
+  document.addEventListener('mouseup', e => { if (game.mode === 'desk' && e.button === 0) triggerUp(p); });
+  document.addEventListener('keydown', e => { desk.keys[e.code] = true;
+    if (e.code === 'KeyB' && game.mode === 'desk' && desk.batleth) swapWeapon({ phaser: desk.phaser, batleth: desk.batleth }); });
+  document.addEventListener('keyup', e => { desk.keys[e.code] = false; });
+}
+function deskTick(dt) {
+  camera.rotation.set(desk.pitch, desk.yaw, 0, 'YXZ');
+  const f = new THREE.Vector3(-Math.sin(desk.yaw), 0, -Math.cos(desk.yaw));
+  const r = new THREE.Vector3(-f.z, 0, f.x);
+  const v = new THREE.Vector3();
+  if (desk.keys.KeyW) v.add(f); if (desk.keys.KeyS) v.sub(f);
+  if (desk.keys.KeyD) v.add(r); if (desk.keys.KeyA) v.sub(r);
+  if (v.lengthSq() > 0) { v.normalize().multiplyScalar(1.8 * dt); playerRig.position.add(v);
+    const flat = new THREE.Vector2(playerRig.position.x, playerRig.position.z);
+    if (flat.length() > 1.3) { flat.normalize().multiplyScalar(1.3); playerRig.position.x = flat.x; playerRig.position.z = flat.y; } }
+  const duck = desk.keys.ShiftLeft || desk.keys.ShiftRight;
+  camera.position.y += ((duck ? 1.05 : 1.6) - camera.position.y) * Math.min(1, dt * 10);
+}
+
+/* ───────────────────── remote brain ───────────────────── */
+const _head = new THREE.Vector3(), _tmp = new THREE.Vector3();
+function headPos(out) { camera.getWorldPosition(out); return out; }
+
+function remoteTick(dt) {
+  const R = remote;
+  // motion
+  if (R.state === 'stalk') {
+    R.t += dt / R.travel;
+    if (R.t >= 1) { remotePickWaypoint(); }
+    const s = R.t < 1 ? R.t * R.t * (3 - 2 * R.t) : 1;
+    R.pos.lerpVectors(R.from, R.to, s);
+  } else if (R.state === 'vulnerable') {
+    R.pos.y += Math.sin(perf * 8) * 0.002; // wounded wobble
+  }
+  R.pos.y += Math.sin(perf * 2.1) * 0.0012; // idle hover
+  R.g.position.copy(R.pos);
+  R.g.lookAt(headPos(_head));
+  // state clock
+  R.timer -= dt;
+  if (R.state === 'stalk' && R.timer <= 0 && game.running) {
+    R.state = 'telegraph'; R.timer = telegraphNow(); AudioKit.chime();
+  } else if (R.state === 'telegraph' && R.timer <= 0) {
+    R.state = 'vulnerable'; R.timer = TUNE.vulnWindow;
+    headPos(_head); spawnStunBolt(R.g.localToWorld(_tmp.set(0, 0, 0.15)), _head, boltSpeedNow());
+    AudioKit.stunFire(); AudioKit.vulnFlare();
+  } else if (R.state === 'vulnerable' && R.timer <= 0) {
+    R.state = 'stalk'; R.timer = TUNE.remoteStalkMin + Math.random() * (TUNE.remoteStalkMax - TUNE.remoteStalkMin);
+    remotePickWaypoint();
+  }
+  // silhouette-readable emitter
+  if (R.state === 'telegraph') {
+    const k = 1 - R.timer / telegraphNow();
+    R.eyeMat.color.setRGB(0.25 + 0.75 * k, 0.1, 0.1); R.glow.color.setHex(0xff3322); R.glow.intensity = 1.5 * k;
+    R.g.scale.setScalar(1 + Math.sin(perf * 30) * 0.02 * k);
+  } else if (R.state === 'vulnerable') {
+    const k = R.timer / TUNE.vulnWindow;
+    R.eyeMat.color.setRGB(1, 1, 0.85); R.glow.color.setHex(0xfff3d6); R.glow.intensity = 2.2 * k;
+    R.chrome.emissive = R.chrome.emissive || new THREE.Color();
+    R.chrome.emissive.setRGB(0.5 * k, 0.5 * k, 0.45 * k);
+    R.g.scale.setScalar(1);
+  } else {
+    R.eyeMat.color.setHex(0x334455); R.glow.intensity = 0;
+    if (R.chrome.emissive) R.chrome.emissive.setRGB(0, 0, 0);
+    R.g.scale.setScalar(1);
+  }
+  // audible hum, panned
+  headPos(_head); _tmp.copy(R.pos).sub(_head);
+  const dist = _tmp.length();
+  const camQ = camera.getWorldQuaternion(new THREE.Quaternion()).invert();
+  _tmp.applyQuaternion(camQ).normalize();
+  AudioKit.humUpdate(_tmp.x, dist);
+}
+
+/* ───────────────────── stun bolts & targets tick ───────────────────── */
+function boltsTick(dt) {
+  headPos(_head);
+  for (let i = stunBolts.length - 1; i >= 0; i--) {
+    const b = stunBolts[i];
+    b.userData.alive += dt;
+    b.position.addScaledVector(b.userData.vel, dt);
+    if (b.userData.friendly) { // a returned bolt hunts the remote, never the player
+      if (b.position.distanceTo(remote.pos) < 0.3) { returnHit(); despawnBolt(i); }
+      else if (b.userData.alive > 4) despawnBolt(i);
+      continue;
+    }
+    if (b.position.distanceTo(_head) < TUNE.headHitRadius) { popEffect(b.position, 0xff5533); despawnBolt(i); onPlayerHit(); continue; }
+    if (b.userData.alive > 5 || b.position.distanceTo(_head) > 12) { despawnBolt(i); if (game.running) onCleanDodge(); }
+  }
+}
+function targetsTick(dt) {
+  for (let i = targetRespawnQueue.length - 1; i >= 0; i--) {
+    targetRespawnQueue[i] -= dt;
+    if (targetRespawnQueue[i] <= 0) { targetRespawnQueue.splice(i, 1); if (targets.length < targetsMaxNow()) spawnTarget(); }
+  }
+  while (targets.length < targetsMaxNow() && targetRespawnQueue.length === 0 && game.running) spawnTarget();
+  targets.forEach(t => {
+    const u = t.userData; u.pulse += dt * 3;
+    t.scale.setScalar(1 + Math.sin(u.pulse) * 0.12);
+    if (u.dart) { u.dartT += dt / u.dart.dur;
+      if (u.dartT >= 1) { u.base.copy(u.dart.to); u.dart = null; }
+      else { const s = u.dartT * u.dartT * (3 - 2 * u.dartT); t.position.lerpVectors(u.dart.from, u.dart.to, s); return; } }
+    else if (Math.random() < TUNE.targetDartChance * game.wave * dt * 60) {
+      const a = Math.random() * Math.PI * 2, r = 1.4 + Math.random() * 3.0;
+      const to = new THREE.Vector3(Math.cos(a) * r, 0.9 + Math.random() * 1.6, Math.sin(a) * r);
+      u.dart = { from: t.position.clone(), to, dur: Math.max(0.4, t.position.distanceTo(to) / TUNE.targetDartSpeed) }; u.dartT = 0; return;
+    }
+    u.phase += dt;
+    t.position.set(u.base.x + Math.sin(u.phase * 0.7) * 0.3,
+                   u.base.y + Math.sin(u.phase * 1.1) * 0.25,
+                   u.base.z + Math.cos(u.phase * 0.6) * 0.3);
+  });
+}
+
+/* ───────────────────── program control ───────────────────── */
+const lobbyEl = document.getElementById('lobby'), hudEl = document.getElementById('hud');
+const toastEl = document.getElementById('toast');
+let toastTimer = null;
+function toast(msg) { toastEl.textContent = msg; toastEl.style.opacity = 1;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.style.opacity = 0, 1400); }
+
+function resetGame() {
+  Object.assign(game, { running: true, over: false, score: 0, streak: 0, bestStreak: 0,
+    wave: 1, pips: TUNE.pips, shots: 0, hits: 0, pops: 0, tags: 0, dodges: 0, popsThisWave: 0, startTime: perf });
+  while (stunBolts.length) despawnBolt(0);
+  while (targets.length) { scene.remove(targets[0]); targets.splice(0, 1); }
+  targetRespawnQueue = [];
+  beamCharge = 1; beamRecharging = false;
+  remote.state = 'stalk'; remote.timer = 2.5; remote.pos.set(0, 1.6, -3.2); remotePickWaypoint();
+  for (let i = 0; i < TUNE.targetsBase; i++) spawnTarget();
+  hudDirty = true;
+}
+
+function startProgram(mode) {
+  game.mode = mode; AudioKit.unlock(); AudioKit.humStart();
+  lobbyEl.style.display = 'none';
+  if (mode === 'desk') { setupDesk(); hudEl.style.display = 'block';
+    lockPointer(renderer.domElement); }
+  resetGame(); flashGrid(0.5);
+  AudioKit.ackBeep(); AudioKit.say('Program running. Phaser range, level one.');
+}
+
+let endedAt = 0;
+function endProgram() {
+  game.running = false; game.over = true; endedAt = perf;
+  AudioKit.beamStop(); AudioKit.endChime(); flashGrid(0.7); hudDirty = true;
+  const acc = game.shots ? Math.round(100 * game.hits / game.shots) : 0;
+  AudioKit.say('Program complete. Wave ' + game.wave + '. Accuracy, ' + acc + ' percent.');
+  toast('PROGRAM COMPLETE — SCORE ' + game.score);
+}
+function tryRestart() { if (game.over && perf - endedAt > 1.5) { resetGame(); flashGrid(0.4); AudioKit.ackBeep(); toast('PROGRAM RESTARTED'); } }
+
+/* DOM hooks */
+const btnVR = document.getElementById('btn-vr'), btnDesk = document.getElementById('btn-desk'),
+      btnPop = document.getElementById('btn-pop');
+const xrStatus = document.getElementById('xrstatus');
+const isFramed = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+const hasRealURL = /^https?:/.test(location.href); // srcdoc/blob viewers give the page no linkable address
+if (hasRealURL) btnPop.href = location.href; // a real link escapes the viewer frame more reliably than window.open
+
+/* diagnostic readout — big enough to read in-headset, easy to report back */
+const diagEl = document.getElementById('diag');
+let lastVRError = '—';
+function drawDiag(supported) {
+  diagEl.textContent =
+    'DIAG · frame:' + (isFramed ? 'EMBEDDED' : 'standalone') +
+    ' · url:' + (hasRealURL ? location.protocol.replace(':','') : 'NONE(' + location.protocol + ')') +
+    ' · webxr:' + (navigator.xr ? 'yes' : 'NO') +
+    ' · immersive-vr:' + supported +
+    ' · lastError:' + lastVRError;
+}
+drawDiag('checking');
+function offerStandalone(msg) {
+  if (isFramed && hasRealURL) {
+    xrStatus.textContent = msg + ' — the embedded viewer is blocking headset access. Open standalone, then enter the range.';
+    btnPop.hidden = false;
+  } else if (isFramed) {
+    xrStatus.textContent = msg + ' — this viewer gives the page no direct address, so it cannot open itself standalone. Host the HTML file elsewhere for headset play.';
+  } else xrStatus.textContent = msg + ' — desktop drill only.';
+  // let the attempt happen anyway; the real error is more useful than the check
+  btnVR.disabled = !(navigator.xr);
+}
+if (navigator.xr && navigator.xr.isSessionSupported) {
+  navigator.xr.isSessionSupported('immersive-vr').then(ok => {
+    drawDiag(ok ? 'yes' : 'NO');
+    if (ok) { xrStatus.textContent = 'Headset detected — the range is ready.'; xrStatus.classList.add('ok'); btnVR.disabled = false;
+      if (isFramed && hasRealURL) btnPop.hidden = false; }
+    else offerStandalone('This browser reports no immersive VR');
+  }).catch(err => { lastVRError = (err && (err.name + ': ' + err.message)) || String(err); drawDiag('REFUSED');
+    offerStandalone('VR check refused (' + (err && err.name || 'error') + ')'); });
+} else { xrStatus.textContent = 'WebXR not available in this browser — desktop drill only.'; drawDiag('n/a'); }
+
+btnVR.addEventListener('click', async () => {
+  try {
+    let session, refType = 'local-floor';
+    try { // preferred: floor-anchored space
+      session = await navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor'] });
+    } catch (e1) { // fallback: barest possible session, no features at all
+      session = await navigator.xr.requestSession('immersive-vr');
+      refType = 'local';
+    }
+    renderer.xr.setReferenceSpaceType(refType);
+    try { await renderer.xr.setSession(session); }
+    catch (e2) { // floor space refused after grant — anchor at head height instead
+      refType = 'local'; renderer.xr.setReferenceSpaceType('local');
+      await renderer.xr.setSession(session);
+    }
+    playerRig.position.y = (refType === 'local') ? 1.6 : 0; // 'local' starts at head, not floor
+    startProgram('vr');
+    session.addEventListener('end', () => {
+      game.running = false; game.mode = null; AudioKit.humStop(); AudioKit.beamStop();
+      lobbyEl.style.display = 'flex'; hudEl.style.display = 'none';
+      playerRig.position.set(0, 0, 0); camera.position.set(0, 1.6, 0); camera.rotation.set(0, 0, 0);
+      renderer.xr.setReferenceSpaceType('local-floor');
+    });
+  } catch (err) {
+    lastVRError = (err && (err.name + ': ' + err.message)) || String(err); drawDiag('start-failed');
+    xrStatus.textContent = isFramed && hasRealURL
+      ? 'The embedded viewer is blocking headset tracking. Tap OPEN STANDALONE, then enter the range from the new tab.'
+      : 'Could not start VR: ' + (err.message || err);
+    xrStatus.classList.remove('ok');
+    if (isFramed && hasRealURL) btnPop.hidden = false;
+  }
+});
+btnDesk.addEventListener('click', () => startProgram('desk'));
+
+/* desktop DOM HUD mirrors */
+const hScore = document.getElementById('h-score'), hStreak = document.getElementById('h-streak'),
+      hWave = document.getElementById('h-wave'), beamFill = document.getElementById('beamfill'),
+      pipEls = document.querySelectorAll('.pip');
+function drawDomHud() {
+  hScore.textContent = game.score; hStreak.textContent = game.streak; hWave.textContent = game.wave;
+  pipEls.forEach((el, i) => el.classList.toggle('lost', i >= game.pips));
+}
+
+/* ───────────────────── main loop ───────────────────── */
+let perf = 0, lastT = 0, hudClock = 0;
+drawHUD();
+renderer.setAnimationLoop((time) => {
+  const t = time * 0.001;
+  const dt = Math.min(0.05, lastT ? t - lastT : 0.016); lastT = t; perf = t;
+
+  vrControllers.forEach(c => c.visible = renderer.xr.isPresenting);
+  if (desk.phaser) desk.phaser.visible = game.mode === 'desk';
+  if (game.mode === 'desk') deskTick(dt);
+  if (game.running || game.over) {
+    remoteTick(dt);
+    if (game.running) { boltsTick(dt); targetsTick(dt); }
+    activePhasers.forEach(p => phaserTick(p, dt));
+    activeBlades.forEach(b => bladeTick(b, dt));
+  }
+
+  // effects decay
+  for (let i = shotFlashes.length - 1; i >= 0; i--) { const f = shotFlashes[i];
+    f.life -= dt; if (f.life <= 0) { scene.remove(f.line); shotFlashes.splice(i, 1); }
+    else if (f.line.material) f.line.material.opacity = f.life / f.max; }
+  for (let i = popFx.length - 1; i >= 0; i--) { const p = popFx[i]; p.life -= dt;
+    if (p.life <= 0) { scene.remove(p.m); popFx.splice(i, 1); }
+    else { p.m.scale.setScalar(1 + (1 - p.life / p.max) * 4); p.m.material.opacity = 0.9 * p.life / p.max; } }
+  if (gridFlash > 0) { gridFlash = Math.max(0, gridFlash - dt * 0.6); holoGrid.userData.mat.opacity = gridFlash; }
+
+  // HUD refresh (throttled)
+  hudClock += dt;
+  if ((hudDirty && hudClock > 0.1) || game.over && hudClock > 0.5) {
+    drawHUD(); if (game.mode === 'desk') drawDomHud(); hudDirty = false; hudClock = 0;
+  }
+  if (game.mode === 'desk' && (beamRecharging || beamCharge < 1)) beamFill.style.transform = 'scaleX(' + beamCharge + ')';
+  else if (game.mode === 'desk') beamFill.style.transform = 'scaleX(1)';
+
+  renderer.render(scene, camera);
+});
+</script>
+
+</body>
+</html>

@@ -207,10 +207,11 @@
         <button id="btn-reset" type="button">Restore defaults</button>
       </div>
       <dl class="legend">
-        <dt>Trigger tap</dt><dd>A six-inch bolt thrown down the line. Snap shots get aim assist &mdash; dial it in Settings</dd>
+        <dt>Hold, then release</dt><dd>The trigger <b>charges</b> the phaser out of its cell; let go and every stored joule flies as one bolt. Snap shots get aim assist &mdash; dial it in Settings</dd>
+        <dt>The power dial</dt><dd>How long it keeps charging: <b>half a second at stun</b>, about a second mid-dial, and at <b>kill</b> it drinks until the cell is dry &mdash; one enormous shot</dd>
         <dt>Light-targets</dt><dd>They hold a charge, shrink as you burn it off, and bolt when your muzzle crosses them</dd>
-        <dt>Velocity</dt><dd>Shots ricochet the disc off at an angle &mdash; square it up to send it straight back. Take it in the head or chest and it costs a pip</dd>
-        <dt>Trigger hold</dt><dd>Sustained beam &mdash; no assist at all, just its own width. Precision work, and it drains the cell</dd>
+        <dt>Velocity</dt><dd>A bolt bounces the disc <i>and</i> dumps its charge into it &mdash; a full cell sends it screaming. Overfeed one and it <b>divides</b>. Take it in the head or chest and it costs a pip</dd>
+        <dt>Keep holding</dt><dd>Stay on past a full charge and it vents as a sustained beam instead &mdash; no assist, just its own width</dd>
         <dt>Thumb key</dt><dd>B / Y fires as well &mdash; the way the swept TNG shell is meant to be worked</dd>
         <dt>A / X or grip</dt><dd>Tap to cycle that hand's weapons &mdash; <b>hold A / X 0.6&thinsp;s to pause</b> (a fresh press on the pause card ends the program)</dd>
         <dt>Thumbstick</dt><dd>Flick right to raise the power setting, left to lower it &mdash; ten detents, stun to kill, the lamp runs green to red (desktop: mouse wheel)</dd>
@@ -218,7 +219,7 @@
         <dt>Bat'leth</dt><dd>One blade, either hand &mdash; take it in the other hand to pass it, or hold it in both for a two-handed grip. Deflects stun bolts even held still; a returned bolt that hits the remote pays 200</dd>
         <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD roams the whole room · Shift sprint · <b>Space dash</b> (dodge!) · C duck · wheel sets power · B or 1/2/3 weapon · P pause</dd>
       </dl>
-      <p class="footnote">M0.14 feel prototype — telegraph timing, phaser feel, and a first bat'leth. On Quest, open this
+      <p class="footnote">M0.16 feel prototype — telegraph timing, phaser feel, and a first bat'leth. On Quest, open this
         page in the headset browser. If the Enter button stays unavailable inside an embedded viewer,
         open the page in its own tab.</p>
       <p class="footnote" id="diag" style="font-family:monospace;font-size:11px;color:#6a6a5c;line-height:1.6"></p>
@@ -323,7 +324,20 @@ const TUNE = {
   courtX: 3.4, courtZ: 3.4, courtY: 3.0,       // m half-extents / height — a Court size dial in settings
   ptsDiscStrike: 50,
   discStrikesPerLevel: 6,
-  boltDrain: 0.055,        // cell units a bolt costs at setting 5 (scaled by power)
+  // Holding the trigger charges the weapon. The power dial is how LONG it will keep
+  // charging: 0.5 s at stun, about a second mid-dial, and at kill it just keeps drinking
+  // the cell until it is dry. Release inside that window and every stored joule goes into
+  // one bolt; stay on past a full charge and it vents as a beam instead.
+  chargeRate: 0.26,        // cell units drawn per second of hold
+  stunHold: 0.5,           // s of charge at setting 1
+  holdGrowth: 1.19,        // per setting step — setting 5 lands near a second
+  beamAfter: 1.0,          // s held before a topped-off charge vents into the beam
+  boltDamageBase: 0.6, boltDamagePerEnergy: 6.0,
+  discEnergyGain: 19,      // m/s a disc picks up per cell unit dumped into it
+  discSpeedHardMax: 26,    // a battery-dump shot may push it this far past the rally cap
+  discSplitEnergy: 0.5,    // absorbed energy that makes a disc divide
+  discEnergyDecay: 0.12,   // per second — absorbed charge bleeds off
+  boltDrain: 0.055,        // (legacy) cell units a bolt cost before charging existed
   beamDrain: 0.30,         // cell units per second of beam at setting 5
   batteryRegen: 0.035,     // trickle recharge per second while not firing
   discMax: 8,              // the court will not field more than this many
@@ -350,7 +364,7 @@ const TUNE = {
 /* ─── tiny synth: every sound in the range is WebAudio, no assets ─── */
 const AudioKit = (() => {
   let ctx = null, master = null, humOsc = null, humGain = null, humPan = null;
-  let beamOsc = null, beamGain = null;
+  let beamOsc = null, beamGain = null, chargeOsc = null, chargeGain = null;
   let phaserBus = null, phaserVol = 0.45;   // the phaser was shouting over everything; start it low
   const ready = () => { if (!ctx) { try {
       ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -367,7 +381,10 @@ const AudioKit = (() => {
     setPhaserVolume(v) { phaserVol = Math.max(0, Math.min(1, v));
       if (phaserBus) phaserBus.gain.value = phaserVol; },
     getPhaserVolume() { return phaserVol; },
-    phaserBolt(){ blip('sawtooth', 1400, 320, 0.16, 0.22, 0, phaserBus); blip('sine', 2200, 500, 0.10, 0.10, 0, phaserBus); },
+    phaserBolt(charged){ const c = Math.max(0, Math.min(1, charged || 0));   // heavier as it fills
+      blip('sawtooth', 1400 - 700 * c, 320 - 180 * c, 0.16 + 0.16 * c, 0.20 + 0.10 * c, 0, phaserBus);
+      blip('sine', 2200 - 900 * c, 500, 0.10 + 0.10 * c, 0.10, 0, phaserBus);
+      if (c > 0.5) blip('square', 150, 60, 0.28, 0.10 * c, 0.02, phaserBus); },
     beamStart(){ if (!ready()) return; this.beamStop(); const t = ctx.currentTime;
       beamOsc = ctx.createOscillator(); beamGain = ctx.createGain();
       const lfo = ctx.createOscillator(), lg = ctx.createGain();
@@ -388,6 +405,19 @@ const AudioKit = (() => {
     pop(){ blip('triangle', 900, 2400, 0.09, 0.18); blip('square', 300, 150, 0.06, 0.06); },
     boltDown(){ blip('triangle', 1200, 3200, 0.12, 0.2); },
     chip(){ blip('square', 1800, 900, 0.08, 0.14); },
+    chargeStart(){ if (!ready()) return; this.chargeStop(); const t = ctx.currentTime;
+      chargeOsc = ctx.createOscillator(); chargeGain = ctx.createGain();
+      chargeOsc.type = 'triangle'; chargeOsc.frequency.setValueAtTime(240, t);
+      chargeGain.gain.setValueAtTime(0.0001, t); chargeGain.gain.linearRampToValueAtTime(0.10, t + 0.08);
+      chargeOsc.connect(chargeGain); chargeGain.connect(phaserBus || master); chargeOsc.start(t); },
+    chargeUpdate(level){ if (!chargeOsc || !ctx) return;
+      const l = Math.max(0, Math.min(1, level));
+      chargeOsc.frequency.setTargetAtTime(240 + 900 * l, ctx.currentTime, 0.05);
+      chargeGain.gain.setTargetAtTime(0.07 + 0.09 * l, ctx.currentTime, 0.05); },
+    chargeStop(){ if (chargeOsc && ctx) { const t = ctx.currentTime;
+      chargeGain.gain.cancelScheduledValues(t); chargeGain.gain.setValueAtTime(chargeGain.gain.value, t);
+      chargeGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.06);
+      chargeOsc.stop(t + 0.1); chargeOsc = null; } },
     dryFire(){ blip('square', 320, 150, 0.05, 0.09, 0, phaserBus); blip('square', 180, 90, 0.06, 0.07, 0.04, phaserBus); },
     serve(){ blip('sine', 400, 1200, 0.22, 0.13); },
     pauseTone(){ blip('sine', 700, 700, 0.12, 0.14); blip('sine', 460, 460, 0.16, 0.14, 0.14); },
@@ -853,15 +883,17 @@ function flashLine(from, to, color, life, width) {
 
 /* the bolt: a six-inch slug cut from the same cloth as the beam, thrown down the line */
 const boltFx = [];
-function spawnBoltFx(from, dir, dist) {
+function spawnBoltFx(from, dir, dist, charged) {
   const g = new THREE.Group(); g.name = 'PhaserBolt';
   const b = TUNE.beamBright;
-  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(TUNE.boltRadius, TUNE.boltRadius * 0.7, TUNE.boltLen, 10, 1, true),
+  const k = 0.8 + 1.6 * Math.min(1, charged || 0);      // a fat slug means a full cell behind it
+  const R = TUNE.boltRadius * k, L = TUNE.boltLen * (0.85 + 0.8 * Math.min(1, charged || 0));
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(R, R * 0.7, L, 10, 1, true),
     new THREE.MeshBasicMaterial({ color: 0xff0510, transparent: true, opacity: 0.75 * b,
       side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
   shaft.material.name = 'Mat_BoltShaft'; shaft.name = 'BoltShaft';
   shaft.rotation.x = Math.PI / 2; g.add(shaft);
-  const core = new THREE.Mesh(new THREE.CylinderGeometry(TUNE.boltRadius * 0.32, TUNE.boltRadius * 0.22, TUNE.boltLen * 0.92, 8, 1, true),
+  const core = new THREE.Mesh(new THREE.CylinderGeometry(R * 0.32, R * 0.22, L * 0.92, 8, 1, true),
     new THREE.MeshBasicMaterial({ color: 0xffccd8, transparent: true, opacity: 0.9 * b,
       side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
   core.material.name = 'Mat_BoltCore'; core.name = 'BoltCore';
@@ -869,7 +901,7 @@ function spawnBoltFx(from, dir, dist) {
   g.position.copy(from);
   g.quaternion.setFromUnitVectors(_boltUp, dir);
   scene.add(g);
-  boltFx.push({ g, dir: dir.clone(), travelled: 0, dist: Math.max(TUNE.boltLen, dist) });
+  boltFx.push({ g, dir: dir.clone(), travelled: 0, dist: Math.max(L, dist) });
 }
 const _boltUp = new THREE.Vector3(0, 0, 1);
 function boltFxTick(dt) {
@@ -959,8 +991,14 @@ function makeDisc(n) {
       depthWrite: false, blending: THREE.AdditiveBlending }));
   halo.name = 'DiscHalo' + n; disc.add(halo);
   const lamp = new THREE.PointLight(0x9fe8ff, 1.1, 5); lamp.name = 'DiscLamp' + n; disc.add(lamp);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(TUNE.discRadius * 1.05, 0.006, 6, 20),
+    new THREE.MeshBasicMaterial({ color: 0x9fe8ff, transparent: true, opacity: 0.85,
+      depthWrite: false, blending: THREE.AdditiveBlending }));
+  rim.material.name = 'Mat_DiscRim'; rim.name = 'DiscRim' + n;
+  rim.rotation.x = Math.PI / 2; disc.add(rim);
   disc.visible = false; scene.add(disc);
-  return { mesh: disc, v: new THREE.Vector3(), live: false, serveT: 0, spin: Math.random() * 6,
+  return { mesh: disc, halo, lamp, rim, v: new THREE.Vector3(), live: false, serveT: 0,
+           spin: Math.random() * 6, wobX: 0, wobZ: 0, energy: 0,
            sinceStrike: 0, lastBladeHit: -9 };
 }
 const VEL = { discs: [makeDisc(1)], speed: TUNE.discSpeed, strikes: 0, splitT: 0,
@@ -1020,10 +1058,11 @@ function nearestLiveDisc(o, dir) {
 }
 const _dn = new THREE.Vector3();
 /* A blast is a wall the disc slams into: elastic bounce, speed conserved. */
-function onDiscStruck(dir, power, disc) {
+function onDiscStruck(dir, energy, disc) {
   const d = disc || VEL.discs[0];
+  const E = Math.max(0, energy || 0);
   _dn.copy(dir).normalize();
-  const pre = Math.max(0.8, d.v.length());       // a collision keeps its energy
+  const pre = Math.max(0.8, d.v.length());       // the bounce itself keeps its energy
   const closing = d.v.dot(_dn);                  // negative while the disc is coming at you
   if (closing < 0) d.v.addScaledVector(_dn, -2 * closing);   // clean rebound off the blast
   else d.v.addScaledVector(_dn, 0.8);                        // caught from behind: shoved along
@@ -1032,9 +1071,35 @@ function onDiscStruck(dir, power, disc) {
   d.v.z += (Math.random() - 0.5) * 0.2;
   const outward = d.v.dot(_dn), least = pre * 0.25;
   if (outward < least) d.v.addScaledVector(_dn, least - outward);  // a hit always sends it away
-  d.v.normalize().multiplyScalar(Math.min(TUNE.discSpeedMax, pre));
-  VEL.speed = d.v.length();
+  // …and then everything the phaser stored is poured in on top
+  const bounced = Math.min(TUNE.discSpeedMax, pre);
+  const added = E * TUNE.discEnergyGain;
+  d.v.normalize().multiplyScalar(Math.min(TUNE.discSpeedHardMax, bounced + added));
+  d.energy += E;
+  d.wobX += (Math.random() - 0.5) * 0.5 * Math.min(1, E * 3);   // the gyro takes a moment to settle
+  d.wobZ += (Math.random() - 0.5) * 0.5 * Math.min(1, E * 3);
+  VEL.speed = Math.min(TUNE.discSpeedMax, d.v.length());
+  if (added > 1.5) toast('ENERGY TRANSFER · ' + d.v.length().toFixed(1) + ' M/S');
   registerDiscStrike(d);
+  if (d.energy >= TUNE.discSplitEnergy) replicateDisc(d);
+}
+/* Overcharge a disc and it does not break — it divides. */
+function replicateDisc(D) {
+  D.energy = 0;
+  if (VEL.discs.length >= TUNE.discMax) return;
+  const child = makeDisc(VEL.discs.length + 1);
+  child.mesh.position.copy(D.mesh.position);
+  const spd = D.v.length() * 0.8, ang = 0.42;
+  const cs = Math.cos(ang), sn = Math.sin(ang);
+  const vx = D.v.x, vz = D.v.z;
+  child.v.set(vx * cs - vz * sn, D.v.y, vx * sn + vz * cs).normalize().multiplyScalar(spd);
+  D.v.set(vx * cs + vz * sn, D.v.y, -vx * sn + vz * cs).normalize().multiplyScalar(spd);
+  child.live = true; child.mesh.visible = true; child.sinceStrike = 0;
+  VEL.discs.push(child);
+  popEffect(D.mesh.position, 0xffffff);
+  AudioKit.serve(); AudioKit.ackBeep();
+  toast('THE DISC DIVIDES — ' + VEL.discs.length + ' ON THE COURT');
+  hudDirty = true;
 }
 function registerDiscStrike(disc) {
   const d = disc || VEL.discs[0];
@@ -1067,9 +1132,10 @@ function discBladeHit(point, bladeVel, disc) {
   const closing = _brel.dot(_bn);
   if (closing < 0) d.v.addScaledVector(_bn, -1.9 * closing);  // rebound off the moving blade
   else d.v.addScaledVector(_bn, Math.max(0.8, bladeVel.length() * 0.5));
-  const spd = Math.min(TUNE.discSpeedMax, Math.max(1.0, d.v.length()));
+  const spd = Math.min(TUNE.discSpeedHardMax, Math.max(1.0, d.v.length()));
   d.v.normalize().multiplyScalar(spd);
-  VEL.speed = spd;
+  d.wobX += (Math.random() - 0.5) * 0.4; d.wobZ += (Math.random() - 0.5) * 0.4;
+  VEL.speed = Math.min(TUNE.discSpeedMax, spd);
   AudioKit.clang();
   registerDiscStrike(d);
 }
@@ -1080,7 +1146,18 @@ function velocityTick(dt) {
 }
 function discTick(D, dt) {
   const d = D.mesh;
-  D.spin += dt * 11; d.rotation.set(1.15, D.spin, 0.2);
+  // it spins about its own vertical and rights itself — gyroscopic, so it stays level
+  D.spin += dt * (7 + D.v.length() * 0.8);
+  const settle = Math.max(0, 1 - dt * 3.0);
+  D.wobX *= settle; D.wobZ *= settle;
+  d.rotation.set(D.wobX, D.spin, D.wobZ);
+  // absorbed charge bleeds away, and the rim shows what it is still carrying
+  if (D.energy > 0) D.energy = Math.max(0, D.energy - TUNE.discEnergyDecay * dt);
+  const heat = Math.min(1, D.energy / TUNE.discSplitEnergy);
+  if (D.rim) { D.rim.material.color.setHSL(0.55 - 0.55 * heat, 1.0, 0.5 + 0.3 * heat);
+               D.rim.material.opacity = 0.55 + 0.45 * heat; }
+  if (D.halo) D.halo.material.opacity = 0.35 + 0.5 * heat;
+  if (D.lamp) { D.lamp.intensity = 1.1 + 2.4 * heat; D.lamp.color.setHSL(0.55 - 0.55 * heat, 1, 0.6); }
   if (!D.live) { D.serveT -= dt; if (D.serveT <= 0 && game.running) velocityLaunch(D); return; }
   d.position.addScaledVector(D.v, dt);
   const X = TUNE.courtX - TUNE.discRadius, Z = TUNE.courtZ - TUNE.discRadius,
@@ -1092,7 +1169,8 @@ function discTick(D, dt) {
   if (d.position.z < -Z) { d.position.z = -Z; D.v.z =  Math.abs(D.v.z); bounced = true; }
   if (d.position.y > Yt) { d.position.y = Yt; D.v.y = -Math.abs(D.v.y); bounced = true; }
   if (d.position.y < Yb) { d.position.y = Yb; D.v.y =  Math.abs(D.v.y); bounced = true; }
-  if (bounced) AudioKit.wallHit();
+  if (bounced) { AudioKit.wallHit();
+    D.wobX += (Math.random() - 0.5) * 0.18; D.wobZ += (Math.random() - 0.5) * 0.18; }
   headPos(_head);
   D.sinceStrike += dt;
   if (D.sinceStrike > TUNE.discSeekDelay) {          // it has run the walls long enough
@@ -1208,12 +1286,13 @@ function getMuzzleRay(phaser, out0, outD) {
   phaser.userData.muzzle.getWorldPosition(_vis); // beam visuals leave the emitter
 }
 
-function fireBolt(phaser) {
+function fireBolt(phaser, energy) {
   if (!game.running) return;
+  const E = energy === undefined ? TUNE.chargeRate * TUNE.stunHold : energy;
+  if (E <= 0.0005) { AudioKit.dryFire(); return; }      // nothing stored, nothing to throw
   getMuzzleRay(phaser, _rayO, _rayD);
-  if (phaser.userData.battery !== undefined && phaser.userData.battery <= 0.001) { AudioKit.dryFire(); return; }
-  drainBattery(phaser, TUNE.boltDrain * powerDrain(phaser.userData.power));
-  game.shots++; AudioKit.phaserBolt(); haptic(phaser, 0.7, 40);
+  const charged = E / Math.max(0.001, phaser.userData.batteryMax || 1);
+  game.shots++; AudioKit.phaserBolt(charged); haptic(phaser, 0.5 + 0.5 * charged, 40 + 60 * charged);
   let bestD = Infinity, bestKind = null, bestIdx = -1, hitPoint = null, bestDisc = null;
   const asst = boltAssist();
   targets.forEach((t, i) => { const d = rayHit(_rayO, _rayD, t.position, targetRadius(), 0, asst);
@@ -1236,14 +1315,14 @@ function fireBolt(phaser) {
     end = _rayO.clone().addScaledVector(_rayD, reach);
   }
   { const d = end.clone().sub(_vis); const len = d.length() || 0.001; d.multiplyScalar(1 / len);
-    spawnBoltFx(_vis.clone(), d, len); }   // a six-inch slug flies the line
-  if (bestKind === 'target') damageTarget(bestIdx, boltDamage(phaser));
+    spawnBoltFx(_vis.clone(), d, len, charged); }   // a slug that fattens with the charge
+  if (bestKind === 'target') damageTarget(bestIdx, TUNE.boltDamageBase + TUNE.boltDamagePerEnergy * E);
   else if (bestKind === 'bolt') { const b = stunBolts[bestIdx];
     popEffect(b.position, 0xff5533); AudioKit.boltDown(); despawnBolt(bestIdx);
     addScore(TUNE.ptsBoltDown); bumpStreak(); toast('BOLT INTERCEPTED'); }
   else if (bestKind === 'remote') onRemoteTagged();
   else if (bestKind === 'chip') onRemoteChipped();
-  else if (bestKind === 'disc') onDiscStruck(_rayD, phaser.userData.power, bestDisc);
+  else if (bestKind === 'disc') onDiscStruck(_rayD, E, bestDisc);
   hudDirty = true;
 }
 
@@ -1420,16 +1499,20 @@ function triggerDown(phaser, src) {
   if (!phaser.visible || phaser.userData.holding) return;
   if (phaser.userData.battery <= 0.001) { AudioKit.dryFire(); return; }   // dead cell
   phaser.userData.holding = true; phaser.userData.holdT = 0; phaser.userData.beaming = false;
+  phaser.userData.charge = 0;
   phaser.userData.holdSrc = src || 'trigger';
+  AudioKit.chargeStart();
 }
 function triggerUp(phaser, src) {
   if (!phaser.userData.holding) return;
   if (phaser.userData.holdSrc !== (src || 'trigger')) return; // trigger and thumb key don't cross wires
   phaser.userData.holding = false;
+  AudioKit.chargeStop();
   if (phaser.userData.beaming) {
     phaser.userData.beaming = false; AudioKit.beamStop();
     phaser.userData.beamRecharging = true;
-  } else if (!game.over) fireBolt(phaser);
+  } else if (!game.over) fireBolt(phaser, phaser.userData.charge || 0);
+  phaser.userData.charge = 0;
 }
 /* Pause: thumbstick click or P. The program holds; trigger resumes, A/X walks out. */
 function setPause(on) {
@@ -1438,7 +1521,8 @@ function setPause(on) {
   game.paused = on;
   if (on) {
     AudioKit.beamStop();
-    activePhasers.forEach(p => { p.userData.holding = false; p.userData.beaming = false; });
+    AudioKit.chargeStop();
+    activePhasers.forEach(p => { p.userData.holding = false; p.userData.beaming = false; p.userData.charge = 0; });
     setPhaserVol(SETTINGS.phaserVol, true);                    // sync both controls, silently
     if (game.mode === 'desk') { pauseEl.hidden = false; try { document.exitPointerLock(); } catch (e) {} }
     else showPausePanel();                                   // in VR the card appears down your gaze
@@ -1497,7 +1581,7 @@ function changePower(w, delta) {
   toast('SETTING ' + next + ' · ' + powerLabel(next));
 }
 function blipPower(n) { AudioKit.ackBeep(); }
-function boltDamage(w) { return 0.5 + 0.25 * ((w.userData.power || 5)); } // setting 10 one-shots a stock target
+function boltDamage(w) { return TUNE.boltDamageBase + TUNE.boltDamagePerEnergy * chargeCapEnergy(w); }
 function beamPowerScale(w) { return 0.4 + 0.12 * ((w.userData.power || 5)); }
 
 /* ═══════════════ the armory, the holsters, and the table ═══════════════
@@ -1787,8 +1871,21 @@ function phaserTick(phaser, dt) {
   if (!phaser.visible) { u.holding = false; }
   if (u.holding && !game.over) {
     u.holdT += dt;
-    if (!u.beaming && u.holdT >= TUNE.holdThreshold && u.beamCharge > 0.05 && !u.beamRecharging && u.battery > 0.001) {
-      u.beaming = true; AudioKit.beamStart();
+    if (!u.beaming) {
+      // draw the cell into the charge until this setting says stop
+      const cap = chargeCapEnergy(phaser);
+      const draw = Math.min(TUNE.chargeRate * dt, Math.max(0, cap - (u.charge || 0)), u.battery);
+      if (draw > 0) { u.charge = (u.charge || 0) + draw; drainBattery(phaser, draw); }
+      AudioKit.chargeUpdate((u.charge || 0) / Math.max(0.001, cap));
+      const topped = (u.charge || 0) >= cap - 1e-6 || u.battery <= 0.001;
+      if (topped && u.power >= 10) {                    // kill has no ceiling but the cell
+        if (u.battery <= 0.001) { AudioKit.chargeStop(); fireBolt(phaser, u.charge || 0);
+          u.charge = 0; u.holding = false; haptic(phaser, 1.0, 90); }
+      } else if (topped && u.holdT >= TUNE.beamAfter &&
+                 u.beamCharge > 0.05 && !u.beamRecharging && u.battery > 0.001) {
+        AudioKit.chargeStop();                          // full and still holding: vent it as a beam
+        u.charge = 0; u.beaming = true; AudioKit.beamStart();
+      }
     }
     if (u.beaming) {
       u.beamCharge -= dt / TUNE.beamMax;
@@ -1813,11 +1910,23 @@ function phaserTick(phaser, dt) {
   // amber tip breathes with charge
   if (phaser.userData.tip) { // amber at rest, hot red while the beam runs
     if (u.beaming) phaser.userData.tip.material.color.setHSL(0.02, 1.0, 0.62);
-    else phaser.userData.tip.material.color.setHSL(0.09, 1.0, 0.20 + 0.50 * (u.battery / u.batteryMax));
+    else if (u.holding) {                     // charging: the emitter winds up white-hot
+      const lvl = Math.min(1, (u.charge || 0) / Math.max(0.001, chargeCapEnergy(phaser)));
+      phaser.userData.tip.material.color.setHSL(0.09 - 0.09 * lvl, 1.0, 0.35 + 0.45 * lvl);
+    } else phaser.userData.tip.material.color.setHSL(0.09, 1.0, 0.20 + 0.50 * (u.battery / u.batteryMax));
   }
 }
 /* Higher settings burn the cell faster — a kill shot is expensive. */
 function powerDrain(p) { return 0.35 + 0.13 * (p || 5); }
+/* How long the dial will let a charge run, and how much energy that is. */
+function chargeCapSec(p) {
+  return (p || 5) >= 10 ? Infinity : TUNE.stunHold * Math.pow(TUNE.holdGrowth, (p || 5) - 1);
+}
+function chargeCapEnergy(w) {
+  const p = w.userData.power || 5;
+  if (p >= 10) return w.userData.batteryMax;            // kill: everything you have
+  return Math.min(w.userData.batteryMax, TUNE.chargeRate * chargeCapSec(p));
+}
 function drainBattery(w, amount) {
   const u = w.userData;
   u.battery = Math.max(0, u.battery - amount);
@@ -2254,7 +2363,8 @@ function resetGame() {
   if (game.program === 'velocity') {
     VEL.speed = TUNE.discSpeed; VEL.strikes = 0; VEL.splitT = 0;
     while (VEL.discs.length > 1) { const gone = VEL.discs.pop(); scene.remove(gone.mesh); }
-    VEL.discs[0].sinceStrike = 0;
+    VEL.discs[0].sinceStrike = 0; VEL.discs[0].energy = 0;
+    VEL.discs[0].wobX = VEL.discs[0].wobZ = 0;
     velocityServe(1.6);
   } else {
     remote.state = 'stalk'; remote.timer = 2.5;
@@ -2282,7 +2392,9 @@ function startProgram(mode) {
 let endedAt = 0;
 function endProgram() {
   game.running = false; game.over = true; endedAt = gt;
-  AudioKit.beamStop(); AudioKit.endChime(); flashGrid(0.7); hudDirty = true;
+  AudioKit.beamStop(); AudioKit.chargeStop();          // no whine left hanging past the end
+  activePhasers.forEach(p => { p.userData.holding = false; p.userData.beaming = false; p.userData.charge = 0; });
+  AudioKit.endChime(); flashGrid(0.7); hudDirty = true;
   toast('PROGRAM COMPLETE — SCORE ' + game.score);
 }
 function tryRestart() { if (game.over && gt - endedAt > 1.5) { resetGame(); flashGrid(0.4); AudioKit.ackBeep(); toast('PROGRAM RESTARTED'); } }

@@ -23,9 +23,12 @@
   canvas{display:block}
 
   /* ——— Lobby: the arch ——— */
-  #lobby{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-    background:radial-gradient(ellipse at 50% 120%, #101018 0%, var(--void) 60%);z-index:20;padding:24px}
-  .arch{display:flex;gap:14px;max-width:680px;width:100%}
+  /* the panel can outgrow the screen, so the lobby scrolls rather than clipping */
+  #lobby{position:fixed;inset:0;display:flex;align-items:flex-start;justify-content:center;
+    background:radial-gradient(ellipse at 50% 120%, #101018 0%, var(--void) 60%);z-index:20;
+    padding:24px;overflow-y:auto;overscroll-behavior:contain}
+  .arch{margin:auto 0}
+  .arch{display:flex;gap:14px;max-width:680px;width:100%;flex:0 0 auto}
   .rail{display:flex;flex-direction:column;gap:6px;width:64px;flex:none}
   .rail span{display:block;border-radius:20px 0 0 20px}
   .rail .b1{height:120px;background:var(--amber)}
@@ -41,6 +44,14 @@
     margin:0 0 14px;color:var(--grid);text-transform:uppercase;letter-spacing:.01em;text-wrap:balance}
   .brief{max-width:52ch;font-size:15.5px;font-weight:300;line-height:1.55;color:var(--ink);margin:0 0 18px}
   .brief b{color:var(--pale);font-weight:600}
+  .progpick{display:flex;gap:0;margin:0 0 10px;border:1px solid var(--edge);border-radius:24px;
+    overflow:hidden;width:fit-content;max-width:100%}
+  .prog{font-family:var(--display);text-transform:uppercase;letter-spacing:.14em;font-size:16px;
+    padding:11px 22px;border:none;background:transparent;color:var(--dim);cursor:pointer;transition:background .12s,color .12s}
+  .prog:hover{color:var(--ink)}
+  .prog.is-on{background:var(--lav);color:#180d18}
+  .prog:focus-visible{outline:2px solid var(--pale);outline-offset:-4px}
+  #progdesc{font-size:14px;color:var(--ink);margin:0 0 14px;max-width:52ch;line-height:1.5}
   #xrstatus{font-family:var(--display);text-transform:uppercase;letter-spacing:.18em;font-size:12px;
     color:var(--dim);margin:0 0 16px}
   #xrstatus.ok{color:var(--grid)}
@@ -102,8 +113,8 @@
     <div class="rail" aria-hidden="true"><span class="b1"></span><span class="b2"></span><span class="b3"></span><span class="b4"></span><span class="b5"></span></div>
     <div class="arch-body">
       <p class="eyebrow">Holodeck · Recreational Program</p>
-      <h1>Phaser Range</h1>
-      <p class="brief">A circular stage in a dark void. Light-targets drift through the black — pop them.
+      <h1 id="progtitle">Phaser Range</h1>
+      <p class="brief" id="brief-range">A circular stage in a dark void. Light-targets drift through the black — pop them.
         A <b>training remote</b> orbits you: when its emitter glows and chimes, a stun bolt follows —
         <b>step aside or duck</b>, or shoot the bolt out of the air. The instant it fires, the remote
         flares white: <b>tag it then</b> for the big score. You can hit it any time to make it flinch —
@@ -111,6 +122,16 @@
         the First Contact pistol, the swept <b>TNG type 2</b> you hold flat like a remote, a
         <b>bat'leth</b> that bats its bolts straight back, and empty hands if you want them.
         Three hits ends the program.</p>
+      <p class="brief" id="brief-velocity" hidden>Voyager's court, walls lit in holodeck gold. An
+        eight-inch disc runs the walls, ricocheting off every surface — and when it has run them
+        long enough, it comes looking for you. <b>Shoot it</b> to send it back where your muzzle
+        points, and it returns faster every time. Take it in the head or the chest and that is a
+        full impact: one of your three pips. There is no remote here and nothing else to shoot —
+        just you, the disc, and the walls.</p>
+      <div class="progpick" role="group" aria-label="Holodeck program">
+        <button type="button" class="prog is-on" data-prog="range">Phaser Range</button>
+        <button type="button" class="prog" data-prog="velocity">Velocity</button>
+      </div>
       <p id="xrstatus">Checking headset support&hellip;</p>
       <div class="actions">
         <button class="lcars" id="btn-vr" disabled>Enter the range</button>
@@ -127,6 +148,17 @@
         <div class="row"><label for="s-agi">Remote</label>
           <input type="range" id="s-agi" min="0.6" max="2.0" step="0.1"><output id="o-agi"></output></div>
         <p class="hint">How hard it weaves, jukes off near misses, and presses the attack.</p>
+
+        <div class="row"><label for="s-thp">Target charge</label>
+          <input type="range" id="s-thp" min="1" max="6" step="1"><output id="o-thp"></output></div>
+        <div class="row"><label for="s-flee">Target nerve</label>
+          <input type="range" id="s-flee" min="0" max="6" step="0.2"><output id="o-flee"></output></div>
+        <p class="hint">How much charge a light-target holds, and how hard it runs when your muzzle crosses it.</p>
+
+        <h2>Velocity</h2>
+        <div class="row"><label for="s-disc">Serve speed</label>
+          <input type="range" id="s-disc" min="1.5" max="6" step="0.25"><output id="o-disc"></output></div>
+        <p class="hint">How fast the disc opens the rally. Every strike sends it back harder.</p>
 
         <h2>Aim</h2>
         <div class="row"><label for="s-ast">Assist</label>
@@ -150,6 +182,8 @@
       </div>
       <dl class="legend">
         <dt>Trigger tap</dt><dd>Phaser bolt — instant, always ready. No aim assist unless you dial some in</dd>
+        <dt>Light-targets</dt><dd>They hold a charge, shrink as you burn it off, and bolt when your muzzle crosses them</dd>
+        <dt>Velocity</dt><dd>Shoot the disc to send it back; take it in the head or chest and it costs a pip</dd>
         <dt>Trigger hold</dt><dd>Wide red beam &mdash; sweeps several targets at once, then recharges</dd>
         <dt>Thumb key</dt><dd>B / Y fires as well &mdash; the way the swept TNG shell is meant to be worked</dd>
         <dt>A / X or grip</dt><dd>Cycle that hand through whatever you left in the rotation</dd>
@@ -157,7 +191,7 @@
         <dt>Bat'leth</dt><dd>One blade, either hand &mdash; take it in the other hand to pass it, or hold it in both for a two-handed grip. Deflects stun bolts even held still; a returned bolt that hits the remote pays 200</dd>
         <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD step · Shift duck · B or 1/2/3 to change weapon</dd>
       </dl>
-      <p class="footnote">M0.5 feel prototype — telegraph timing, phaser feel, and a first bat'leth. On Quest, open this
+      <p class="footnote">M0.6 feel prototype — telegraph timing, phaser feel, and a first bat'leth. On Quest, open this
         page in the headset browser. If the Enter button stays unavailable inside an embedded viewer,
         open the page in its own tab.</p>
       <p class="footnote" id="diag" style="font-family:monospace;font-size:11px;color:#6a6a5c;line-height:1.6"></p>
@@ -169,7 +203,7 @@
   <div class="top">
     <div class="stat"><div class="lab">Score</div><div class="val" id="h-score">0</div></div>
     <div class="stat"><div class="lab">Streak</div><div class="val" id="h-streak">0</div></div>
-    <div class="stat"><div class="lab">Wave</div><div class="val" id="h-wave">1</div></div>
+    <div class="stat"><div class="lab" id="lab-wave">Wave</div><div class="val" id="h-wave">1</div></div>
     <div class="stat"><div class="lab">Tolerance</div><div id="pips"><span class="pip"></span><span class="pip"></span><span class="pip"></span></div></div>
   </div>
   <div id="reticle"></div>
@@ -211,11 +245,11 @@ const TUNE = {
   // Aim is a true ray against the object's real radius. Assist, if any, widens that
   // radius with distance; 0 means you have to actually point at the thing.
   aimAssistDeg: 0,
-  beamSweep: 0.42,         // m the wide beam reaches past a target's own radius
+  beamSweep: 0.24,         // m the wide beam reaches past a target's own radius
   boltHitBolt: 0.10,       // m effective radius of an incoming stun bolt (it's a glowing blob)
   beamMax: 1.0,            // s of sustained beam
   beamRecharge: 1.6,       // s to refill after any beam use
-  beamRadius: 0.075,       // m visual thickness of the sustained beam
+  beamRadius: 0.048,       // m visual thickness of the sustained beam
   beamBright: 0.72,        // 0–1 overall beam luminance
   holdThreshold: 0.14,     // s trigger held before tap becomes beam
   // — light-targets —
@@ -223,8 +257,27 @@ const TUNE = {
   targetScale: 0.75,
   targetsBase: 2, targetsMaxCap: 4,            // concurrent spheres, wave-ramped
   targetRespawn: 1.1,                          // s
-  targetDriftSpeed: 0.5, targetDartSpeed: 2.2, // m/s
-  targetDartChance: 0.012,                     // per frame-ish
+  // targets hold a charge: bolts chip it, the beam drains it, and they shrink as it goes
+  targetHP: 3,             // bolt hits to burn one down
+  beamDPS: 2.4,            // charge drained per second of beam
+  targetShrink: 0.5,       // fraction of its size a nearly-dead target has lost
+  // and they run when your muzzle crosses them
+  targetFleeRadius: 0.8,   // m from the aim line before it bolts
+  targetFleeSpeed: 3.4,    // m/s panic run
+  targetWander: 0.55,      // m/s idle drift
+  targetTurn: 6.0,         // how sharply they steer
+  arenaRMin: 1.3, arenaRMax: 5.6, arenaYMin: 0.7, arenaYMax: 2.7,
+  // — velocity (VOY) —
+  discRadius: 0.10,        // m — the canon disc is about eight inches
+  discSpeed: 3.0,          // m/s serve
+  discSpeedStep: 1.05,     // per strike
+  discSpeedMax: 11.0,
+  courtX: 3.4, courtZ: 3.4, courtY: 3.0,       // m half-extents / height of the court
+  ptsDiscStrike: 50,
+  discStrikesPerLevel: 6,
+  discSeekDelay: 2.6,      // s of free ricochet before the disc starts hunting you
+  discSeek: 2.4,           // how hard it turns toward you once it does
+  discHitBonus: 0.05,      // m of extra girth when shooting it — it is small and quick
   // — player / scoring —
   headHitRadius: 0.30,     // m — stun bolt vs head
   pips: 3,
@@ -277,6 +330,9 @@ const AudioKit = (() => {
     pop(){ blip('triangle', 900, 2400, 0.09, 0.18); blip('square', 300, 150, 0.06, 0.06); },
     boltDown(){ blip('triangle', 1200, 3200, 0.12, 0.2); },
     chip(){ blip('square', 1800, 900, 0.08, 0.14); },
+    serve(){ blip('sine', 400, 1200, 0.22, 0.13); },
+    wallHit(){ blip('sine', 520, 300, 0.07, 0.10); },
+    discHit(){ blip('triangle', 1500, 700, 0.11, 0.20); blip('sine', 2600, 1600, 0.08, 0.10); },
     clang(){ blip('square', 2400, 1500, 0.10, 0.18); blip('triangle', 5100, 3400, 0.07, 0.09, 0.01); },
     deflect(){ this.clang(); blip('triangle', 800, 2600, 0.15, 0.12, 0.05); },
     hit(){ blip('sawtooth', 160, 60, 0.45, 0.30); blip('square', 90, 60, 0.4, 0.15); },
@@ -556,18 +612,35 @@ function spawnStunBolt(from, at, speed) {
 const TARGET_COLORS = [0x53d3e0, 0xe060c8, 0x7de07a, 0xf2c14e];
 const targets = [];
 let targetRespawnQueue = [];
+function targetGoal(u) {
+  const a = Math.random() * Math.PI * 2;
+  const r = TUNE.arenaRMin + Math.random() * (TUNE.arenaRMax - TUNE.arenaRMin);
+  u.goal.set(Math.cos(a) * r, TUNE.arenaYMin + Math.random() * (TUNE.arenaYMax - TUNE.arenaYMin), Math.sin(a) * r);
+  u.goalT = 1.2 + Math.random() * 2.0;
+}
 function spawnTarget() {
   const color = TARGET_COLORS[Math.floor(Math.random() * TARGET_COLORS.length)];
   const mat = new THREE.MeshBasicMaterial({ color }); mat.name = 'Mat_LightTarget';
   const m = new THREE.Mesh(new THREE.SphereGeometry(TUNE.targetRadius, 16, 16), mat);
-  m.scale.setScalar(TUNE.targetScale);
   m.name = 'LightTarget';
   const a = Math.random() * Math.PI * 2;
   const r = 1.4 + Math.random() * 3.0; // near ones are in bat'leth reach from the stage edge
   m.position.set(Math.cos(a) * r, 0.9 + Math.random() * 1.6, Math.sin(a) * r);
-  m.userData = { phase: Math.random() * 10, base: m.position.clone(),
-    dart: null, dartT: 0, pulse: Math.random() * Math.PI };
+  m.userData = { hpMax: TUNE.targetHP, hp: TUNE.targetHP, pulse: Math.random() * Math.PI,
+    vel: new THREE.Vector3(), goal: new THREE.Vector3(), goalT: 0, spooked: 0, flash: 0 };
+  targetGoal(m.userData);
+  m.scale.setScalar(TUNE.targetScale);
   scene.add(m); targets.push(m);
+}
+/* Bolts chip a target's charge, the beam drains it; it shrinks as it fades. */
+function damageTarget(i, amount) {
+  const t = targets[i], u = t.userData;
+  u.hp -= amount;
+  if (u.hp <= 0) { onTargetPop(i); return true; }
+  u.flash = 0.10; u.spooked = Math.max(u.spooked, 0.6);
+  if (!u.chipMuted) { AudioKit.chip(); u.chipMuted = 0.06; }
+  addScore(5); hudDirty = true;
+  return false;
 }
 
 /* shot flash lines (both tap-bolts and beams reuse these) */
@@ -607,9 +680,139 @@ function popEffect(pos, color) {
   m.name = 'PopShell'; m.position.copy(pos); scene.add(m); popFx.push({ m, life: 0.35, max: 0.35 });
 }
 
+/* ───────────────────── Velocity (VOY) ─────────────────────
+   A disc runs the court until it hits you. You knock it back with the phaser;
+   every strike it comes back faster. */
+const court = new THREE.Group(); court.name = 'VelocityCourt'; court.visible = false; scene.add(court);
+{
+  const X = TUNE.courtX, Z = TUNE.courtZ, Y = TUNE.courtY, step = 0.85;
+  const grid = [], edge = [];
+  const L = (a, b, c, d, e, f) => grid.push(a, b, c, d, e, f);
+  for (let y = 0; y <= Y + 0.001; y += step) {          // horizontal rings up the four walls
+    L(-X, y, -Z, X, y, -Z); L(-X, y, Z, X, y, Z);
+    L(-X, y, -Z, -X, y, Z); L(X, y, -Z, X, y, Z);
+  }
+  for (let x = -X; x <= X + 0.001; x += step) {          // verticals + floor/ceiling runs
+    L(x, 0, -Z, x, Y, -Z); L(x, 0, Z, x, Y, Z);
+    L(x, 0, -Z, x, 0, Z);  L(x, Y, -Z, x, Y, Z);
+  }
+  for (let z = -Z; z <= Z + 0.001; z += step) {
+    L(-X, 0, z, -X, Y, z); L(X, 0, z, X, Y, z);
+    L(-X, 0, z, X, 0, z);  L(-X, Y, z, X, Y, z);
+  }
+  [[-X,-Z],[X,-Z],[X,Z],[-X,Z]].forEach((c, i, arr) => {  // brighter box edges read the corners
+    const n = arr[(i + 1) % 4];
+    edge.push(c[0], 0, c[1], c[0], Y, c[1]);
+    edge.push(c[0], 0, c[1], n[0], 0, n[1]);
+    edge.push(c[0], Y, c[1], n[0], Y, n[1]);
+  });
+  const mk = (arr, opacity, name) => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3));
+    const m = new THREE.LineBasicMaterial({ color: 0xf2c14e, transparent: true, opacity });
+    m.name = 'Mat_CourtGrid';
+    const ls = new THREE.LineSegments(g, m); ls.name = name; court.add(ls);
+  };
+  mk(grid, 0.13, 'CourtGrid');
+  mk(edge, 0.45, 'CourtEdges');
+}
+
+const VEL = (() => {
+  const shell = new THREE.MeshStandardMaterial({ color: 0xdde3ec, metalness: 0.92, roughness: 0.22 });
+  shell.name = 'Mat_DiscShell';
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(TUNE.discRadius, TUNE.discRadius, 0.022, 24), shell);
+  disc.name = 'VelocityDisc';
+  const halo = new THREE.Mesh(new THREE.CylinderGeometry(TUNE.discRadius * 1.35, TUNE.discRadius * 1.35, 0.004, 24),
+    new THREE.MeshBasicMaterial({ color: 0x9fe8ff, transparent: true, opacity: 0.5,
+      depthWrite: false, blending: THREE.AdditiveBlending }));
+  halo.name = 'DiscHalo'; disc.add(halo);
+  const lamp = new THREE.PointLight(0x9fe8ff, 1.1, 5); lamp.name = 'DiscLamp'; disc.add(lamp);
+  disc.visible = false; scene.add(disc);
+  return { disc, v: new THREE.Vector3(), speed: TUNE.discSpeed, strikes: 0,
+           live: false, serveT: 0, spin: 0, sinceStrike: 0 };
+})();
+
+function velocityServe(delay) { VEL.live = false; VEL.serveT = delay || 1.2; VEL.disc.visible = false; }
+function velocityLaunch() {
+  headPos(_head);
+  const X = TUNE.courtX - 0.25, Z = TUNE.courtZ - 0.25;
+  const side = Math.floor(Math.random() * 4);
+  VEL.disc.position.set(
+    side === 0 ? -X : side === 1 ? X : (Math.random() * 2 - 1) * X,
+    0.8 + Math.random() * 1.5,
+    side === 2 ? -Z : side === 3 ? Z : (Math.random() * 2 - 1) * Z);
+  // aim past the player, not at them — the rally should ricochet before it threatens
+  const a = Math.random() * Math.PI * 2, off = 1.4 + Math.random() * 1.2;
+  _tmp.set(_head.x + Math.cos(a) * off, 0.7 + Math.random() * 1.6, _head.z + Math.sin(a) * off);
+  VEL.v.copy(_tmp).sub(VEL.disc.position);
+  if (VEL.v.lengthSq() < 0.01) VEL.v.set(1, 0.2, 1);
+  VEL.v.normalize().multiplyScalar(VEL.speed);
+  VEL.sinceStrike = 0;
+  VEL.disc.visible = true; VEL.live = true;
+  AudioKit.serve();
+}
+function onDiscStruck(dir) {
+  VEL.speed = Math.min(TUNE.discSpeedMax, VEL.speed * TUNE.discSpeedStep);
+  VEL.v.copy(dir).normalize();
+  VEL.v.x += (Math.random() - 0.5) * 0.35;               // never a pure ping-pong
+  VEL.v.y += (Math.random() - 0.5) * 0.25;
+  VEL.v.z += (Math.random() - 0.5) * 0.35;
+  VEL.v.normalize().multiplyScalar(VEL.speed);
+  VEL.sinceStrike = 0;
+  VEL.strikes++; game.strikes = VEL.strikes;
+  addScore(TUNE.ptsDiscStrike); bumpStreak();
+  AudioKit.discHit(); popEffect(VEL.disc.position, 0x9fe8ff);
+  if (VEL.strikes % TUNE.discStrikesPerLevel === 0) {
+    game.wave++; AudioKit.ackBeep(); AudioKit.say('Velocity. Level ' + game.wave + '.');
+    toast('SPEED ' + game.wave);
+  } else toast('STRIKE +' + TUNE.ptsDiscStrike);
+  hudDirty = true;
+}
+function velocityTick(dt) {
+  const d = VEL.disc;
+  VEL.spin += dt * 11; d.rotation.set(1.15, VEL.spin, 0.2);
+  if (!VEL.live) { VEL.serveT -= dt; if (VEL.serveT <= 0 && game.running) velocityLaunch(); return; }
+  d.position.addScaledVector(VEL.v, dt);
+  const X = TUNE.courtX - TUNE.discRadius, Z = TUNE.courtZ - TUNE.discRadius,
+        Yt = TUNE.courtY - TUNE.discRadius, Yb = TUNE.discRadius;
+  let bounced = false;
+  if (d.position.x >  X) { d.position.x =  X; VEL.v.x = -Math.abs(VEL.v.x); bounced = true; }
+  if (d.position.x < -X) { d.position.x = -X; VEL.v.x =  Math.abs(VEL.v.x); bounced = true; }
+  if (d.position.z >  Z) { d.position.z =  Z; VEL.v.z = -Math.abs(VEL.v.z); bounced = true; }
+  if (d.position.z < -Z) { d.position.z = -Z; VEL.v.z =  Math.abs(VEL.v.z); bounced = true; }
+  if (d.position.y > Yt) { d.position.y = Yt; VEL.v.y = -Math.abs(VEL.v.y); bounced = true; }
+  if (d.position.y < Yb) { d.position.y = Yb; VEL.v.y =  Math.abs(VEL.v.y); bounced = true; }
+  if (bounced) AudioKit.wallHit();
+  headPos(_head);
+  VEL.sinceStrike += dt;
+  if (VEL.sinceStrike > TUNE.discSeekDelay) {          // it has run the walls long enough
+    _tmp.copy(_head).sub(d.position);
+    if (_tmp.lengthSq() > 0.04) {
+      _tmp.normalize();
+      VEL.v.addScaledVector(_tmp, TUNE.discSeek * dt);
+      const s = VEL.v.length() || 1;
+      VEL.v.multiplyScalar(VEL.speed / s);
+    }
+  }
+  _tmp.copy(_head); _tmp.y -= 0.45;                       // head or chest counts as a full impact
+  if (d.position.distanceTo(_head) < 0.34 || d.position.distanceTo(_tmp) < 0.34) {
+    popEffect(d.position, 0xff5533);
+    onPlayerHit();
+    velocityServe(1.5);
+  }
+}
+function applyProgram() {
+  const v = game.program === 'velocity';
+  court.visible = v;
+  remote.g.visible = !v;
+  VEL.disc.visible = v && VEL.live;
+  if (scene.fog) scene.fog.density = v ? 0.028 : 0.055;
+}
+
 /* ───────────────────── game state ───────────────────── */
 const game = {
   running: false, over: false, mode: null,           // 'vr' | 'desk'
+  program: 'range', strikes: 0,                      // 'range' | 'velocity'
   score: 0, streak: 0, bestStreak: 0, wave: 1,
   pips: TUNE.pips, shots: 0, hits: 0, pops: 0, tags: 0, dodges: 0,
   popsThisWave: 0, startTime: 0,
@@ -699,19 +902,25 @@ function fireBolt(phaser) {
     if (d > 0 && d < bestD) { bestD = d; bestKind = 'target'; bestIdx = i; } });
   stunBolts.forEach((b, i) => { const d = rayHit(_rayO, _rayD, b.position, TUNE.boltHitBolt);
     if (d > 0 && d < bestD) { bestD = d; bestKind = 'bolt'; bestIdx = i; } });
-  { const d = rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS); // remote is a target any time now
+  if (game.program === 'velocity') {
+    if (VEL.live) { const d = rayHit(_rayO, _rayD, VEL.disc.position, TUNE.discRadius + TUNE.discHitBonus);
+      if (d > 0 && d < bestD) { bestD = d; bestKind = 'disc'; } }
+  } else { const d = rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS); // remote is a target any time now
     if (d > 0 && d < bestD) { bestD = d; bestKind = (remote.state === 'vulnerable') ? 'remote' : 'chip'; } }
   if (bestKind) { game.hits++; hitPoint = _rayO.clone().add(_rayD.clone().multiplyScalar(bestD)); }
-  else if (rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS + 0.55) > 0 && Math.random() < TUNE.remoteJukeChance)
+  else if (game.program !== 'velocity' &&
+           rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS + 0.55) > 0 &&
+           Math.random() < TUNE.remoteJukeChance)
     remoteJuke();  // shot went close — the remote saw it and breaks off
   const end = hitPoint || _rayO.clone().add(_rayD.clone().multiplyScalar(25));
   flashLine(_vis.clone(), end, 0xff1018, 0.09); // tap bolt reads red, same family as the beam
-  if (bestKind === 'target') onTargetPop(bestIdx);
+  if (bestKind === 'target') damageTarget(bestIdx, 1);
   else if (bestKind === 'bolt') { const b = stunBolts[bestIdx];
     popEffect(b.position, 0xff5533); AudioKit.boltDown(); despawnBolt(bestIdx);
     addScore(TUNE.ptsBoltDown); bumpStreak(); toast('BOLT INTERCEPTED'); }
   else if (bestKind === 'remote') onRemoteTagged();
   else if (bestKind === 'chip') onRemoteChipped();
+  else if (bestKind === 'disc') onDiscStruck(_rayD);
   hudDirty = true;
 }
 
@@ -721,7 +930,15 @@ function beamTick(phaser, dt) {
   flashBeam(_vis.clone(), _rayD.clone(), 25);
   haptic(phaser, 0.35, 30);
   for (let i = targets.length - 1; i >= 0; i--)
-    if (rayHit(_rayO, _rayD, targets[i].position, targetRadius(), TUNE.beamSweep) > 0) { game.hits++; game.shots++; onTargetPop(i); }
+    if (rayHit(_rayO, _rayD, targets[i].position, targetRadius(), TUNE.beamSweep) > 0) {
+      game.hits++; game.shots++; damageTarget(i, TUNE.beamDPS * dt); }
+  if (game.program === 'velocity') {
+    if (VEL.live && rayHit(_rayO, _rayD, VEL.disc.position, TUNE.discRadius, TUNE.beamSweep) > 0) {
+      VEL.v.addScaledVector(_rayD, 7 * dt);              // the beam shoves it, the bolt scores it
+      const s = VEL.v.length(); if (s > VEL.speed) VEL.v.multiplyScalar(VEL.speed / s);
+    }
+    return;
+  }
   if (rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS, TUNE.beamSweep) > 0) { // the beam counter-attacks too
     if (remote.state === 'vulnerable') { game.hits++; game.shots++; onRemoteTagged(); }
     else onRemoteChipped();
@@ -755,7 +972,9 @@ function drawHUD() {
   c.fillStyle = '#ff9c00'; roundRect(c, 24, 24, 60, H - 48, 28); c.fill();
   const dsp = (px, w) => `${w || 600} ${px}px Antonio, "Arial Narrow", sans-serif`;
   c.textBaseline = 'top';
-  const cols = [{ lab: 'SCORE', val: game.score }, { lab: 'STREAK', val: game.streak }, { lab: 'WAVE', val: game.wave }];
+  const vmode = game.program === 'velocity';
+  const cols = [{ lab: 'SCORE', val: game.score }, { lab: 'STREAK', val: game.streak },
+                { lab: vmode ? 'SPEED' : 'WAVE', val: game.wave }];
   cols.forEach((col, i) => { const x = 140 + i * 250;
     c.fillStyle = '#cc99cc'; c.font = dsp(34, 400); c.fillText(col.lab, x, 60);
     c.fillStyle = '#f2c14e'; c.font = dsp(110, 700); c.fillText(String(col.val), x, 110); });
@@ -769,7 +988,8 @@ function drawHUD() {
     const acc = game.shots ? Math.round(100 * game.hits / game.shots) : 100;
     c.fillStyle = '#8d8a7b'; c.font = dsp(38, 400);
     c.fillText('ACCURACY ' + acc + '%', 480, 340);
-    c.fillText('TAGS ' + game.tags + '   DODGES ' + game.dodges, 480, 395);
+    c.fillText(vmode ? 'STRIKES ' + game.strikes
+                     : 'TAGS ' + game.tags + '   DODGES ' + game.dodges, 480, 395);
   }
   worldHUD.tex.needsUpdate = true;
 }
@@ -1001,6 +1221,7 @@ function deskTick(dt) {
 /* ───────────────────── settings ─────────────────────
    The dials worth arguing about live here, not in the code. Saved per browser. */
 const DEFAULTS = { telegraph: 0.55, assist: 0, targetScale: 0.75, agility: 1.0, brightness: 0.72,
+                   targetHP: 3, fleeSpeed: 3.4, discSpeed: 3.0,
                    weapons: { fc: true, tng: true, batleth: true, none: true } };
 const SETTINGS = JSON.parse(JSON.stringify(DEFAULTS));
 function loadSettings() {
@@ -1022,7 +1243,11 @@ function applySettings() {
   TUNE.targetScale = SETTINGS.targetScale;
   TUNE.remoteAgility = SETTINGS.agility;
   TUNE.beamBright = SETTINGS.brightness;
-  targets.forEach(t => t.scale.setScalar(TUNE.targetScale));
+  TUNE.targetHP = SETTINGS.targetHP;
+  TUNE.targetFleeSpeed = SETTINGS.fleeSpeed;
+  TUNE.discSpeed = SETTINGS.discSpeed;
+  targets.forEach(t => { t.userData.hpMax = TUNE.targetHP;
+    t.userData.hp = Math.min(t.userData.hp, TUNE.targetHP); });
 }
 function rackFor(hand) {
   const w = [];
@@ -1122,27 +1347,84 @@ function boltsTick(dt) {
     if (b.userData.alive > 5 || b.position.distanceTo(_head) > 12) { despawnBolt(i); if (game.running) onCleanDodge(); }
   }
 }
+/* Where the player's muzzle points this frame — the targets watch it. */
+const aimO = new THREE.Vector3(), aimD = new THREE.Vector3(0, 0, -1);
+let aimLive = false;
+function updateAim() {
+  aimLive = false;
+  const consider = (h) => {
+    if (aimLive || !h || !h.weapons || !h.weapons.length) return;
+    const w = handWeapon(h);
+    if (w && w.userData.isGun && w.visible) { getMuzzleRay(w, aimO, aimD); aimLive = true; }
+  };
+  if (game.mode === 'desk') consider(desk.hand);
+  else hands.forEach(consider);
+}
+
+const _tv = new THREE.Vector3(), _perp = new THREE.Vector3();
 function targetsTick(dt) {
   for (let i = targetRespawnQueue.length - 1; i >= 0; i--) {
     targetRespawnQueue[i] -= dt;
     if (targetRespawnQueue[i] <= 0) { targetRespawnQueue.splice(i, 1); if (targets.length < targetsMaxNow()) spawnTarget(); }
   }
   while (targets.length < targetsMaxNow() && targetRespawnQueue.length === 0 && game.running) spawnTarget();
+  const hot = 1 + 0.05 * (game.wave - 1);
   targets.forEach(t => {
-    const u = t.userData; u.pulse += dt * 3;
-    t.scale.setScalar(TUNE.targetScale * (1 + Math.sin(u.pulse) * 0.12));
-    if (u.dart) { u.dartT += dt / u.dart.dur;
-      if (u.dartT >= 1) { u.base.copy(u.dart.to); u.dart = null; }
-      else { const s = u.dartT * u.dartT * (3 - 2 * u.dartT); t.position.lerpVectors(u.dart.from, u.dart.to, s); return; } }
-    else if (Math.random() < TUNE.targetDartChance * game.wave * dt * 60) {
-      const a = Math.random() * Math.PI * 2, r = 1.4 + Math.random() * 3.0;
-      const to = new THREE.Vector3(Math.cos(a) * r, 0.9 + Math.random() * 1.6, Math.sin(a) * r);
-      u.dart = { from: t.position.clone(), to, dur: Math.max(0.4, t.position.distanceTo(to) / TUNE.targetDartSpeed) }; u.dartT = 0; return;
+    const u = t.userData;
+    u.pulse += dt * 3;
+    if (u.flash > 0) u.flash -= dt;
+    if (u.chipMuted > 0) u.chipMuted -= dt;
+    if (u.spooked > 0) u.spooked -= dt;
+
+    // where it wants to be
+    u.goalT -= dt;
+    if (u.goalT <= 0) targetGoal(u);
+    _tv.copy(u.goal).sub(t.position);
+    const dg = _tv.length(); if (dg > 0.001) _tv.multiplyScalar(1 / dg);
+    let speed = TUNE.targetWander * hot;
+
+    // …unless your muzzle is crossing it, in which case it runs
+    if (aimLive) {
+      _perp.copy(t.position).sub(aimO);
+      const along = _perp.dot(aimD);
+      if (along > 0.2 && along < 30) {
+        const perpSq = Math.max(0, _perp.lengthSq() - along * along);
+        const rad = TUNE.targetFleeRadius + targetRadius();
+        if (perpSq < rad * rad) {
+          _perp.addScaledVector(aimD, -along);              // its offset from the aim line
+          if (_perp.lengthSq() < 1e-4) _perp.set(Math.random() - 0.5, 0.4, Math.random() - 0.5);
+          _perp.normalize();
+          _tv.copy(_perp).addScaledVector(aimD, 0.2).normalize();
+          speed = TUNE.targetFleeSpeed * hot;
+          u.spooked = 0.55;
+        }
+      }
     }
-    u.phase += dt;
-    t.position.set(u.base.x + Math.sin(u.phase * 0.7) * 0.3,
-                   u.base.y + Math.sin(u.phase * 1.1) * 0.25,
-                   u.base.z + Math.cos(u.phase * 0.6) * 0.3);
+    if (u.spooked > 0) speed = Math.max(speed, TUNE.targetFleeSpeed * 0.6 * hot);
+
+    const k = Math.min(1, dt * TUNE.targetTurn);
+    u.vel.x += (_tv.x * speed - u.vel.x) * k;
+    u.vel.y += (_tv.y * speed - u.vel.y) * k;
+    u.vel.z += (_tv.z * speed - u.vel.z) * k;
+    t.position.addScaledVector(u.vel, dt);
+
+    // hold the shell of the arena
+    const r = Math.sqrt(t.position.x * t.position.x + t.position.z * t.position.z) || 0.001;
+    if (r < TUNE.arenaRMin || r > TUNE.arenaRMax) {
+      const want = Math.min(TUNE.arenaRMax, Math.max(TUNE.arenaRMin, r));
+      t.position.x *= want / r; t.position.z *= want / r;
+      u.vel.x *= -0.35; u.vel.z *= -0.35; targetGoal(u);
+    }
+    if (t.position.y < TUNE.arenaYMin) { t.position.y = TUNE.arenaYMin; u.vel.y = Math.abs(u.vel.y) * 0.5; }
+    if (t.position.y > TUNE.arenaYMax) { t.position.y = TUNE.arenaYMax; u.vel.y = -Math.abs(u.vel.y) * 0.5; }
+
+    // charge left reads as size, and a hit flashes it white
+    const life = Math.max(0, u.hp) / u.hpMax;
+    const worn = 1 - TUNE.targetShrink * (1 - life);
+    t.scale.setScalar(TUNE.targetScale * worn * (1 + Math.sin(u.pulse) * 0.12));
+    t.material.opacity = 1; t.material.transparent = false;
+    if (u.flash > 0) t.material.color.setRGB(1, 1, 1);
+    else t.material.color.setHex(u.baseHex !== undefined ? u.baseHex : (u.baseHex = t.material.color.getHex()));
   });
 }
 
@@ -1155,23 +1437,34 @@ function toast(msg) { toastEl.textContent = msg; toastEl.style.opacity = 1;
 
 function resetGame() {
   Object.assign(game, { running: true, over: false, score: 0, streak: 0, bestStreak: 0,
-    wave: 1, pips: TUNE.pips, shots: 0, hits: 0, pops: 0, tags: 0, dodges: 0, popsThisWave: 0, startTime: perf });
+    wave: 1, pips: TUNE.pips, shots: 0, hits: 0, pops: 0, tags: 0, dodges: 0, strikes: 0,
+    popsThisWave: 0, startTime: perf });
   while (stunBolts.length) despawnBolt(0);
   while (targets.length) { scene.remove(targets[0]); targets.splice(0, 1); }
   targetRespawnQueue = [];
   beamCharge = 1; beamRecharging = false;
-  remote.state = 'stalk'; remote.timer = 2.5; remote.pos.set(0, 1.6, -3.2); remotePickWaypoint();
-  for (let i = 0; i < TUNE.targetsBase; i++) spawnTarget();
+  if (game.program === 'velocity') {
+    VEL.speed = TUNE.discSpeed; VEL.strikes = 0; VEL.sinceStrike = 0; velocityServe(1.6);
+  } else {
+    remote.state = 'stalk'; remote.timer = 2.5;
+    remote.pos.set(0, 1.6, -3.2); remote.base.copy(remote.pos); remotePickWaypoint();
+    for (let i = 0; i < TUNE.targetsBase; i++) spawnTarget();
+  }
+  applyProgram();
   hudDirty = true;
 }
 
 function startProgram(mode) {
-  game.mode = mode; AudioKit.unlock(); AudioKit.humStart();
+  game.mode = mode; AudioKit.unlock();
+  if (game.program !== 'velocity') AudioKit.humStart(); else AudioKit.humStop();
   lobbyEl.style.display = 'none';
   if (mode === 'desk') { setupDesk(); hudEl.style.display = 'block';
     lockPointer(renderer.domElement); }
   resetGame(); flashGrid(0.5);
-  AudioKit.ackBeep(); AudioKit.say('Program running. Phaser range, level one.');
+  AudioKit.ackBeep();
+  AudioKit.say(game.program === 'velocity'
+    ? 'Program running. Velocity, level one.'
+    : 'Program running. Phaser range, level one.');
 }
 
 let endedAt = 0;
@@ -1258,6 +1551,21 @@ btnVR.addEventListener('click', async () => {
 });
 btnDesk.addEventListener('click', () => startProgram('desk'));
 
+/* program picker */
+const progBtns = Array.prototype.slice.call(document.querySelectorAll('.prog'));
+const PROG_TITLE = { range: 'Phaser Range', velocity: 'Velocity' };
+function setProgram(p) {
+  game.program = p;
+  progBtns.forEach(b => b.classList.toggle('is-on', b.dataset.prog === p));
+  document.getElementById('progtitle').textContent = PROG_TITLE[p];
+  document.getElementById('brief-range').hidden = p !== 'range';
+  document.getElementById('brief-velocity').hidden = p !== 'velocity';
+  btnVR.textContent = p === 'velocity' ? 'Enter the court' : 'Enter the range';
+  applyProgram();
+}
+progBtns.forEach(b => b.addEventListener('click', () => setProgram(b.dataset.prog)));
+setProgram('range');
+
 /* settings panel */
 const settingsEl = document.getElementById('settings');
 const btnSettings = document.getElementById('btn-settings');
@@ -1272,6 +1580,9 @@ const CONTROLS = [
   { id: 's-ast', out: 'o-ast', key: 'assist',      fmt: v => v === 0 ? 'off' : v.toFixed(1) + '°' },
   { id: 's-tsz', out: 'o-tsz', key: 'targetScale', fmt: v => '×' + v.toFixed(2) },
   { id: 's-bri', out: 'o-bri', key: 'brightness',  fmt: v => Math.round(v * 100) + '%' },
+  { id: 's-thp', out: 'o-thp', key: 'targetHP',    fmt: v => v + (v === 1 ? ' hit' : ' hits') },
+  { id: 's-flee', out: 'o-flee', key: 'fleeSpeed', fmt: v => v === 0 ? 'holds still' : v.toFixed(1) + ' m/s' },
+  { id: 's-disc', out: 'o-disc', key: 'discSpeed', fmt: v => v.toFixed(2) + ' m/s' },
 ];
 const RACK_BOXES = [ { id: 'w-fc', key: 'fc' }, { id: 'w-tng', key: 'tng' },
                      { id: 'w-bat', key: 'batleth' }, { id: 'w-none', key: 'none' } ];
@@ -1311,6 +1622,7 @@ const hScore = document.getElementById('h-score'), hStreak = document.getElement
       pipEls = document.querySelectorAll('.pip');
 function drawDomHud() {
   hScore.textContent = game.score; hStreak.textContent = game.streak; hWave.textContent = game.wave;
+  document.getElementById('lab-wave').textContent = game.program === 'velocity' ? 'Speed' : 'Wave';
   pipEls.forEach((el, i) => el.classList.toggle('lost', i >= game.pips));
 }
 
@@ -1327,8 +1639,13 @@ renderer.setAnimationLoop((time) => {
   bladeGripTick();
   if (game.mode === 'desk') deskTick(dt);
   if (game.running || game.over) {
-    remoteTick(dt);
-    if (game.running) { boltsTick(dt); targetsTick(dt); }
+    updateAim();
+    if (game.program === 'velocity') {
+      if (game.running) velocityTick(dt);
+    } else {
+      remoteTick(dt);
+      if (game.running) { boltsTick(dt); targetsTick(dt); }
+    }
     activePhasers.forEach(p => phaserTick(p, dt));
     activeBlades.forEach(b => bladeTick(b, dt));
   }

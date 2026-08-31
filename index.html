@@ -53,6 +53,21 @@
   button.lcars:focus-visible,a.lcars:focus-visible{outline:2px solid var(--pale);outline-offset:3px}
   button.lcars.alt,a.lcars.alt{background:transparent;color:var(--pale);box-shadow:inset 0 0 0 2px var(--pale)}
   button.lcars:disabled{background:var(--edge);color:var(--dim);cursor:default}
+  /* settings */
+  #settings{margin:0 0 18px;padding:16px 18px;border-left:3px solid var(--lav);background:rgba(204,153,204,.05)}
+  #settings h2{font-family:var(--display);text-transform:uppercase;letter-spacing:.2em;font-size:13px;
+    color:var(--lav);margin:0 0 12px;font-weight:400}
+  #settings h2:not(:first-child){margin-top:18px}
+  .row{display:grid;grid-template-columns:11ch 1fr 6ch;align-items:center;gap:12px;margin-bottom:9px}
+  .row label{font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;font-size:12.5px;color:var(--ink)}
+  .row output{font-family:var(--display);font-size:16px;color:var(--grid);text-align:right;font-variant-numeric:tabular-nums}
+  .row input[type=range]{width:100%;accent-color:var(--amber);background:transparent}
+  .row .hint{grid-column:1 / -1;font-size:11.5px;color:var(--dim);margin:-4px 0 2px}
+  .racklist{display:flex;flex-wrap:wrap;gap:8px 18px}
+  .racklist label{display:flex;align-items:center;gap:7px;font-size:13.5px;color:var(--ink);cursor:pointer}
+  .racklist input{accent-color:var(--amber);width:16px;height:16px}
+  #btn-reset{font-family:var(--body);font-size:12.5px;color:var(--pale);background:none;border:none;
+    padding:8px 0 0;cursor:pointer;text-decoration:underline}
   .legend{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13.5px;color:var(--dim);max-width:52ch}
   .legend dt{font-family:var(--display);text-transform:uppercase;letter-spacing:.14em;color:var(--lav);font-size:12px;padding-top:1px}
   .legend dd{margin:0}
@@ -92,25 +107,57 @@
         A <b>training remote</b> orbits you: when its emitter glows and chimes, a stun bolt follows —
         <b>step aside or duck</b>, or shoot the bolt out of the air. The instant it fires, the remote
         flares white: <b>tag it then</b> for the big score. You can hit it any time to make it flinch —
-        counter-fire during the glow <b>breaks its attack</b>. Every hand carries three weapons:
-        the First Contact pistol, the swept <b>TNG type 2</b> you hold flat like a remote, and a
-        <b>bat'leth</b> that bats its bolts straight back. Three hits ends the program.</p>
+        counter-fire during the glow <b>breaks its attack</b>. Each hand cycles its own rack —
+        the First Contact pistol, the swept <b>TNG type 2</b> you hold flat like a remote, a
+        <b>bat'leth</b> that bats its bolts straight back, and empty hands if you want them.
+        Three hits ends the program.</p>
       <p id="xrstatus">Checking headset support&hellip;</p>
       <div class="actions">
         <button class="lcars" id="btn-vr" disabled>Enter the range</button>
         <a class="lcars alt" id="btn-pop" target="_blank" rel="noopener" hidden>Open standalone</a>
         <button class="lcars alt" id="btn-desk">Desktop drill</button>
+        <button class="lcars alt" id="btn-settings" aria-expanded="false">Settings</button>
+      </div>
+
+      <div id="settings" hidden>
+        <h2>Drill</h2>
+        <div class="row"><label for="s-tel">Telegraph</label>
+          <input type="range" id="s-tel" min="0.35" max="0.80" step="0.05"><output id="o-tel"></output></div>
+        <p class="hint">Warning the remote gives before it fires. Lower is sharper.</p>
+        <div class="row"><label for="s-agi">Remote</label>
+          <input type="range" id="s-agi" min="0.6" max="2.0" step="0.1"><output id="o-agi"></output></div>
+        <p class="hint">How hard it weaves, jukes off near misses, and presses the attack.</p>
+
+        <h2>Aim</h2>
+        <div class="row"><label for="s-ast">Assist</label>
+          <input type="range" id="s-ast" min="0" max="6" step="0.5"><output id="o-ast"></output></div>
+        <p class="hint">Forgiveness added around each target. Zero means you point at the thing.</p>
+        <div class="row"><label for="s-tsz">Target size</label>
+          <input type="range" id="s-tsz" min="0.5" max="1.25" step="0.05"><output id="o-tsz"></output></div>
+
+        <h2>Beam</h2>
+        <div class="row"><label for="s-bri">Brightness</label>
+          <input type="range" id="s-bri" min="0.3" max="1" step="0.05"><output id="o-bri"></output></div>
+
+        <h2>In the rotation</h2>
+        <div class="racklist">
+          <label><input type="checkbox" id="w-fc"> First Contact phaser</label>
+          <label><input type="checkbox" id="w-tng"> TNG type 2</label>
+          <label><input type="checkbox" id="w-bat"> Bat'leth</label>
+          <label><input type="checkbox" id="w-none"> No weapon</label>
+        </div>
+        <button id="btn-reset" type="button">Restore defaults</button>
       </div>
       <dl class="legend">
-        <dt>Trigger tap</dt><dd>Phaser bolt — generous aim, always ready</dd>
+        <dt>Trigger tap</dt><dd>Phaser bolt — instant, always ready. No aim assist unless you dial some in</dd>
         <dt>Trigger hold</dt><dd>Wide red beam &mdash; sweeps several targets at once, then recharges</dd>
         <dt>Thumb key</dt><dd>B / Y fires as well &mdash; the way the swept TNG shell is meant to be worked</dd>
-        <dt>A / X or grip</dt><dd>Cycle that hand: First Contact pistol &rarr; TNG type 2 &rarr; bat'leth</dd>
+        <dt>A / X or grip</dt><dd>Cycle that hand through whatever you left in the rotation</dd>
         <dt>Your body</dt><dd>Dodge stun bolts physically — sidestep, duck</dd>
-        <dt>Bat'leth</dt><dd>Deflects stun bolts even held still; a returned bolt that hits the remote pays 200</dd>
+        <dt>Bat'leth</dt><dd>One blade, either hand &mdash; take it in the other hand to pass it, or hold it in both for a two-handed grip. Deflects stun bolts even held still; a returned bolt that hits the remote pays 200</dd>
         <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD step · Shift duck · B or 1/2/3 to change weapon</dd>
       </dl>
-      <p class="footnote">M0.4 feel prototype — telegraph timing, phaser feel, and a first bat'leth. On Quest, open this
+      <p class="footnote">M0.5 feel prototype — telegraph timing, phaser feel, and a first bat'leth. On Quest, open this
         page in the headset browser. If the Enter button stays unavailable inside an embedded viewer,
         open the page in its own tab.</p>
       <p class="footnote" id="diag" style="font-family:monospace;font-size:11px;color:#6a6a5c;line-height:1.6"></p>
@@ -156,17 +203,24 @@ const TUNE = {
   vulnWindow: 1.25,                            // s the remote is tappable after firing
   remoteOrbitMin: 2.6, remoteOrbitMax: 4.0,    // m from stage centre
   remoteHMin: 1.0, remoteHMax: 2.2,            // m height band
-  remoteSpeed: 1.5,                            // m/s repositioning speed
+  remoteSpeed: 2.3,                            // m/s repositioning speed
+  remoteAgility: 1.0,                          // scales speed, juke rate and attack cadence
+  remoteJukeChance: 0.55,                      // chance a near miss makes it break away
+  remoteStrafe: 0.35,                          // m of constant lateral weave
   // — phaser —
-  boltCone: 5.0,           // ° aim-assist half-angle vs light-targets
-  boltConeRemote: 4.0,     // ° vs remote
-  boltConeBolt: 6.0,       // ° vs incoming stun bolts (generous — canon "shoot it out of the air")
+  // Aim is a true ray against the object's real radius. Assist, if any, widens that
+  // radius with distance; 0 means you have to actually point at the thing.
+  aimAssistDeg: 0,
+  beamSweep: 0.42,         // m the wide beam reaches past a target's own radius
+  boltHitBolt: 0.10,       // m effective radius of an incoming stun bolt (it's a glowing blob)
   beamMax: 1.0,            // s of sustained beam
   beamRecharge: 1.6,       // s to refill after any beam use
-  beamCone: 7.5,           // ° beam sweep half-angle — wide enough to cut several targets at once
   beamRadius: 0.075,       // m visual thickness of the sustained beam
+  beamBright: 0.72,        // 0–1 overall beam luminance
   holdThreshold: 0.14,     // s trigger held before tap becomes beam
   // — light-targets —
+  targetRadius: 0.11,      // m — base sphere; targetScale is the player-facing dial
+  targetScale: 0.75,
   targetsBase: 2, targetsMaxCap: 4,            // concurrent spheres, wave-ramped
   targetRespawn: 1.1,                          // s
   targetDriftSpeed: 0.5, targetDartSpeed: 2.2, // m/s
@@ -180,6 +234,7 @@ const TUNE = {
   // — bat'leth —
   ptsMeleePop: 35, ptsDeflect: 50, ptsReturn: 200,
   bladeSwingSpeed: 1.2,    // m/s blade speed needed to pop a target (desktop: 0.8)
+  bladeScale: 1.25,        // the blade wanted more presence in the hand
   bladePopRadius: 0.16, bladeDeflectRadius: 0.22,
   deflectSpeedBoost: 1.6,  // returned bolts fly this much faster
   waveEvery: 8,            // target pops per wave
@@ -407,9 +462,25 @@ function buildBatleth() {
   }
   inner.rotation.x = Math.PI / 2;              // lie flat: leading edge points away, handholds toward you
   g.add(inner);
+  g.scale.setScalar(TUNE.bladeScale);
+  g.userData.isBladeObject = true;
+  g.userData.isBlade = true; g.userData.label = "BAT'LETH";
   g.userData.samples = samples;
   g.userData.prev = samples.map(() => new THREE.Vector3());
   g.userData.prevValid = false;
+  return g;
+}
+
+/* Empty hands — a real choice in the rotation, and how you free a hand for a two-handed grip. */
+function buildEmptyHand() {
+  const g = new THREE.Group(); g.name = 'EmptyHand';
+  g.userData.isEmpty = true; g.userData.label = 'NO WEAPON';
+  return g;
+}
+/* Per-hand stand-in for the one shared bat'leth. */
+function buildBladeSlot() {
+  const g = new THREE.Group(); g.name = 'BladeSlot';
+  g.userData.isBlade = true; g.userData.label = "BAT'LETH";
   return g;
 }
 </script>
@@ -433,16 +504,40 @@ const remote = (() => {
   scene.add(g);
   return { g, eye, eyeMat: emitMat, glow, chrome,
     state: 'stalk', timer: 0, from: new THREE.Vector3(0, 1.6, -3), to: new THREE.Vector3(),
-    pos: new THREE.Vector3(0, 1.6, -3), t: 0, travel: 1 };
+    pos: new THREE.Vector3(0, 1.6, -3), base: new THREE.Vector3(0, 1.6, -3),
+    t: 0, travel: 1, phase: Math.random() * 6.28, lastJuke: -9 };
 })();
 
 function remotePickWaypoint() {
   const a = Math.random() * Math.PI * 2;
   const r = TUNE.remoteOrbitMin + Math.random() * (TUNE.remoteOrbitMax - TUNE.remoteOrbitMin);
   const h = TUNE.remoteHMin + Math.random() * (TUNE.remoteHMax - TUNE.remoteHMin);
-  remote.from.copy(remote.pos); remote.to.set(Math.cos(a) * r, h, Math.sin(a) * r);
-  remote.travel = Math.max(0.6, remote.from.distanceTo(remote.to) / TUNE.remoteSpeed);
+  remote.from.copy(remote.base); remote.to.set(Math.cos(a) * r, h, Math.sin(a) * r);
+  remote.travel = Math.max(0.45, remote.from.distanceTo(remote.to) / (TUNE.remoteSpeed * TUNE.remoteAgility));
   remote.t = 0;
+}
+/* A shot went past its hull — break hard sideways. */
+function remoteJuke() {
+  const R = remote;
+  if (perf - R.lastJuke < 0.6 / TUNE.remoteAgility) return;
+  R.lastJuke = perf;
+  headPos(_head);
+  _tmp.copy(R.base).sub(_head); _tmp.y = 0;
+  if (_tmp.lengthSq() < 0.01) _tmp.set(0, 0, 1);
+  _tmp.normalize();
+  const side = Math.random() < 0.5 ? -1 : 1;
+  const px = -_tmp.z * side, pz = _tmp.x * side;
+  const step = 1.1 + Math.random() * 0.9;
+  let tx = R.base.x + px * step, tz = R.base.z + pz * step;
+  const rad = Math.sqrt(tx * tx + tz * tz) || 1;            // hold the orbit band
+  const want = Math.min(TUNE.remoteOrbitMax, Math.max(TUNE.remoteOrbitMin, rad));
+  tx *= want / rad; tz *= want / rad;
+  const ty = Math.min(TUNE.remoteHMax, Math.max(TUNE.remoteHMin,
+    R.base.y + (Math.random() - 0.5) * 0.7));
+  R.from.copy(R.base); R.to.set(tx, ty, tz);
+  R.travel = Math.max(0.22, R.from.distanceTo(R.to) / (TUNE.remoteSpeed * 2.1 * TUNE.remoteAgility));
+  R.t = 0;
+  AudioKit.feintOff();
 }
 
 /* ───────────────────── projectiles & targets ───────────────────── */
@@ -464,7 +559,8 @@ let targetRespawnQueue = [];
 function spawnTarget() {
   const color = TARGET_COLORS[Math.floor(Math.random() * TARGET_COLORS.length)];
   const mat = new THREE.MeshBasicMaterial({ color }); mat.name = 'Mat_LightTarget';
-  const m = new THREE.Mesh(new THREE.SphereGeometry(0.11, 16, 16), mat);
+  const m = new THREE.Mesh(new THREE.SphereGeometry(TUNE.targetRadius, 16, 16), mat);
+  m.scale.setScalar(TUNE.targetScale);
   m.name = 'LightTarget';
   const a = Math.random() * Math.PI * 2;
   const r = 1.4 + Math.random() * 3.0; // near ones are in bat'leth reach from the stage edge
@@ -478,12 +574,11 @@ function spawnTarget() {
 const shotFlashes = [];
 function flashLine(from, to, color, life, width) {
   const geo = new THREE.BufferGeometry().setFromPoints([from, to]);
-  const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.95 }); mat.name = 'Mat_PhaserBeam';
+  const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.95,
+    blending: THREE.AdditiveBlending }); mat.name = 'Mat_PhaserBeam';
   const line = new THREE.Line(geo, mat); line.name = 'PhaserBeamFlash';
-  scene.add(line); shotFlashes.push({ line, life, max: life, peak: 0.95 });
-  const core = new THREE.Mesh(new THREE.SphereGeometry(0.02, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffccd8 }));
-  core.name = 'MuzzleFlash'; core.position.copy(from); scene.add(core);
-  shotFlashes.push({ line: core, life: life * 0.6, max: life * 0.6 });
+  scene.add(line); shotFlashes.push({ line, life, max: life, peak: 0.95 * TUNE.beamBright });
+  // (no muzzle ball — the bolt itself is the whole effect)
 }
 
 /* the sustained beam: a wide red shaft with a hot white core */
@@ -499,13 +594,9 @@ function flashBeam(from, dir, len) {
     m.quaternion.copy(_beamQ.setFromUnitVectors(_beamUp, dir)); // cylinders stand on +Y by default
     scene.add(m); shotFlashes.push({ line: m, life: 0.05, max: 0.05, peak: opacity });
   };
-  mk(TUNE.beamRadius, 0xff0510, 0.60, 'PhaserBeamShaft');       // saturated red envelope
-  mk(TUNE.beamRadius * 0.26, 0xffccd8, 0.75, 'PhaserBeamCore');  // thin pink-white core (no orange bias)
-  const glow = new THREE.Mesh(new THREE.SphereGeometry(TUNE.beamRadius * 1.6, 12, 12),
-    new THREE.MeshBasicMaterial({ color: 0xff0a18, transparent: true, opacity: 0.7,
-      depthWrite: false, blending: THREE.AdditiveBlending }));
-  glow.name = 'BeamMuzzleGlow'; glow.position.copy(from);
-  scene.add(glow); shotFlashes.push({ line: glow, life: 0.08, max: 0.08, peak: 0.7 });
+  const b = TUNE.beamBright;
+  mk(TUNE.beamRadius, 0xff0510, 0.60 * b, 'PhaserBeamShaft');       // saturated red envelope
+  mk(TUNE.beamRadius * 0.26, 0xffccd8, 0.75 * b, 'PhaserBeamCore'); // thin pink-white core
 }
 
 /* pop effect: brief expanding shell */
@@ -546,7 +637,8 @@ function onRemoteTagged() {
   AudioKit.remoteTag(); popEffect(remote.pos, 0xfff3d6);
   game.tags++; addScore(TUNE.ptsRemoteTag); bumpStreak();
   toast('REMOTE TAGGED +' + TUNE.ptsRemoteTag);
-  remote.state = 'stalk'; remote.timer = TUNE.remoteStalkMax; remotePickWaypoint(); // interrupt its pattern
+  remote.state = 'stalk'; remote.timer = TUNE.remoteStalkMax / TUNE.remoteAgility;
+  remotePickWaypoint(); remote.lastJuke = -9; remoteJuke(); // knocked off its pattern
 }
 
 function onRemoteChipped() {
@@ -571,12 +663,18 @@ function onCleanDodge() { game.dodges++; addScore(TUNE.ptsDodge); bumpStreak(); 
 
 /* ───────────────────── firing ───────────────────── */
 const _rayO = new THREE.Vector3(), _rayD = new THREE.Vector3(), _toT = new THREE.Vector3();
-function coneHit(origin, dir, point, coneDeg, maxDist) {
-  _toT.copy(point).sub(origin); const d = _toT.length();
-  if (d < 0.05 || d > (maxDist || 40)) return -1;
-  const ang = _toT.normalize().angleTo(dir) * 180 / Math.PI;
-  return ang <= coneDeg ? d : -1;
+/* True ray test: how far off the line the object's centre sits, against its own radius.
+   TUNE.aimAssistDeg (0 by default) widens that radius with distance if you want help. */
+function rayHit(origin, dir, point, radius, extra) {
+  _toT.copy(point).sub(origin);
+  const along = _toT.dot(dir);
+  if (along < 0.05 || along > 40) return -1;
+  const perpSq = Math.max(0, _toT.lengthSq() - along * along);
+  const r = radius + (extra || 0) + Math.tan(TUNE.aimAssistDeg * Math.PI / 180) * along;
+  return (perpSq <= r * r) ? along : -1;
 }
+function targetRadius() { return TUNE.targetRadius * TUNE.targetScale; }
+const REMOTE_RADIUS = 0.16;
 
 const _vis = new THREE.Vector3();
 function getMuzzleRay(phaser, out0, outD) {
@@ -597,13 +695,15 @@ function fireBolt(phaser) {
   getMuzzleRay(phaser, _rayO, _rayD);
   game.shots++; AudioKit.phaserBolt(); haptic(phaser, 0.7, 40);
   let bestD = Infinity, bestKind = null, bestIdx = -1, hitPoint = null;
-  targets.forEach((t, i) => { const d = coneHit(_rayO, _rayD, t.position, TUNE.boltCone);
+  targets.forEach((t, i) => { const d = rayHit(_rayO, _rayD, t.position, targetRadius());
     if (d > 0 && d < bestD) { bestD = d; bestKind = 'target'; bestIdx = i; } });
-  stunBolts.forEach((b, i) => { const d = coneHit(_rayO, _rayD, b.position, TUNE.boltConeBolt);
+  stunBolts.forEach((b, i) => { const d = rayHit(_rayO, _rayD, b.position, TUNE.boltHitBolt);
     if (d > 0 && d < bestD) { bestD = d; bestKind = 'bolt'; bestIdx = i; } });
-  { const d = coneHit(_rayO, _rayD, remote.pos, TUNE.boltConeRemote); // remote is a target any time now
+  { const d = rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS); // remote is a target any time now
     if (d > 0 && d < bestD) { bestD = d; bestKind = (remote.state === 'vulnerable') ? 'remote' : 'chip'; } }
   if (bestKind) { game.hits++; hitPoint = _rayO.clone().add(_rayD.clone().multiplyScalar(bestD)); }
+  else if (rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS + 0.55) > 0 && Math.random() < TUNE.remoteJukeChance)
+    remoteJuke();  // shot went close — the remote saw it and breaks off
   const end = hitPoint || _rayO.clone().add(_rayD.clone().multiplyScalar(25));
   flashLine(_vis.clone(), end, 0xff1018, 0.09); // tap bolt reads red, same family as the beam
   if (bestKind === 'target') onTargetPop(bestIdx);
@@ -621,8 +721,8 @@ function beamTick(phaser, dt) {
   flashBeam(_vis.clone(), _rayD.clone(), 25);
   haptic(phaser, 0.35, 30);
   for (let i = targets.length - 1; i >= 0; i--)
-    if (coneHit(_rayO, _rayD, targets[i].position, TUNE.beamCone) > 0) { game.hits++; game.shots++; onTargetPop(i); }
-  if (coneHit(_rayO, _rayD, remote.pos, TUNE.beamCone) > 0) { // the beam counter-attacks too
+    if (rayHit(_rayO, _rayD, targets[i].position, targetRadius(), TUNE.beamSweep) > 0) { game.hits++; game.shots++; onTargetPop(i); }
+  if (rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS, TUNE.beamSweep) > 0) { // the beam counter-attacks too
     if (remote.state === 'vulnerable') { game.hits++; game.shots++; onRemoteTagged(); }
     else onRemoteChipped();
   }
@@ -746,22 +846,57 @@ function phaserTick(phaser, dt) {
 const vrControllers = [];
 const activeBlades = [];
 const hands = [];
+/* There is exactly one bat'leth. It lives in the rig, not in a hand, so either hand can
+   take it and both together can grip it. */
+const vrBlade = buildBatleth(); vrBlade.name = 'Batleth_Shared';
+vrBlade.visible = false; playerRig.add(vrBlade); activeBlades.push(vrBlade);
 for (let i = 0; i < 2; i++) {
   const c = renderer.xr.getController(i); c.name = 'Controller' + i;
-  const fc = buildPhaser();                       // 0 · First Contact pistol
-  const tng = buildType2TNG(); tng.visible = false; // 1 · TNG swept shell
-  const batleth = buildBatleth(); batleth.visible = false;
-  c.add(fc); c.add(tng); c.add(batleth);
-  activePhasers.push(fc, tng); activeBlades.push(batleth);
-  const hand = { weapons: [fc, tng, batleth], idx: 0, src: null, prevLower: false, prevUpper: false };
+  const fc = buildPhaser();                       // First Contact pistol
+  const tng = buildType2TNG(); tng.visible = false; // TNG swept shell
+  const slot = buildBladeSlot(); const none = buildEmptyHand();
+  c.add(fc); c.add(tng);
+  activePhasers.push(fc, tng);
+  const hand = { c, all: { fc, tng, batleth: slot, none }, weapons: [], idx: 0,
+                 src: null, prevLower: false, prevUpper: false };
   c.addEventListener('connected', e => { hand.src = e.data;
-    hand.weapons.forEach(w => w.userData.inputSource = e.data); });
+    [fc, tng].forEach(w => w.userData.inputSource = e.data); });
   c.addEventListener('disconnected', () => { hand.src = null;
-    hand.weapons.forEach(w => w.userData.inputSource = null); });
+    [fc, tng].forEach(w => w.userData.inputSource = null); });
   c.addEventListener('selectstart', () => handFire(hand, true, 'trigger'));
   c.addEventListener('selectend', () => handFire(hand, false, 'trigger'));
   c.addEventListener('squeezestart', () => cycleWeapon(hand, 1));
   playerRig.add(c); vrControllers.push(c); hands.push(hand);
+}
+
+/* Place the shared blade: one hand carries it, two hands grip it across the span. */
+const _bx = new THREE.Vector3(), _by = new THREE.Vector3(), _bz = new THREE.Vector3(),
+      _bmid = new THREE.Vector3(), _bm4 = new THREE.Matrix4();
+function bladeGripTick() {
+  const holders = hands.filter(h => h.weapons.length && handWeapon(h).userData.isBlade);
+  vrBlade.visible = renderer.xr.isPresenting && holders.length > 0;
+  if (!vrBlade.visible) { vrBlade.userData.prevValid = false; vrBlade.userData.twoHanded = false; return; }
+  vrBlade.userData.inputSource = holders[0].src;
+  if (holders.length === 1) {                       // carried in that hand, as authored
+    vrBlade.position.copy(holders[0].c.position);
+    vrBlade.quaternion.copy(holders[0].c.quaternion);
+    vrBlade.userData.twoHanded = false;
+  } else {                                          // gripped across both hands
+    const a = holders[0].c.position, b = holders[1].c.position;
+    _bx.copy(b).sub(a);
+    if (_bx.lengthSq() < 1e-4) _bx.set(1, 0, 0);
+    _bx.normalize();                                // span runs hand to hand
+    camera.getWorldPosition(_bmid);
+    _bz.copy(_bmid).sub(a); _bz.y *= 0.3;           // +Z toward you ⇒ the edge faces out
+    _bz.addScaledVector(_bx, -_bz.dot(_bx));
+    if (_bz.lengthSq() < 1e-4) _bz.set(0, 0, 1);
+    _bz.normalize();
+    _by.crossVectors(_bz, _bx).normalize();
+    _bm4.makeBasis(_bx, _by, _bz);
+    vrBlade.quaternion.setFromRotationMatrix(_bm4);
+    vrBlade.position.copy(a).add(b).multiplyScalar(0.5);
+    vrBlade.userData.twoHanded = true;
+  }
 }
 
 /* Quest face buttons (xr-standard: 4 = A/X lower, 5 = B/Y upper) are polled,
@@ -805,10 +940,10 @@ function bladeTick(b, dt) {
     const speed = u.prevValid ? _bw.distanceTo(u.prev[i]) / dt : 0;
     for (let j = stunBolts.length - 1; j >= 0; j--) {      // a block deflects even when still
       const bolt = stunBolts[j];
-      if (!bolt.userData.friendly && bolt.position.distanceTo(_bw) < TUNE.bladeDeflectRadius) deflectBolt(bolt, b);
+      if (!bolt.userData.friendly && bolt.position.distanceTo(_bw) < TUNE.bladeDeflectRadius * TUNE.bladeScale) deflectBolt(bolt, b);
     }
     if (speed > minSpeed) for (let j = targets.length - 1; j >= 0; j--) {  // popping takes a real swing
-      if (targets[j].position.distanceTo(_bw) < TUNE.bladePopRadius) { game.shots++; game.hits++; onTargetPop(j, TUNE.ptsMeleePop); haptic(b, 0.5, 40); }
+      if (targets[j].position.distanceTo(_bw) < TUNE.bladePopRadius * TUNE.bladeScale) { game.shots++; game.hits++; onTargetPop(j, TUNE.ptsMeleePop); haptic(b, 0.5, 40); }
     }
     u.prev[i].copy(_bw);
   }
@@ -827,9 +962,11 @@ function setupDesk() {
   t2.position.set(0.22, -0.20, -0.42); t2.userData.useCameraRay = true; t2.visible = false;
   camera.add(t2); activePhasers.push(t2);
   const bl = buildBatleth(); bl.name = 'Batleth_Desk';
-  bl.position.set(0, -0.30, -0.55); bl.visible = false;
+  bl.position.set(0, -0.34, -0.62); bl.visible = false;
   camera.add(bl); desk.batleth = bl; activeBlades.push(bl);
-  desk.hand = { weapons: [p, t2, bl], idx: 0, desk: true };
+  const none = buildEmptyHand(); camera.add(none);
+  desk.hand = { all: { fc: p, tng: t2, batleth: bl, none }, weapons: [], idx: 0, desk: true };
+  rebuildRacks();
   const cv = renderer.domElement;
   cv.addEventListener('click', () => { if (game.mode === 'desk' && !desk.locked) lockPointer(cv); });
   document.addEventListener('pointerlockchange', () => { desk.locked = document.pointerLockElement === cv; });
@@ -861,22 +998,75 @@ function deskTick(dt) {
   camera.position.y += ((duck ? 1.05 : 1.6) - camera.position.y) * Math.min(1, dt * 10);
 }
 
+/* ───────────────────── settings ─────────────────────
+   The dials worth arguing about live here, not in the code. Saved per browser. */
+const DEFAULTS = { telegraph: 0.55, assist: 0, targetScale: 0.75, agility: 1.0, brightness: 0.72,
+                   weapons: { fc: true, tng: true, batleth: true, none: true } };
+const SETTINGS = JSON.parse(JSON.stringify(DEFAULTS));
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem('phaserRange.settings');
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    Object.assign(SETTINGS, saved);
+    SETTINGS.weapons = Object.assign({}, DEFAULTS.weapons, saved.weapons || {});
+  } catch (e) { /* private window or blocked storage — defaults are fine */ }
+}
+function saveSettings() {
+  try { localStorage.setItem('phaserRange.settings', JSON.stringify(SETTINGS)); } catch (e) {}
+}
+function applySettings() {
+  TUNE.telegraph = SETTINGS.telegraph;
+  TUNE.telegraphFloor = Math.max(0.22, SETTINGS.telegraph - 0.15);
+  TUNE.aimAssistDeg = SETTINGS.assist;
+  TUNE.targetScale = SETTINGS.targetScale;
+  TUNE.remoteAgility = SETTINGS.agility;
+  TUNE.beamBright = SETTINGS.brightness;
+  targets.forEach(t => t.scale.setScalar(TUNE.targetScale));
+}
+function rackFor(hand) {
+  const w = [];
+  if (SETTINGS.weapons.fc) w.push(hand.all.fc);
+  if (SETTINGS.weapons.tng) w.push(hand.all.tng);
+  if (SETTINGS.weapons.batleth) w.push(hand.all.batleth);
+  if (SETTINGS.weapons.none) w.push(hand.all.none);
+  if (!w.length) w.push(hand.all.fc);          // never leave a hand with nothing to cycle to
+  return w;
+}
+function rebuildRacks() {
+  const racks = hands.slice();
+  if (desk.hand) racks.push(desk.hand);
+  racks.forEach(h => {
+    const held = h.weapons[h.idx];
+    h.weapons = rackFor(h);
+    const at = h.weapons.indexOf(held);
+    h.idx = at >= 0 ? at : 0;
+    Object.keys(h.all).forEach(k => { const w = h.all[k];
+      w.visible = (w === h.weapons[h.idx]) && (h.desk ? game.mode === 'desk' : true); });
+  });
+}
+loadSettings(); applySettings(); rebuildRacks();
+
 /* ───────────────────── remote brain ───────────────────── */
 const _head = new THREE.Vector3(), _tmp = new THREE.Vector3();
 function headPos(out) { camera.getWorldPosition(out); return out; }
 
 function remoteTick(dt) {
-  const R = remote;
-  // motion
-  if (R.state === 'stalk') {
-    R.t += dt / R.travel;
-    if (R.t >= 1) { remotePickWaypoint(); }
-    const s = R.t < 1 ? R.t * R.t * (3 - 2 * R.t) : 1;
-    R.pos.lerpVectors(R.from, R.to, s);
-  } else if (R.state === 'vulnerable') {
-    R.pos.y += Math.sin(perf * 8) * 0.002; // wounded wobble
-  }
-  R.pos.y += Math.sin(perf * 2.1) * 0.0012; // idle hover
+  const R = remote, ag = TUNE.remoteAgility;
+  // motion — it never fully stops now; it only steadies a little to aim
+  R.t += (dt / R.travel) * (R.state === 'telegraph' ? 0.5 : 1);
+  if (R.t >= 1) remotePickWaypoint();
+  const s = R.t < 1 ? R.t * R.t * (3 - 2 * R.t) : 1;
+  R.base.lerpVectors(R.from, R.to, s);
+  // constant lateral weave around the path, plus hover
+  headPos(_head);
+  _tmp.copy(R.base).sub(_head); _tmp.y = 0;
+  if (_tmp.lengthSq() < 0.01) _tmp.set(0, 0, 1);
+  _tmp.normalize();
+  const weave = Math.sin(perf * 1.9 * ag + R.phase) * TUNE.remoteStrafe;
+  R.pos.set(R.base.x - _tmp.z * weave, R.base.y, R.base.z + _tmp.x * weave);
+  R.pos.y += Math.sin(perf * 2.3 * ag + R.phase) * 0.05
+           + (R.state === 'vulnerable' ? Math.sin(perf * 9) * 0.03 : 0); // wounded wobble
   R.g.position.copy(R.pos);
   R.g.lookAt(headPos(_head));
   // state clock
@@ -888,7 +1078,8 @@ function remoteTick(dt) {
     headPos(_head); spawnStunBolt(R.g.localToWorld(_tmp.set(0, 0, 0.15)), _head, boltSpeedNow());
     AudioKit.stunFire(); AudioKit.vulnFlare();
   } else if (R.state === 'vulnerable' && R.timer <= 0) {
-    R.state = 'stalk'; R.timer = TUNE.remoteStalkMin + Math.random() * (TUNE.remoteStalkMax - TUNE.remoteStalkMin);
+    R.state = 'stalk';
+    R.timer = (TUNE.remoteStalkMin + Math.random() * (TUNE.remoteStalkMax - TUNE.remoteStalkMin)) / ag;
     remotePickWaypoint();
   }
   // silhouette-readable emitter
@@ -939,7 +1130,7 @@ function targetsTick(dt) {
   while (targets.length < targetsMaxNow() && targetRespawnQueue.length === 0 && game.running) spawnTarget();
   targets.forEach(t => {
     const u = t.userData; u.pulse += dt * 3;
-    t.scale.setScalar(1 + Math.sin(u.pulse) * 0.12);
+    t.scale.setScalar(TUNE.targetScale * (1 + Math.sin(u.pulse) * 0.12));
     if (u.dart) { u.dartT += dt / u.dart.dur;
       if (u.dartT >= 1) { u.base.copy(u.dart.to); u.dart = null; }
       else { const s = u.dartT * u.dartT * (3 - 2 * u.dartT); t.position.lerpVectors(u.dart.from, u.dart.to, s); return; } }
@@ -1067,6 +1258,53 @@ btnVR.addEventListener('click', async () => {
 });
 btnDesk.addEventListener('click', () => startProgram('desk'));
 
+/* settings panel */
+const settingsEl = document.getElementById('settings');
+const btnSettings = document.getElementById('btn-settings');
+btnSettings.addEventListener('click', () => {
+  const open = settingsEl.hidden;
+  settingsEl.hidden = !open;
+  btnSettings.setAttribute('aria-expanded', String(open));
+});
+const CONTROLS = [
+  { id: 's-tel', out: 'o-tel', key: 'telegraph',   fmt: v => v.toFixed(2) + 's' },
+  { id: 's-agi', out: 'o-agi', key: 'agility',     fmt: v => '×' + v.toFixed(1) },
+  { id: 's-ast', out: 'o-ast', key: 'assist',      fmt: v => v === 0 ? 'off' : v.toFixed(1) + '°' },
+  { id: 's-tsz', out: 'o-tsz', key: 'targetScale', fmt: v => '×' + v.toFixed(2) },
+  { id: 's-bri', out: 'o-bri', key: 'brightness',  fmt: v => Math.round(v * 100) + '%' },
+];
+const RACK_BOXES = [ { id: 'w-fc', key: 'fc' }, { id: 'w-tng', key: 'tng' },
+                     { id: 'w-bat', key: 'batleth' }, { id: 'w-none', key: 'none' } ];
+function syncSettingsUI() {
+  CONTROLS.forEach(c => {
+    const el = document.getElementById(c.id);
+    el.value = SETTINGS[c.key];
+    document.getElementById(c.out).textContent = c.fmt(Number(SETTINGS[c.key]));
+  });
+  RACK_BOXES.forEach(b => { document.getElementById(b.id).checked = !!SETTINGS.weapons[b.key]; });
+}
+CONTROLS.forEach(c => {
+  document.getElementById(c.id).addEventListener('input', e => {
+    SETTINGS[c.key] = Number(e.target.value);
+    document.getElementById(c.out).textContent = c.fmt(SETTINGS[c.key]);
+    applySettings(); saveSettings();
+  });
+});
+RACK_BOXES.forEach(b => {
+  document.getElementById(b.id).addEventListener('change', e => {
+    SETTINGS.weapons[b.key] = e.target.checked;
+    if (!RACK_BOXES.some(x => SETTINGS.weapons[x.key])) {   // never empty the rack
+      SETTINGS.weapons.fc = true; syncSettingsUI();
+    }
+    rebuildRacks(); saveSettings();
+  });
+});
+document.getElementById('btn-reset').addEventListener('click', () => {
+  Object.assign(SETTINGS, JSON.parse(JSON.stringify(DEFAULTS)));
+  syncSettingsUI(); applySettings(); rebuildRacks(); saveSettings();
+});
+syncSettingsUI();
+
 /* desktop DOM HUD mirrors */
 const hScore = document.getElementById('h-score'), hStreak = document.getElementById('h-streak'),
       hWave = document.getElementById('h-wave'), beamFill = document.getElementById('beamfill'),
@@ -1086,6 +1324,7 @@ renderer.setAnimationLoop((time) => {
   vrControllers.forEach(c => c.visible = renderer.xr.isPresenting);
   if (desk.hand) desk.hand.weapons.forEach((w, i) => w.visible = (game.mode === 'desk' && i === desk.hand.idx));
   if (renderer.xr.isPresenting) pollHandButtons();
+  bladeGripTick();
   if (game.mode === 'desk') deskTick(dt);
   if (game.running || game.over) {
     remoteTick(dt);

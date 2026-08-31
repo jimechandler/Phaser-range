@@ -166,7 +166,9 @@
         <h2>Velocity</h2>
         <div class="row"><label for="s-disc">Serve speed</label>
           <input type="range" id="s-disc" min="1.5" max="6" step="0.25"><output id="o-disc"></output></div>
-        <p class="hint">How fast the disc opens the rally. Every strike sends it back harder.</p>
+        <div class="row"><label for="s-court">Court size</label>
+          <input type="range" id="s-court" min="2.5" max="5.6" step="0.1"><output id="o-court"></output></div>
+        <p class="hint">Serve pace, and how far the walls stand. 3.4 is the classic court; 5.6 fills the whole arena.</p>
 
         <h2>Aim</h2>
         <div class="row"><label for="s-ast">Assist</label>
@@ -194,8 +196,8 @@
         <dt>Velocity</dt><dd>Shots ricochet the disc off at an angle &mdash; square it up to send it straight back. Take it in the head or chest and it costs a pip</dd>
         <dt>Trigger hold</dt><dd>Wide red beam &mdash; sweeps several targets at once, then recharges</dd>
         <dt>Thumb key</dt><dd>B / Y fires as well &mdash; the way the swept TNG shell is meant to be worked</dd>
-        <dt>A / X or grip</dt><dd>Cycle that hand through whatever you left in the rotation</dd>
-        <dt>Thumbstick</dt><dd>Flick right to raise the power setting, left to lower it &mdash; ten detents, stun to kill, the lamp runs green to red (desktop: mouse wheel). Click the stick to pause</dd>
+        <dt>A / X or grip</dt><dd>Tap to cycle that hand's weapons &mdash; <b>hold A / X 0.6&thinsp;s to pause</b> (a fresh press on the pause card ends the program)</dd>
+        <dt>Thumbstick</dt><dd>Flick right to raise the power setting, left to lower it &mdash; ten detents, stun to kill, the lamp runs green to red (desktop: mouse wheel)</dd>
         <dt>Your body</dt><dd>Dodge stun bolts physically — sidestep, duck</dd>
         <dt>Bat'leth</dt><dd>One blade, either hand &mdash; take it in the other hand to pass it, or hold it in both for a two-handed grip. Deflects stun bolts even held still; a returned bolt that hits the remote pays 200</dd>
         <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD step · Shift duck · B or 1/2/3 to change weapon</dd>
@@ -216,7 +218,7 @@
       <button class="lcars" id="btn-resume">Resume</button>
       <button class="lcars alt" id="btn-quit">Main menu</button>
     </div>
-    <p class="footnote">P or thumbstick click pauses. In the headset: trigger resumes, A / X returns here.</p>
+    <p class="footnote">Desktop: P pauses. Headset: hold A / X 0.6&thinsp;s to pause; trigger resumes, a fresh A / X press returns here.</p>
   </div>
 </div>
 
@@ -292,7 +294,7 @@ const TUNE = {
   discRadius: 0.10,        // m — the canon disc is about eight inches
   discSpeed: 3.0,          // m/s serve
   discSpeedMax: 11.0,
-  courtX: 5.6, courtZ: 5.6, courtY: 3.2,       // m half-extents / height — same room as the range arena (arenaRMax / arenaYMax)
+  courtX: 3.4, courtZ: 3.4, courtY: 3.0,       // m half-extents / height — a Court size dial in settings
   ptsDiscStrike: 50,
   discStrikesPerLevel: 6,
   discSeekDelay: 2.6,      // s of free ricochet before the disc starts hunting you
@@ -724,7 +726,10 @@ function popEffect(pos, color) {
    A disc runs the court until it hits you. You knock it back with the phaser;
    every strike it comes back faster. */
 const court = new THREE.Group(); court.name = 'VelocityCourt'; court.visible = false; scene.add(court);
-{
+function rebuildCourtGrid() {
+  if (court.userData.builtX === TUNE.courtX) return;
+  court.userData.builtX = TUNE.courtX;
+  while (court.children.length) court.remove(court.children[0]);
   const X = TUNE.courtX, Z = TUNE.courtZ, Y = TUNE.courtY, step = 0.85;
   const grid = [], edge = [];
   const L = (a, b, c, d, e, f) => grid.push(a, b, c, d, e, f);
@@ -756,6 +761,7 @@ const court = new THREE.Group(); court.name = 'VelocityCourt'; court.visible = f
   mk(grid, 0.13, 'CourtGrid');
   mk(edge, 0.45, 'CourtEdges');
 }
+rebuildCourtGrid();
 
 const VEL = (() => {
   const shell = new THREE.MeshStandardMaterial({ color: 0xdde3ec, metalness: 0.92, roughness: 0.22 });
@@ -782,22 +788,6 @@ function courtRayLimit(o, d) {
   face(o.y, d.y, 0.02, TUNE.courtY);
   return t;
 }
-/* Where a beam lands on the wall: a splash that lingers, so a sweep leaves a glowing trail. */
-function wallGlow(point, towardShooter, big) {
-  const disc = new THREE.Mesh(new THREE.CircleGeometry(big ? 0.11 : 0.07, 12),
-    new THREE.MeshBasicMaterial({ color: 0xff2a1a, transparent: true, opacity: 0.8,
-      depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
-  disc.name = 'WallGlow'; disc.material.name = 'Mat_WallGlow';
-  disc.position.copy(point).addScaledVector(towardShooter, 0.015);
-  disc.lookAt(_tmp.copy(point).add(towardShooter));
-  scene.add(disc); shotFlashes.push({ line: disc, life: 0.5, max: 0.5, peak: 0.8 });
-  const core = new THREE.Mesh(new THREE.SphereGeometry(0.02, 8, 8),
-    new THREE.MeshBasicMaterial({ color: 0xffccd8, transparent: true, opacity: 0.9,
-      depthWrite: false, blending: THREE.AdditiveBlending }));
-  core.name = 'WallGlowCore'; core.position.copy(disc.position);
-  scene.add(core); shotFlashes.push({ line: core, life: 0.18, max: 0.18, peak: 0.9 });
-}
-
 function velocityServe(delay) { VEL.live = false; VEL.serveT = delay || 1.2; VEL.disc.visible = false; }
 function velocityLaunch() {
   headPos(_head);
@@ -1015,7 +1005,6 @@ function fireBolt(phaser) {
   if (!end) {
     const reach = game.program === 'velocity' ? Math.min(25, courtRayLimit(_rayO, _rayD)) : 25;
     end = _rayO.clone().addScaledVector(_rayD, reach);
-    if (game.program === 'velocity') wallGlow(end, _rayD.clone().multiplyScalar(-1), true);
   }
   flashLine(_vis.clone(), end, 0xff1018, 0.09); // tap bolt reads red, same family as the beam
   if (bestKind === 'target') damageTarget(bestIdx, boltDamage(phaser));
@@ -1035,8 +1024,6 @@ function beamTick(phaser, dt) {
   if (game.program === 'velocity') {
     reach = Math.min(25, courtRayLimit(_rayO, _rayD));
     const hitPt = _rayO.clone().addScaledVector(_rayD, reach);
-    const u = phaser.userData;
-    if (gt - (u.glowT ?? -9) > 0.045) { u.glowT = gt; wallGlow(hitPt, _rayD.clone().multiplyScalar(-1)); }
     const vDir = hitPt.sub(_vis); const vLen = Math.max(0.1, vDir.length()); vDir.normalize();
     flashBeam(_vis.clone(), vDir, vLen);
   } else {
@@ -1152,7 +1139,7 @@ function showPausePanel() {
   c.fillStyle = '#f2c14e'; c.font = dsp(64, 700); c.fillText('PROGRAM SUSPENDED', 110, 48);
   c.fillStyle = '#e8e4d8'; c.font = dsp(40, 400);
   c.fillText('TRIGGER — RESUME', 110, 160);
-  c.fillText('A / X — MAIN MENU', 110, 222);
+  c.fillText('A / X (FRESH PRESS) — MAIN MENU', 110, 222);
   c.fillStyle = '#8d8a7b'; c.font = dsp(30, 400);
   c.fillText('SCORE ' + game.score + '   ·   ' +
     (game.program === 'velocity' ? 'STRIKES ' + game.strikes : 'WAVE ' + game.wave), 110, 300);
@@ -1366,12 +1353,16 @@ function pollHandButtons() {
     const upper = !!(gp.buttons[5] && gp.buttons[5].pressed);
     const stick = !!(gp.buttons[3] && gp.buttons[3].pressed);   // thumbstick click
     const ax = (gp.axes && gp.axes.length > 2) ? gp.axes[2] : 0; // thumbstick x
-    if (stick && !hand.prevStick) togglePause();
+    if (stick && !hand.prevStick) togglePause();                // stick click still works where supported
     if (game.paused) {
-      if (lower && !hand.prevLower) quitToMenu();               // A/X ends the program from pause
+      if (lower && !hand.prevLower) quitToMenu();               // a FRESH A/X press ends the program
       if (upper && !hand.prevUpper) togglePause();              // any fire key resumes
+      hand.lowerT = 0; hand.lowerFired = true;                  // the press that paused us is spent
     } else {
-      if (lower && !hand.prevLower) cycleWeapon(hand, 1);
+      // A/X: tap cycles the weapon, holding 0.6 s calls the pause — a binding every controller has
+      if (lower && !hand.prevLower) { hand.lowerT = perf; hand.lowerFired = false; }
+      if (lower && !hand.lowerFired && perf - hand.lowerT > 0.6) { hand.lowerFired = true; setPause(true); }
+      if (!lower && hand.prevLower && !hand.lowerFired) cycleWeapon(hand, 1);
       if (upper !== hand.prevUpper) handFire(hand, upper, 'thumb');
       const w = hand.weapons.length ? handWeapon(hand) : null;
       const pAx = hand.prevAx === undefined ? 0 : hand.prevAx;  // first flick after connect must count
@@ -1490,7 +1481,7 @@ function deskTick(dt) {
 /* ───────────────────── settings ─────────────────────
    The dials worth arguing about live here, not in the code. Saved per browser. */
 const DEFAULTS = { telegraph: 0.55, assist: 0, targetScale: 0.75, agility: 1.0, brightness: 0.72,
-                   targetHP: 3, fleeSpeed: 3.4, discSpeed: 3.0,
+                   targetHP: 3, fleeSpeed: 3.4, discSpeed: 3.0, courtSize: 3.4,
                    weapons: { fc: true, tng: true, batleth: true, none: true } };
 const SETTINGS = JSON.parse(JSON.stringify(DEFAULTS));
 function loadSettings() {
@@ -1515,6 +1506,8 @@ function applySettings() {
   TUNE.targetHP = SETTINGS.targetHP;
   TUNE.targetFleeSpeed = SETTINGS.fleeSpeed;
   TUNE.discSpeed = SETTINGS.discSpeed;
+  TUNE.courtX = TUNE.courtZ = SETTINGS.courtSize;
+  rebuildCourtGrid();
   targets.forEach(t => { t.userData.hpMax = TUNE.targetHP;
     t.userData.hp = Math.min(t.userData.hp, TUNE.targetHP); });
 }
@@ -1855,6 +1848,7 @@ const CONTROLS = [
   { id: 's-thp', out: 'o-thp', key: 'targetHP',    fmt: v => v + (v === 1 ? ' hit' : ' hits') },
   { id: 's-flee', out: 'o-flee', key: 'fleeSpeed', fmt: v => v === 0 ? 'holds still' : v.toFixed(1) + ' m/s' },
   { id: 's-disc', out: 'o-disc', key: 'discSpeed', fmt: v => v.toFixed(2) + ' m/s' },
+  { id: 's-court', out: 'o-court', key: 'courtSize', fmt: v => '±' + v.toFixed(1) + ' m' },
 ];
 const RACK_BOXES = [ { id: 'w-fc', key: 'fc' }, { id: 'w-tng', key: 'tng' },
                      { id: 'w-bat', key: 'batleth' }, { id: 'w-none', key: 'none' } ];

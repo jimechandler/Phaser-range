@@ -216,10 +216,11 @@
         <dt>A / X or grip</dt><dd>Tap to cycle that hand's weapons &mdash; <b>hold A / X 0.6&thinsp;s to pause</b> (a fresh press on the pause card ends the program)</dd>
         <dt>Thumbstick</dt><dd>Flick right to raise the power setting, left to lower it &mdash; ten detents, stun to kill, the lamp runs green to red (desktop: mouse wheel)</dd>
         <dt>Your body</dt><dd>Dodge stun bolts physically — sidestep, duck</dd>
-        <dt>Bat'leth</dt><dd>One blade, either hand &mdash; take it in the other hand to pass it, or hold it in both for a two-handed grip. Deflects stun bolts even held still; a returned bolt that hits the remote pays 200</dd>
+        <dt>Bat'leth</dt><dd>Over your <b>left shoulder</b>. Either hand, or both for a two-handed grip. Deflects stun bolts even held still; a returned bolt that hits the remote pays 200</dd>
+        <dt>Throw a blade</dt><dd>Grip while swinging hard and it <b>flies and sticks</b> where it lands &mdash; grip near it again to pull it free (desktop: G throws, F recovers)</dd>
         <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD roams the whole room · Shift sprint · <b>Space dash</b> (dodge!) · C duck · wheel sets power · B or 1/2/3 weapon · P pause</dd>
       </dl>
-      <p class="footnote">M0.16 feel prototype — telegraph timing, phaser feel, and a first bat'leth. On Quest, open this
+      <p class="footnote">M0.17 feel prototype — telegraph timing, phaser feel, and a first bat'leth. On Quest, open this
         page in the headset browser. If the Enter button stays unavailable inside an embedded viewer,
         open the page in its own tab.</p>
       <p class="footnote" id="diag" style="font-family:monospace;font-size:11px;color:#6a6a5c;line-height:1.6"></p>
@@ -300,6 +301,9 @@ const TUNE = {
   boltLen: 0.152,          // m — a six-inch slug
   boltRadius: 0.030,
   boltFlySpeed: 46,        // m/s: fast, but you can see it go
+  boltLife: 2.6,           // s before a stray round burns out
+  boltMaxBounces: 4,       // wall ricochets a miss gets in the court
+  boltBounceLoss: 0.55,    // energy kept per bounce
   beamBright: 0.72,        // 0–1 overall beam luminance
   holdThreshold: 0.14,     // s trigger held before tap becomes beam
   // — light-targets —
@@ -354,6 +358,9 @@ const TUNE = {
   // — bat'leth —
   ptsMeleePop: 35, ptsDeflect: 50, ptsReturn: 200,
   bladeSwingSpeed: 1.2,    // m/s blade speed needed to pop a target (desktop: 0.8)
+  throwSpeed: 2.2,         // m/s of hand movement that turns a release into a throw
+  throwBoost: 1.35,
+  throwGravity: 7.5,
   bladeScale: 1.25,        // the blade wanted more presence in the hand
   bladePopRadius: 0.16, bladeDeflectRadius: 0.22,
   deflectSpeedBoost: 1.6,  // returned bolts fly this much faster
@@ -581,14 +588,14 @@ function buildType2TNG() {
   const muzzle = new THREE.Object3D(); muzzle.name = 'Muzzle';
   muzzle.position.copy(tip.position); m.add(muzzle);
   // power strip across the shell: the lamp slides left (stun) to right (kill)
-  const rail = new THREE.Mesh(new THREE.BoxGeometry(0.032, 0.003, 0.008), panel);
-  rail.name = 'PowerRail'; rail.position.set(0, 0.0555, -0.020); rail.rotation.x = -0.10; m.add(rail);
+  addPowerScale(m, 0, 0.0555, -0.020, 0.030, 'x');
   const lampMat2 = new THREE.MeshBasicMaterial({ color: 0x22cc44 }); lampMat2.name = 'Mat_PowerLamp';
   const slider = new THREE.Mesh(new THREE.SphereGeometry(0.0035, 8, 8), lampMat2);
   slider.name = 'PowerLampTNG'; slider.position.set(-0.013, 0.058, -0.020); m.add(slider);
   g.userData.muzzle = muzzle; g.userData.tip = tip;
   g.userData.power = 5; g.userData.powerLamp = lampMat2; g.userData.powerSlider = slider;
-  g.userData.gauge = addBatteryGauge(m, -0.025, 0.028, -0.02, 0.008, 0.030);
+  g.userData.sliderAxis = 'x'; g.userData.sliderFrom = -0.013; g.userData.sliderTo = 0.013;
+  g.userData.gauge = addBatteryGauge(m, -0.025, 0.028, -0.02, 0.008, 0.034);
   g.userData.isGun = true; g.userData.label = 'PHASER · TNG TYPE 2';
   return g;
 }
@@ -599,33 +606,36 @@ function buildBatleth() {
   const steel = new THREE.MeshStandardMaterial({ color: 0xb9bec8, metalness: 0.9, roughness: 0.35 }); steel.name = 'Mat_BladeSteel';
   const wrap  = new THREE.MeshStandardMaterial({ color: 0x2a2024, metalness: 0.1, roughness: 0.9 });  wrap.name  = 'Mat_HandleWrap';
   const g = new THREE.Group(); g.name = 'Batleth';
-  const inner = new THREE.Group(); inner.name = 'BatlethBladeAssembly'; // authored flat in XY, laid horizontal below
+  const body = new THREE.Group(); body.name = 'BatlethBladeAssembly'; // authored flat in XY, laid horizontal below
+  const inner_add = (m) => body.add(m);
+  // one flat piece of steel: the handle side is a clean crescent, the blade side
+  // carries six points
+  const S = 0.58, N = 6, STEPS = N * 9;
+  const inner = (x) => 0.020 + 0.052 * (1 - (x / S) * (x / S));          // crescent you hold
+  const outer = (x, t) => -0.024 - 0.088 * (1 - (x / S) * (x / S))       // the belly of the blade
+                          - 0.055 * Math.abs(Math.sin(Math.PI * N * t)); // …scalloped into six points
   const s = new THREE.Shape();
-  s.moveTo(-0.54, 0.02);
-  s.quadraticCurveTo(0, -0.16, 0.54, 0.02);   // leading edge bows away — tips are two of the four points
-  s.quadraticCurveTo(0, -0.05, -0.54, 0.02);  // trailing edge
-  const blade = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth: 0.012, bevelEnabled: false }), steel);
-  blade.name = 'BatlethBlade'; blade.position.z = -0.006; inner.add(blade);
-  [-0.19, 0.19].forEach((x, i) => {           // the two mid spikes
-    const spike = new THREE.Mesh(new THREE.ConeGeometry(0.016, 0.09, 8), steel);
-    spike.name = 'BatlethSpike' + (i + 1);
-    spike.rotation.z = Math.PI; spike.position.set(x, -0.095, 0); inner.add(spike);
-  });
-  [-0.30, 0, 0.30].forEach((x, i) => {        // three handholds on the trailing edge
+  s.moveTo(-S, inner(-S));
+  for (let k = 1; k <= STEPS; k++) { const x = -S + 2 * S * (k / STEPS); s.lineTo(x, inner(x)); }
+  for (let k = STEPS; k >= 0; k--) { const t = k / STEPS; s.lineTo(-S + 2 * S * t, outer(-S + 2 * S * t, t)); }
+  s.lineTo(-S, inner(-S));
+  const blade = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth: 0.011, bevelEnabled: true,
+    bevelThickness: 0.0025, bevelSize: 0.0025, bevelSegments: 1, curveSegments: 2 }), steel);
+  blade.name = 'BatlethBlade'; blade.position.z = -0.0055; inner_add(blade);
+  [-0.30, 0, 0.30].forEach((x, i) => {        // three handholds along the crescent
     const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.11, 10), wrap);
     grip.name = 'BatlethGrip' + (i + 1);
-    grip.rotation.z = Math.PI / 2; grip.position.set(x, 0.045, 0); inner.add(grip);
+    grip.rotation.z = Math.PI / 2; grip.position.set(x, inner(x) + 0.018, 0); inner_add(grip);
   });
-  const samples = [];                          // collision samples along the leading edge
-  for (let i = 0; i <= 8; i++) {
-    const t = i / 8, mt = 1 - t;
-    const x = mt * mt * -0.54 + t * t * 0.54;
-    const y = mt * mt * 0.02 + 2 * mt * t * -0.16 + t * t * 0.02;
-    const o = new THREE.Object3D(); o.name = 'BladeSample' + i; o.position.set(x, y - 0.015, 0);
-    inner.add(o); samples.push(o);
+  const samples = [];                          // collision samples along the six-point edge
+  for (let i = 0; i <= 10; i++) {
+    const t = i / 10, x = -S + 2 * S * t;
+    const o = new THREE.Object3D(); o.name = 'BladeSample' + i;
+    o.position.set(x, outer(x, t) - 0.008, 0);
+    body.add(o); samples.push(o);
   }
-  inner.rotation.x = Math.PI / 2;              // lie flat: leading edge points away, handholds toward you
-  g.add(inner);
+  body.rotation.x = Math.PI / 2;               // lie flat: blade edge away, handholds toward you
+  g.add(body);
   g.scale.setScalar(TUNE.bladeScale);
   g.userData.isBladeObject = true;
   g.userData.isBlade = true; g.userData.label = "BAT'LETH";
@@ -635,23 +645,47 @@ function buildBatleth() {
   return g;
 }
 
-/* A charge cell you can read at a glance: it empties downward and runs green → red. */
+/* The charge cell: ten blue bars that go out one at a time. Blue is the CELL —
+   the green-to-red lamp beside it is the power setting, a different thing entirely. */
+const CELL_LIT = 0x3fa9ff, CELL_OUT = 0x0d2130;
 function addBatteryGauge(model, x, y, z, w, h) {
-  const housing = new THREE.Mesh(new THREE.BoxGeometry(w + 0.005, h + 0.005, 0.004),
-    new THREE.MeshStandardMaterial({ color: 0x17191d, metalness: 0.5, roughness: 0.6 }));
+  const N = 10;
+  const housing = new THREE.Mesh(new THREE.BoxGeometry(w + 0.005, h + 0.006, 0.004),
+    new THREE.MeshStandardMaterial({ color: 0x14171b, metalness: 0.5, roughness: 0.6 }));
   housing.material.name = 'Mat_CellHousing'; housing.name = 'BatteryHousing';
   housing.position.set(x, y, z); model.add(housing);
-  const mat = new THREE.MeshBasicMaterial({ color: 0x33dd55 }); mat.name = 'Mat_CellCharge';
-  const cell = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.006), mat);
-  cell.name = 'BatteryCell'; cell.position.set(x, y, z + 0.001); model.add(cell);
-  return { cell, mat, baseY: y, fullH: h };
+  const pitch = h / N, barH = pitch * 0.66;
+  const cells = [];
+  for (let i = 0; i < N; i++) {
+    const mat = new THREE.MeshBasicMaterial({ color: CELL_LIT }); mat.name = 'Mat_CellBar';
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(w, barH, 0.006), mat);
+    bar.name = 'CellBar' + (i + 1);
+    bar.position.set(x, y - h / 2 + pitch * (i + 0.5), z + 0.0012);
+    model.add(bar); cells.push(bar);
+  }
+  return { cells, cell: cells[0], baseY: y, fullH: h };
 }
 function updateBatteryGauge(w) {
-  const g = w.userData.gauge; if (!g) return;
+  const g = w.userData.gauge; if (!g || !g.cells) return;
   const lv = Math.max(0, Math.min(1, w.userData.battery / w.userData.batteryMax));
-  g.cell.scale.y = Math.max(0.03, lv);
-  g.cell.position.y = g.baseY - g.fullH / 2 + (g.fullH * Math.max(0.03, lv)) / 2;
-  g.mat.color.setHSL(0.33 * lv, 1.0, 0.5);
+  const lit = Math.ceil(lv * g.cells.length - 1e-6);
+  for (let i = 0; i < g.cells.length; i++) g.cells[i].material.color.setHex(i < lit ? CELL_LIT : CELL_OUT);
+}
+/* Green at the low end of the dial, red at the high end — the scale you read the lamp against. */
+function addPowerScale(model, x, y, z, len, axis) {
+  const rail = new THREE.Mesh(new THREE.BoxGeometry(axis === 'x' ? len : 0.006, 0.004,
+    axis === 'z' ? len : 0.006),
+    new THREE.MeshStandardMaterial({ color: 0x24272c, metalness: 0.5, roughness: 0.7 }));
+  rail.material.name = 'Mat_PowerRail'; rail.name = 'PowerScaleRail';
+  rail.position.set(x, y, z); model.add(rail);
+  [['Low', 0x22cc44, -1], ['High', 0xe5484d, 1]].forEach(([nm, col, sgn]) => {
+    const pip = new THREE.Mesh(new THREE.SphereGeometry(0.0028, 8, 8),
+      new THREE.MeshBasicMaterial({ color: col }));
+    pip.material.name = 'Mat_PowerPip' + nm; pip.name = 'PowerPip' + nm;
+    pip.position.set(x + (axis === 'x' ? sgn * len / 2 : 0), y + 0.004,
+                     z + (axis === 'z' ? sgn * len / 2 : 0));
+    model.add(pip);
+  });
 }
 
 /* — the d'k tahg: Klingon dagger, main blade with two forward side blades — */
@@ -723,12 +757,17 @@ function buildRifle() {
   const tip = new THREE.Mesh(new THREE.SphereGeometry(0.011, 12, 12), emit);
   tip.name = 'RifleTip'; tip.position.set(0, 0.018, -0.545); m.add(tip);
   const muzzle = new THREE.Object3D(); muzzle.name = 'Muzzle'; muzzle.position.copy(tip.position); m.add(muzzle);
+  // power adjuster on the receiver deck, right under the firing thumb
+  const deck = new THREE.Mesh(new THREE.BoxGeometry(0.040, 0.008, 0.075), dark);
+  deck.name = 'RiflePowerDeck'; deck.position.set(0, 0.046, 0.012); m.add(deck);
+  addPowerScale(m, 0, 0.052, 0.012, 0.062, 'z');
   const lampMat = new THREE.MeshBasicMaterial({ color: 0x22cc44 }); lampMat.name = 'Mat_PowerLamp';
-  const slider = new THREE.Mesh(new THREE.SphereGeometry(0.005, 8, 8), lampMat);
-  slider.name = 'PowerLampRifle'; slider.position.set(0.030, 0.030, -0.06); m.add(slider);
+  const slider = new THREE.Mesh(new THREE.SphereGeometry(0.0055, 8, 8), lampMat);
+  slider.name = 'PowerLampRifle'; slider.position.set(0, 0.056, -0.019); m.add(slider);
   g.userData.muzzle = muzzle; g.userData.tip = tip;
   g.userData.power = 5; g.userData.powerLamp = lampMat; g.userData.powerSlider = slider;
-  g.userData.gauge = addBatteryGauge(m, -0.031, 0.010, -0.06, 0.012, 0.048);
+  g.userData.sliderAxis = 'z'; g.userData.sliderFrom = -0.019; g.userData.sliderTo = 0.043;
+  g.userData.gauge = addBatteryGauge(m, -0.031, 0.010, -0.06, 0.012, 0.052);
   g.userData.isGun = true; g.userData.label = 'PHASER RIFLE';
   return g;
 }
@@ -757,12 +796,16 @@ function buildCompRifle() {
   const tip = new THREE.Mesh(new THREE.SphereGeometry(0.012, 12, 12), emit);
   tip.name = 'CompTip'; tip.position.set(0, -0.004, -0.474); m.add(tip);
   const muzzle = new THREE.Object3D(); muzzle.name = 'Muzzle'; muzzle.position.copy(tip.position); m.add(muzzle);
+  const deck2 = new THREE.Mesh(new THREE.BoxGeometry(0.044, 0.008, 0.070), dark);
+  deck2.name = 'CompPowerDeck'; deck2.position.set(0, 0.048, 0.006); m.add(deck2);
+  addPowerScale(m, 0, 0.054, 0.006, 0.058, 'z');
   const lampMat = new THREE.MeshBasicMaterial({ color: 0x22cc44 }); lampMat.name = 'Mat_PowerLamp';
-  const slider = new THREE.Mesh(new THREE.SphereGeometry(0.005, 8, 8), lampMat);
-  slider.name = 'PowerLampComp'; slider.position.set(0.034, 0.020, -0.04); m.add(slider);
+  const slider = new THREE.Mesh(new THREE.SphereGeometry(0.0055, 8, 8), lampMat);
+  slider.name = 'PowerLampComp'; slider.position.set(0, 0.058, -0.023); m.add(slider);
   g.userData.muzzle = muzzle; g.userData.tip = tip;
   g.userData.power = 5; g.userData.powerLamp = lampMat; g.userData.powerSlider = slider;
-  g.userData.gauge = addBatteryGauge(m, -0.034, 0.000, -0.04, 0.013, 0.055);
+  g.userData.sliderAxis = 'z'; g.userData.sliderFrom = -0.023; g.userData.sliderTo = 0.035;
+  g.userData.gauge = addBatteryGauge(m, -0.034, 0.000, -0.04, 0.013, 0.058);
   g.userData.isGun = true; g.userData.label = 'COMPRESSION RIFLE';
   return g;
 }
@@ -901,16 +944,66 @@ function spawnBoltFx(from, dir, dist, charged) {
   g.position.copy(from);
   g.quaternion.setFromUnitVectors(_boltUp, dir);
   scene.add(g);
-  boltFx.push({ g, dir: dir.clone(), travelled: 0, dist: Math.max(L, dist) });
+  boltFx.push({ g, dir: dir.clone(), travelled: 0, dist: Math.max(L, dist),
+                bounces: 0, life: TUNE.boltLife, energy: 0, spent: false });
 }
 const _boltUp = new THREE.Vector3(0, 0, 1);
+const _bfp = new THREE.Vector3(), _segA = new THREE.Vector3(), _segB = new THREE.Vector3();
+/* Closest approach of a point to the segment a→b — a bolt moves ~0.7 m per frame,
+   so testing only where it lands would let it tunnel straight through a disc. */
+function segmentDistance(a, b, pt) {
+  _segA.copy(b).sub(a);
+  const len2 = _segA.lengthSq();
+  if (len2 < 1e-9) return a.distanceTo(pt);
+  _segB.copy(pt).sub(a);
+  const t = Math.max(0, Math.min(1, _segB.dot(_segA) / len2));
+  _segA.multiplyScalar(t).add(a);
+  return _segA.distanceTo(pt);
+}
 function boltFxTick(dt) {
   for (let i = boltFx.length - 1; i >= 0; i--) {
     const f = boltFx[i];
     const step = TUNE.boltFlySpeed * dt;
+    if (!f.prevPos) f.prevPos = new THREE.Vector3();
+    f.prevPos.copy(f.g.position);
     f.travelled += step;
     f.g.position.addScaledVector(f.dir, step);
-    if (f.travelled >= f.dist) { scene.remove(f.g); boltFx.splice(i, 1); }
+    const p = f.g.position;
+
+    // in the court a stray round ricochets off the walls instead of vanishing into them
+    if (game.program === 'velocity' && f.travelled >= f.dist) {
+      const X = TUNE.courtX - 0.02, Z = TUNE.courtZ - 0.02, Y = TUNE.courtY - 0.02;
+      let hit = false;
+      if (p.x >  X) { p.x =  X; f.dir.x = -Math.abs(f.dir.x); hit = true; }
+      if (p.x < -X) { p.x = -X; f.dir.x =  Math.abs(f.dir.x); hit = true; }
+      if (p.z >  Z) { p.z =  Z; f.dir.z = -Math.abs(f.dir.z); hit = true; }
+      if (p.z < -Z) { p.z = -Z; f.dir.z =  Math.abs(f.dir.z); hit = true; }
+      if (p.y >  Y) { p.y =  Y; f.dir.y = -Math.abs(f.dir.y); hit = true; }
+      if (p.y < 0.02) { p.y = 0.02; f.dir.y = Math.abs(f.dir.y); hit = true; }
+      if (hit) {
+        f.bounces++;
+        f.energy *= TUNE.boltBounceLoss;
+        f.dist = f.travelled + 40;                   // let it run to the next wall
+        f.g.quaternion.setFromUnitVectors(_boltUp, f.dir);
+        AudioKit.wallHit();
+        f.g.children.forEach(c => { if (c.material) c.material.opacity *= 0.72; });
+        if (f.bounces > TUNE.boltMaxBounces) { scene.remove(f.g); boltFx.splice(i, 1); continue; }
+      }
+      // a live round still counts against a disc it happens to cross
+      if (!f.spent && f.energy > 0.002) {
+        for (const D of VEL.discs) {
+          if (!D.live) continue;
+          if (segmentDistance(f.prevPos, p, D.mesh.position) < TUNE.discRadius + TUNE.boltRadius + 0.03) {
+            onDiscStruck(f.dir, f.energy, D);
+            f.spent = true; scene.remove(f.g); boltFx.splice(i, 1); break;
+          }
+        }
+        if (f.spent) continue;
+      }
+    } else if (f.travelled >= f.dist) { scene.remove(f.g); boltFx.splice(i, 1); continue; }
+
+    f.life -= dt;
+    if (f.life <= 0) { scene.remove(f.g); boltFx.splice(i, 1); }
   }
 }
 
@@ -1315,7 +1408,8 @@ function fireBolt(phaser, energy) {
     end = _rayO.clone().addScaledVector(_rayD, reach);
   }
   { const d = end.clone().sub(_vis); const len = d.length() || 0.001; d.multiplyScalar(1 / len);
-    spawnBoltFx(_vis.clone(), d, len, charged); }   // a slug that fattens with the charge
+    spawnBoltFx(_vis.clone(), d, len, charged);
+    if (boltFx.length) boltFx[boltFx.length - 1].energy = bestKind ? 0 : E; }  // a miss keeps its charge
   if (bestKind === 'target') damageTarget(bestIdx, TUNE.boltDamageBase + TUNE.boltDamagePerEnergy * E);
   else if (bestKind === 'bolt') { const b = stunBolts[bestIdx];
     popEffect(b.position, 0xff5533); AudioKit.boltDown(); despawnBolt(bestIdx);
@@ -1567,7 +1661,12 @@ function updatePowerVisual(w) {
   const u = w.userData; if (!u.isGun) return;
   if (u.powerLamp) powerColor(u.powerLamp, u.power);
   if (u.dialPivot) u.dialPivot.rotation.y = -((u.power - 1) / 9) * (Math.PI * 1.5); // clockwise sweep
-  if (u.powerSlider) u.powerSlider.position.x = -0.013 + ((u.power - 1) / 9) * 0.026; // left → right
+  if (u.powerSlider) {                                   // low end → high end along its rail
+    const f = (u.power - 1) / 9;
+    const a = u.sliderAxis || 'x', from = u.sliderFrom === undefined ? -0.013 : u.sliderFrom,
+          to = u.sliderTo === undefined ? 0.013 : u.sliderTo;
+    u.powerSlider.position[a] = from + f * (to - from);
+  }
 }
 function powerLabel(p) { return p <= 3 ? 'STUN' : p >= 8 ? 'KILL' : 'DISRUPT'; }
 function changePower(w, delta) {
@@ -1617,8 +1716,8 @@ const bodyFrame = new THREE.Group(); bodyFrame.name = 'BodyFrame'; playerRig.add
 const HOLSTERS = [
   { id: 'hipL',  label: 'LEFT HIP',   pos: [-0.24, 0.94,  0.04], rot: [0, 0,  0.30] },
   { id: 'hipR',  label: 'RIGHT HIP',  pos: [ 0.24, 0.94,  0.04], rot: [0, 0, -0.30] },
-  { id: 'backL', label: 'LEFT BACK',  pos: [-0.19, 1.34,  0.20], rot: [0.5, 0,  0.5] },
-  { id: 'backR', label: 'RIGHT BACK', pos: [ 0.19, 1.34,  0.20], rot: [0.5, 0, -0.5] },
+  { id: 'backL', label: 'LEFT SHOULDER',  pos: [-0.22, 1.44, 0.17], rot: [0.55, 0,  0.6] },
+  { id: 'backR', label: 'RIGHT SHOULDER', pos: [ 0.22, 1.44, 0.17], rot: [0.55, 0, -0.6] },
 ];
 HOLSTERS.forEach((h, i) => {
   const a = new THREE.Object3D(); a.name = 'Holster_' + h.id;
@@ -1670,6 +1769,9 @@ function giveTo(w, i) {
   if (prev && prev !== w) return false;                    // that hand is full
   if (w.userData.holding) { w.userData.holdSrc = 'trigger'; triggerUp(w); }
   if (w.userData.support === i) w.userData.support = null;
+  const wasFlying = thrown.indexOf(w);
+  if (wasFlying >= 0) thrown.splice(wasFlying, 1);
+  if (w.userData.vel) w.userData.vel.set(0, 0, 0);
   w.userData.holder = 'hand' + i;
   w.userData.useCameraRay = (i === 2);
   if (w.userData.prevValid !== undefined) w.userData.prevValid = false;
@@ -1692,8 +1794,11 @@ function returnToTable(w) {
 
 const _hp = new THREE.Vector3(), _hq = new THREE.Quaternion(), _ap = new THREE.Vector3();
 function handPose(i, outPos, outQuat) {
-  if (i === 2) {                                            // desktop viewmodel
-    camera.getWorldPosition(outPos); camera.getWorldQuaternion(outQuat);
+  if (i === 2) {                                            // desktop: the hand is the viewmodel,
+    camera.getWorldPosition(outPos);                        // not the camera itself
+    camera.getWorldQuaternion(outQuat);
+    _vmOff.set(0.20, -0.20, -0.40).applyQuaternion(outQuat);
+    outPos.add(_vmOff);
     return true;
   }
   const c = vrControllers[i]; if (!c) return false;
@@ -1723,6 +1828,7 @@ function handGrip(i) {
   if (held) {
     const k = nearestHolster(_hp, 0.34);
     if (k >= 0 && !holsterOccupant(k)) { stowIn(held, k); AudioKit.ackBeep(); toast('STOWED · ' + HOLSTERS[k].label); return; }
+    if (!held.userData.isGun && throwWeapon(held, i)) return;   // a hard release lets the blade fly
     if (game.phase === 'select' && _hp.distanceTo(stageTable.position) < 1.2) {
       returnToTable(held); AudioKit.ackBeep(); toast('RETURNED TO THE TABLE'); return;
     }
@@ -1731,6 +1837,8 @@ function handGrip(i) {
   const k = nearestHolster(_hp, 0.34);
   const hw = k >= 0 ? holsterOccupant(k) : null;
   if (hw) { giveTo(hw, i); AudioKit.ackBeep(); toast('DREW · ' + hw.userData.label); return; }
+  const planted = pickUpThrown(_hp, 0.45);                     // pull it back out of the wall
+  if (planted) { giveTo(planted, i); AudioKit.ackBeep(); toast('RECOVERED · ' + planted.userData.label); return; }
   if (game.phase === 'select') {
     const tw = nearestTableWeapon(_hp, 0.42);
     if (tw) { giveTo(tw, i); AudioKit.ackBeep(); toast(tw.userData.label); return; }
@@ -1751,11 +1859,107 @@ function handGripEnd(i) {
   for (const id in arms) if (arms[id].userData.support === i) arms[id].userData.support = null;
 }
 
+/* A blade you let go of hard enough leaves your hand and sticks where it lands. */
+const thrown = [];
+const _thv = new THREE.Vector3(), _tsp = new THREE.Vector3();
+function throwWeapon(w, i) {
+  if (!w || w.userData.isGun) return false;      // you do not throw a phaser
+  if (heldBy(i) !== w) return false;             // …nor one that is not in that hand
+  const hand = i === 2 ? desk.hand : hands[i];
+  if (!hand || !hand.vel) return false;
+  const speed = hand.vel.length();
+  if (speed < TUNE.throwSpeed) return false;
+  w.userData.holder = 'flight';
+  w.userData.support = null;
+  w.userData.vel = w.userData.vel || new THREE.Vector3();
+  w.userData.vel.copy(hand.vel).multiplyScalar(TUNE.throwBoost);
+  w.userData.spinAxis = (w.userData.spinAxis || new THREE.Vector3()).set(
+    0.2 + Math.random() * 0.3, 1, 0.1).normalize();
+  w.userData.spinRate = 9 + speed * 1.2;
+  w.userData.flightT = 0;
+  w.userData.prevValid = false;
+  if (w.userData.samples) w.userData.samples.forEach((s, k) => s.getWorldPosition(w.userData.prev[k]));
+  thrown.push(w);
+  refreshHeld(); hudDirty = true;
+  AudioKit.feintOff(); haptic(w, 0.6, 50);
+  toast('THROWN · ' + w.userData.label);
+  return true;
+}
+const _twp = new THREE.Vector3(), _tq = new THREE.Quaternion();
+function thrownTick(dt) {
+  for (let n = thrown.length - 1; n >= 0; n--) {
+    const w = thrown[n], u = w.userData;
+    if (u.holder !== 'flight') { thrown.splice(n, 1); continue; }
+    u.flightT += dt;
+    u.vel.y -= TUNE.throwGravity * dt;
+    w.position.addScaledVector(u.vel, dt);
+    _tq.setFromAxisAngle(u.spinAxis, u.spinRate * dt);
+    w.quaternion.multiplyQuaternions(_tq, w.quaternion);
+    w.visible = true;
+
+    let stuck = false;
+    // it cuts whatever it passes through on the way
+    if (game.running) {
+      for (let j = targets.length - 1; j >= 0; j--) {
+        if (targets[j].position.distanceTo(w.position) < targetRadius() + 0.22) {
+          onTargetPop(j, TUNE.ptsMeleePop * 2); break;
+        }
+      }
+      if (game.program === 'velocity') {
+        for (const D of VEL.discs) {
+          if (!D.live) continue;
+          if (D.mesh.position.distanceTo(w.position) < TUNE.discRadius + 0.2) {
+            _tsp.copy(u.vel);
+            discBladeHit(w.position, _tsp, D);
+            break;
+          }
+        }
+      } else if (w.position.distanceTo(remote.pos) < REMOTE_RADIUS + 0.22) {
+        if (remote.state === 'vulnerable') onRemoteTagged(); else onRemoteChipped();
+        u.vel.multiplyScalar(-0.3);
+      }
+    }
+    // …and then it plants itself in whatever stops it
+    if (game.program === 'velocity') {
+      const X = TUNE.courtX - 0.04, Z = TUNE.courtZ - 0.04, Y = TUNE.courtY - 0.04;
+      if (w.position.x >  X) { w.position.x =  X; stuck = true; }
+      if (w.position.x < -X) { w.position.x = -X; stuck = true; }
+      if (w.position.z >  Z) { w.position.z =  Z; stuck = true; }
+      if (w.position.z < -Z) { w.position.z = -Z; stuck = true; }
+      if (w.position.y >  Y) { w.position.y =  Y; stuck = true; }
+    } else {
+      const r = Math.hypot(w.position.x, w.position.z);
+      if (r > TUNE.arenaRMax + 1.2) stuck = true;
+    }
+    if (w.position.y <= 0.06) { w.position.y = 0.06; stuck = true; }
+    if (u.flightT > 6) stuck = true;
+    if (stuck) {
+      u.holder = 'stuck';
+      u.vel.set(0, 0, 0);
+      thrown.splice(n, 1);
+      AudioKit.clang(); popEffect(w.position, 0xc3c8d2);
+      hudDirty = true;
+    }
+  }
+}
+function pickUpThrown(pos, maxD) {
+  let best = null, bd = maxD;
+  for (const id in arms) {
+    const w = arms[id], h = w.userData.holder;
+    if (h !== 'stuck' && h !== 'flight') continue;
+    const d = w.position.distanceTo(pos);
+    if (d < bd) { bd = d; best = w; }
+  }
+  return best;
+}
+
 /* Put every weapon where its holder says it should be. */
 const _gx = new THREE.Vector3(), _gy = new THREE.Vector3(), _gz = new THREE.Vector3(),
       _mainP = new THREE.Vector3(), _suppP = new THREE.Vector3(), _gm4 = new THREE.Matrix4(),
       _upv = new THREE.Vector3(0, 1, 0), _vmOff = new THREE.Vector3();
-function loadoutTick() {
+let dtNow = 0.016;
+function loadoutTick(dt) {
+  if (dt) dtNow = dt;
   // the body frame follows your heading, smoothed, so holsters sit on your hips
   camera.getWorldPosition(_hp);
   const yaw = Math.atan2(
@@ -1766,12 +1970,24 @@ function loadoutTick() {
   while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2;
   bodyFrame.rotation.y += d * 0.12;
 
+  // every hand remembers how fast it is moving — that is what makes a release a throw
+  [0, 1, 2].forEach(i => {
+    const hand = i === 2 ? desk.hand : hands[i];
+    if (!hand) return;
+    if (!hand.vel) { hand.vel = new THREE.Vector3(); hand.prevPos = new THREE.Vector3(); hand.posValid = false; }
+    if (handPose(i, _thv, _tq)) {
+      if (hand.posValid && dtNow > 0) hand.vel.copy(_thv).sub(hand.prevPos).multiplyScalar(1 / dtNow);
+      hand.prevPos.copy(_thv); hand.posValid = true;
+    } else hand.posValid = false;
+  });
+
   const selecting = game.phase === 'select';
   stageTable.visible = selecting;
   HOLSTERS.forEach(h => { h.ring.visible = selecting || !!game.running; });
 
   for (const id in arms) {
     const w = arms[id], u = w.userData, hold = u.holder;
+    if (hold === 'flight' || hold === 'stuck') { w.visible = true; continue; }
     if (hold === 'table') {
       w.visible = selecting;
       if (selecting) {
@@ -1835,7 +2051,7 @@ function dealDefaultLoadout() {
   giveTo(arms.fc, dom);
   stowIn(arms.tng, dom === 1 ? 0 : 1);        // opposite hip
   stowIn(arms.dktahg, dom === 1 ? 1 : 0);
-  stowIn(arms.batleth, 2);
+  stowIn(arms.batleth, 2);                    // left shoulder — reach over and draw it
   stowIn(arms.rifle, 3);
   returnToTable(arms.comp);
 }
@@ -2083,7 +2299,14 @@ function setupDesk() {
         giveTo(w, 2); AudioKit.ackBeep(); toast(w.userData.label); }
       return;
     }
-    if (e.code === 'KeyG') { const cur = heldBy(2); if (cur) { returnToTable(cur); toast('EMPTY HANDS'); } }
+    if (e.code === 'KeyG') { const cur = heldBy(2);
+      if (cur && !cur.userData.isGun) {                        // desktop throw, straight ahead
+        const hd = desk.hand; hd.vel = hd.vel || new THREE.Vector3();
+        camera.getWorldDirection(hd.vel); hd.vel.multiplyScalar(9); hd.vel.y += 1.2;
+        throwWeapon(cur, 2);
+      } else if (cur) { returnToTable(cur); toast('EMPTY HANDS'); } }
+    if (e.code === 'KeyF') { const p2 = pickUpThrown(camera.getWorldPosition(new THREE.Vector3()), 2.2);
+      if (p2 && !heldBy(2)) { giveTo(p2, 2); AudioKit.ackBeep(); toast('RECOVERED · ' + p2.userData.label); } }
     if (e.code === 'KeyB' || e.code === 'KeyQ') {   // step through the armory
       const cur = heldBy(2);
       const at = cur ? ARMORY.findIndex(d => arms[d.id] === cur) : -1;
@@ -2360,6 +2583,11 @@ function resetGame() {
     if (!u.isGun) continue;
     u.beamCharge = 1; u.beamRecharging = false;
     u.battery = u.batteryMax; u.wasDry = false; updateBatteryGauge(arms[id]); }
+  thrown.length = 0;
+  for (const id in arms) { const u = arms[id].userData;
+    if (u.holder === 'flight' || u.holder === 'stuck') {       // recall anything left in a wall
+      u.holder = 'holster2'; if (u.vel) u.vel.set(0, 0, 0); } }
+  refreshHeld();
   if (game.program === 'velocity') {
     VEL.speed = TUNE.discSpeed; VEL.strikes = 0; VEL.splitT = 0;
     while (VEL.discs.length > 1) { const gone = VEL.discs.pop(); scene.remove(gone.mesh); }
@@ -2576,7 +2804,8 @@ renderer.setAnimationLoop((time) => {
   if (!game.paused) gt += dt;
 
   vrControllers.forEach(c => c.visible = renderer.xr.isPresenting);
-  if (game.mode) loadoutTick();
+  if (game.mode) loadoutTick(dt);
+  if (!game.paused) thrownTick(dt);
   if (game.phase === 'select') {
     stageTable.userData.padMat.color.setHSL(0.09, 1, 0.45 + 0.25 * Math.sin(perf * 4));
     HOLSTERS.forEach(h => { h.ringMat.opacity = 0.18 + 0.12 * Math.sin(perf * 3); });

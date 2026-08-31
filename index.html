@@ -92,8 +92,9 @@
         A <b>training remote</b> orbits you: when its emitter glows and chimes, a stun bolt follows —
         <b>step aside or duck</b>, or shoot the bolt out of the air. The instant it fires, the remote
         flares white: <b>tag it then</b> for the big score. You can hit it any time to make it flinch —
-        counter-fire during the glow <b>breaks its attack</b>. Or squeeze the grip button for a
-        <b>bat'leth</b> and bat its bolts straight back at it. Three hits ends the program.</p>
+        counter-fire during the glow <b>breaks its attack</b>. Every hand carries three weapons:
+        the First Contact pistol, the swept <b>TNG type 2</b> you hold flat like a remote, and a
+        <b>bat'leth</b> that bats its bolts straight back. Three hits ends the program.</p>
       <p id="xrstatus">Checking headset support&hellip;</p>
       <div class="actions">
         <button class="lcars" id="btn-vr" disabled>Enter the range</button>
@@ -103,11 +104,13 @@
       <dl class="legend">
         <dt>Trigger tap</dt><dd>Phaser bolt — generous aim, always ready</dd>
         <dt>Trigger hold</dt><dd>Wide red beam &mdash; sweeps several targets at once, then recharges</dd>
+        <dt>Thumb key</dt><dd>B / Y fires as well &mdash; the way the swept TNG shell is meant to be worked</dd>
+        <dt>A / X or grip</dt><dd>Cycle that hand: First Contact pistol &rarr; TNG type 2 &rarr; bat'leth</dd>
         <dt>Your body</dt><dd>Dodge stun bolts physically — sidestep, duck</dd>
-        <dt>Grip button</dt><dd>Swap phaser &harr; bat'leth &mdash; the blade deflects stun bolts; a returned bolt that hits the remote pays 200</dd>
-        <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD step · Shift duck · B swaps weapon</dd>
+        <dt>Bat'leth</dt><dd>Deflects stun bolts even held still; a returned bolt that hits the remote pays 200</dd>
+        <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD step · Shift duck · B or 1/2/3 to change weapon</dd>
       </dl>
-      <p class="footnote">M0.2 feel prototype — telegraph timing, phaser feel, and a first bat'leth. On Quest, open this
+      <p class="footnote">M0.4 feel prototype — telegraph timing, phaser feel, and a first bat'leth. On Quest, open this
         page in the headset browser. If the Enter button stays unavailable inside an embedded viewer,
         open the page in its own tab.</p>
       <p class="footnote" id="diag" style="font-family:monospace;font-size:11px;color:#6a6a5c;line-height:1.6"></p>
@@ -311,18 +314,63 @@ function buildPhaser() {
   const gunmetal = new THREE.MeshStandardMaterial({ color: 0x3a3d44, metalness: 0.7, roughness: 0.45 }); gunmetal.name = 'Mat_Gunmetal';
   const brushed  = new THREE.MeshStandardMaterial({ color: 0x8a8f99, metalness: 0.9, roughness: 0.3 });  brushed.name  = 'Mat_BrushedSteel';
   const amber    = new THREE.MeshBasicMaterial({ color: 0xffb347 }); amber.name = 'Mat_EmitterAmber';
-  const g = new THREE.Group(); g.name = 'Phaser_Type2';
+  const g = new THREE.Group(); g.name = 'Phaser_Type2_FirstContact';
+  const m = new THREE.Group(); m.name = 'PhaserModel'; m.rotation.x = -0.5; g.add(m); // pistol rake, visual only
   const body = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.045, 0.17), gunmetal);
-  body.name = 'PhaserBody'; body.position.set(0, 0.015, -0.03); g.add(body);
+  body.name = 'PhaserBody'; body.position.set(0, 0.015, -0.03); m.add(body);
   const grip = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.09, 0.045), gunmetal);
-  grip.name = 'PhaserGrip'; grip.position.set(0, -0.045, 0.035); grip.rotation.x = 0.35; g.add(grip);
+  grip.name = 'PhaserGrip'; grip.position.set(0, -0.045, 0.035); grip.rotation.x = 0.35; m.add(grip);
   const emitter = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.014, 0.05, 16), brushed);
-  emitter.name = 'PhaserEmitter'; emitter.rotation.x = Math.PI / 2; emitter.position.set(0, 0.028, -0.125); g.add(emitter);
+  emitter.name = 'PhaserEmitter'; emitter.rotation.x = Math.PI / 2; emitter.position.set(0, 0.028, -0.125); m.add(emitter);
   const tip = new THREE.Mesh(new THREE.SphereGeometry(0.008, 12, 12), amber);
-  tip.name = 'PhaserTip'; tip.position.set(0, 0.028, -0.152); g.add(tip);
+  tip.name = 'PhaserTip'; tip.position.set(0, 0.028, -0.152); m.add(tip);
   const muzzle = new THREE.Object3D(); muzzle.name = 'Muzzle';
-  muzzle.position.copy(tip.position); g.add(muzzle);
+  muzzle.position.copy(tip.position); m.add(muzzle);
   g.userData.muzzle = muzzle; g.userData.tip = tip;
+  g.userData.isGun = true; g.userData.label = 'PHASER · FIRST CONTACT';
+  return g;
+}
+
+/* — the TNG Type 2: swept wedge shell, held flat in the palm like a remote —
+     (materials named & colored: pale shell, dark control panel, red emitter) */
+function buildType2TNG() {
+  const shell = new THREE.MeshStandardMaterial({ color: 0x9ea099, metalness: 0.35, roughness: 0.6 }); shell.name = 'Mat_PhaserShell';
+  const panel = new THREE.MeshStandardMaterial({ color: 0x33363c, metalness: 0.5, roughness: 0.6 }); panel.name = 'Mat_ControlPanel';
+  const trim  = new THREE.MeshStandardMaterial({ color: 0x5a5e66, metalness: 0.8, roughness: 0.35 }); trim.name = 'Mat_ShellTrim';
+  const emit  = new THREE.MeshBasicMaterial({ color: 0xff2a1a }); emit.name = 'Mat_EmitterRed';
+  const g = new THREE.Group(); g.name = 'Phaser_Type2_TNG';
+  const m = new THREE.Group(); m.name = 'PhaserModel'; m.rotation.x = -0.12; g.add(m); // lies flat in the hand
+
+  // side profile: tail swells up and sweeps down to a low nose — the TNG "dolphin" curve
+  const s = new THREE.Shape();
+  s.moveTo(-0.088, 0.002);
+  s.lineTo(0.070, 0.001);
+  s.quadraticCurveTo(0.098, 0.006, 0.094, 0.021);   // nose
+  s.quadraticCurveTo(0.030, 0.049, -0.040, 0.055);  // swept spine
+  s.quadraticCurveTo(-0.086, 0.056, -0.092, 0.030); // rounded tail
+  s.quadraticCurveTo(-0.094, 0.010, -0.088, 0.002);
+  const W = 0.046;
+  const shellMesh = new THREE.Mesh(new THREE.ExtrudeGeometry(s, {
+    depth: W, bevelEnabled: true, bevelThickness: 0.005, bevelSize: 0.005, bevelSegments: 3, curveSegments: 14 }), shell);
+  shellMesh.name = 'PhaserShell';
+  shellMesh.rotation.y = Math.PI / 2;      // profile length runs along -Z (forward)
+  shellMesh.position.x = -W / 2;           // centre the extrusion on the hand
+  m.add(shellMesh);
+
+  const strip = new THREE.Mesh(new THREE.BoxGeometry(0.030, 0.006, 0.070), panel);
+  strip.name = 'ControlStrip'; strip.position.set(0, 0.052, 0.012); strip.rotation.x = -0.10; m.add(strip);
+  [0.030, 0.002].forEach((z, i) => {        // the two thumb keys — fire sits under your thumb
+    const key = new THREE.Mesh(new THREE.BoxGeometry(0.020, 0.005, 0.018), trim);
+    key.name = 'ThumbKey' + (i + 1); key.position.set(0, 0.056, z); key.rotation.x = -0.10; m.add(key);
+  });
+  const aperture = new THREE.Mesh(new THREE.CylinderGeometry(0.010, 0.010, 0.006, 16), panel);
+  aperture.name = 'EmitterAperture'; aperture.rotation.x = Math.PI / 2; aperture.position.set(0, 0.019, -0.093); m.add(aperture);
+  const tip = new THREE.Mesh(new THREE.SphereGeometry(0.007, 12, 12), emit);
+  tip.name = 'PhaserTip'; tip.position.set(0, 0.019, -0.098); m.add(tip);
+  const muzzle = new THREE.Object3D(); muzzle.name = 'Muzzle';
+  muzzle.position.copy(tip.position); m.add(muzzle);
+  g.userData.muzzle = muzzle; g.userData.tip = tip;
+  g.userData.isGun = true; g.userData.label = 'PHASER · TNG TYPE 2';
   return g;
 }
 
@@ -433,7 +481,7 @@ function flashLine(from, to, color, life, width) {
   const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.95 }); mat.name = 'Mat_PhaserBeam';
   const line = new THREE.Line(geo, mat); line.name = 'PhaserBeamFlash';
   scene.add(line); shotFlashes.push({ line, life, max: life, peak: 0.95 });
-  const core = new THREE.Mesh(new THREE.SphereGeometry(0.02, 8, 8), new THREE.MeshBasicMaterial({ color: 0xfff3d6 }));
+  const core = new THREE.Mesh(new THREE.SphereGeometry(0.02, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffccd8 }));
   core.name = 'MuzzleFlash'; core.position.copy(from); scene.add(core);
   shotFlashes.push({ line: core, life: life * 0.6, max: life * 0.6 });
 }
@@ -443,17 +491,19 @@ const _beamUp = new THREE.Vector3(0, 1, 0), _beamMid = new THREE.Vector3(), _bea
 function flashBeam(from, dir, len) {
   const mk = (radius, color, opacity, name) => {
     const m = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius * 0.55, len, 12, 1, true),
-      new THREE.MeshBasicMaterial({ color, transparent: true, opacity, side: THREE.DoubleSide, depthWrite: false }));
+      new THREE.MeshBasicMaterial({ color, transparent: true, opacity, side: THREE.DoubleSide,
+        depthWrite: false, blending: THREE.AdditiveBlending }));
     m.name = name; m.material.name = 'Mat_' + name;
     _beamMid.copy(from).addScaledVector(dir, len / 2);
     m.position.copy(_beamMid);
     m.quaternion.copy(_beamQ.setFromUnitVectors(_beamUp, dir)); // cylinders stand on +Y by default
     scene.add(m); shotFlashes.push({ line: m, life: 0.05, max: 0.05, peak: opacity });
   };
-  mk(TUNE.beamRadius, 0xff2a18, 0.45, 'PhaserBeamShaft');   // wide red envelope
-  mk(TUNE.beamRadius * 0.35, 0xffd8c0, 0.9, 'PhaserBeamCore'); // hot core
+  mk(TUNE.beamRadius, 0xff0510, 0.60, 'PhaserBeamShaft');       // saturated red envelope
+  mk(TUNE.beamRadius * 0.26, 0xffccd8, 0.75, 'PhaserBeamCore');  // thin pink-white core (no orange bias)
   const glow = new THREE.Mesh(new THREE.SphereGeometry(TUNE.beamRadius * 1.6, 12, 12),
-    new THREE.MeshBasicMaterial({ color: 0xff5533, transparent: true, opacity: 0.7, depthWrite: false }));
+    new THREE.MeshBasicMaterial({ color: 0xff0a18, transparent: true, opacity: 0.7,
+      depthWrite: false, blending: THREE.AdditiveBlending }));
   glow.name = 'BeamMuzzleGlow'; glow.position.copy(from);
   scene.add(glow); shotFlashes.push({ line: glow, life: 0.08, max: 0.08, peak: 0.7 });
 }
@@ -530,11 +580,14 @@ function coneHit(origin, dir, point, coneDeg, maxDist) {
 
 const _vis = new THREE.Vector3();
 function getMuzzleRay(phaser, out0, outD) {
-  if (phaser.userData.useCameraRay) { // desktop: aim exactly down the reticle
+  if (phaser.userData.useCameraRay) {        // desktop: aim exactly down the reticle
     camera.getWorldPosition(out0); camera.getWorldDirection(outD);
+  } else if (phaser.parent) {                // VR: shots follow where the controller points,
+    phaser.parent.getWorldPosition(out0);    // never the prop's cosmetic rake
+    phaser.parent.getWorldDirection(outD); outD.multiplyScalar(-1);
   } else {
     phaser.userData.muzzle.getWorldPosition(out0);
-    phaser.userData.muzzle.getWorldDirection(outD); outD.multiplyScalar(-1); // -Z forward
+    phaser.userData.muzzle.getWorldDirection(outD); outD.multiplyScalar(-1);
   }
   phaser.userData.muzzle.getWorldPosition(_vis); // beam visuals always leave the emitter
 }
@@ -552,7 +605,7 @@ function fireBolt(phaser) {
     if (d > 0 && d < bestD) { bestD = d; bestKind = (remote.state === 'vulnerable') ? 'remote' : 'chip'; } }
   if (bestKind) { game.hits++; hitPoint = _rayO.clone().add(_rayD.clone().multiplyScalar(bestD)); }
   const end = hitPoint || _rayO.clone().add(_rayD.clone().multiplyScalar(25));
-  flashLine(_vis.clone(), end, 0xff8033, 0.09);
+  flashLine(_vis.clone(), end, 0xff1018, 0.09); // tap bolt reads red, same family as the beam
   if (bestKind === 'target') onTargetPop(bestIdx);
   else if (bestKind === 'bolt') { const b = stunBolts[bestIdx];
     popEffect(b.position, 0xff5533); AudioKit.boltDown(); despawnBolt(bestIdx);
@@ -629,27 +682,39 @@ function roundRect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y);
 let beamCharge = 1, beamRecharging = false;
 const activePhasers = [];
 
-function triggerDown(phaser) {
+function triggerDown(phaser, src) {
   AudioKit.unlock();
   if (game.over) { tryRestart(); return; }
-  if (!phaser.visible) return; // this hand is holding the bat'leth
+  if (!phaser.visible || phaser.userData.holding) return;
   phaser.userData.holding = true; phaser.userData.holdT = 0; phaser.userData.beaming = false;
+  phaser.userData.holdSrc = src || 'trigger';
 }
-function triggerUp(phaser) {
+function triggerUp(phaser, src) {
   if (!phaser.userData.holding) return;
+  if (phaser.userData.holdSrc !== (src || 'trigger')) return; // trigger and thumb key don't cross wires
   phaser.userData.holding = false;
   if (phaser.userData.beaming) {
     phaser.userData.beaming = false; AudioKit.beamStop();
     beamRecharging = true;
   } else if (!game.over) fireBolt(phaser);
 }
-function swapWeapon(rig) {
+/* one hand = a rack of weapons; the non-trigger buttons cycle through it */
+function cycleWeapon(hand, dir) {
   AudioKit.unlock();
-  if (rig.phaser.userData.holding) triggerUp(rig.phaser); // ends a live beam cleanly
-  const toBlade = rig.phaser.visible;
-  rig.phaser.visible = !toBlade; rig.batleth.visible = toBlade;
-  rig.batleth.userData.prevValid = false;
-  AudioKit.ackBeep(); toast(toBlade ? "BAT'LETH" : 'PHASER');
+  const cur = hand.weapons[hand.idx];
+  if (cur.userData.holding) { cur.userData.holdSrc = 'trigger'; triggerUp(cur); } // ends a live beam cleanly
+  hand.idx = (hand.idx + (dir || 1) + hand.weapons.length) % hand.weapons.length;
+  hand.weapons.forEach((w, i) => {
+    w.visible = (i === hand.idx) && (hand.desk ? game.mode === 'desk' : true);
+    if (w.userData.samples) w.userData.prevValid = false;
+  });
+  AudioKit.ackBeep(); toast(hand.weapons[hand.idx].userData.label);
+}
+function handWeapon(hand) { return hand.weapons[hand.idx]; }
+function handFire(hand, down, src) {
+  const w = handWeapon(hand);
+  if (!w.userData.isGun) { if (down && game.over) tryRestart(); return; }
+  down ? triggerDown(w, src) : triggerUp(w, src);
 }
 
 function phaserTick(phaser, dt) {
@@ -680,25 +745,44 @@ function phaserTick(phaser, dt) {
 /* ───────────────────── VR controllers ───────────────────── */
 const vrControllers = [];
 const activeBlades = [];
+const hands = [];
 for (let i = 0; i < 2; i++) {
   const c = renderer.xr.getController(i); c.name = 'Controller' + i;
-  const phaser = buildPhaser(); phaser.rotation.x = -0.5; // pistol grip on Quest controller
+  const fc = buildPhaser();                       // 0 · First Contact pistol
+  const tng = buildType2TNG(); tng.visible = false; // 1 · TNG swept shell
   const batleth = buildBatleth(); batleth.visible = false;
-  c.add(phaser); c.add(batleth);
-  activePhasers.push(phaser); activeBlades.push(batleth);
-  c.addEventListener('connected', e => { phaser.userData.inputSource = e.data; batleth.userData.inputSource = e.data; });
-  c.addEventListener('disconnected', () => { phaser.userData.inputSource = null; batleth.userData.inputSource = null; });
-  c.addEventListener('selectstart', () => triggerDown(phaser));
-  c.addEventListener('selectend', () => triggerUp(phaser));
-  c.addEventListener('squeezestart', () => swapWeapon({ phaser, batleth }));
-  playerRig.add(c); vrControllers.push(c);
+  c.add(fc); c.add(tng); c.add(batleth);
+  activePhasers.push(fc, tng); activeBlades.push(batleth);
+  const hand = { weapons: [fc, tng, batleth], idx: 0, src: null, prevLower: false, prevUpper: false };
+  c.addEventListener('connected', e => { hand.src = e.data;
+    hand.weapons.forEach(w => w.userData.inputSource = e.data); });
+  c.addEventListener('disconnected', () => { hand.src = null;
+    hand.weapons.forEach(w => w.userData.inputSource = null); });
+  c.addEventListener('selectstart', () => handFire(hand, true, 'trigger'));
+  c.addEventListener('selectend', () => handFire(hand, false, 'trigger'));
+  c.addEventListener('squeezestart', () => cycleWeapon(hand, 1));
+  playerRig.add(c); vrControllers.push(c); hands.push(hand);
+}
+
+/* Quest face buttons (xr-standard: 4 = A/X lower, 5 = B/Y upper) are polled,
+   not evented: lower cycles weapons, upper is the thumb-key fire the TNG shell wants. */
+function pollHandButtons() {
+  for (const hand of hands) {
+    const gp = hand.src && hand.src.gamepad;
+    if (!gp || !gp.buttons) { hand.prevLower = hand.prevUpper = false; continue; }
+    const lower = !!(gp.buttons[4] && gp.buttons[4].pressed);
+    const upper = !!(gp.buttons[5] && gp.buttons[5].pressed);
+    if (lower && !hand.prevLower) cycleWeapon(hand, 1);
+    if (upper !== hand.prevUpper) handFire(hand, upper, 'thumb');
+    hand.prevLower = lower; hand.prevUpper = upper;
+  }
 }
 
 /* ───────────────────── bat'leth combat ───────────────────── */
 const _bw = new THREE.Vector3();
 function deflectBolt(bolt, blade) {
   bolt.userData.friendly = true;
-  bolt.material = bolt.material.clone(); bolt.material.color.setHex(0xffb347); bolt.material.name = 'Mat_ReturnedBolt';
+  bolt.material = bolt.material.clone(); bolt.material.color.setHex(0xff3040); bolt.material.name = 'Mat_ReturnedBolt';
   const speed = bolt.userData.vel.length() * TUNE.deflectSpeedBoost;
   bolt.userData.vel.copy(remote.pos).sub(bolt.position).normalize().multiplyScalar(speed);
   bolt.userData.alive = 0;
@@ -739,19 +823,28 @@ function setupDesk() {
   const p = buildPhaser(); p.name = 'Phaser_Desk';
   p.position.set(0.22, -0.20, -0.42); p.userData.useCameraRay = true;
   camera.add(p); desk.phaser = p; activePhasers.push(p);
+  const t2 = buildType2TNG(); t2.name = 'Phaser_TNG_Desk';
+  t2.position.set(0.22, -0.20, -0.42); t2.userData.useCameraRay = true; t2.visible = false;
+  camera.add(t2); activePhasers.push(t2);
   const bl = buildBatleth(); bl.name = 'Batleth_Desk';
   bl.position.set(0, -0.30, -0.55); bl.visible = false;
   camera.add(bl); desk.batleth = bl; activeBlades.push(bl);
+  desk.hand = { weapons: [p, t2, bl], idx: 0, desk: true };
   const cv = renderer.domElement;
   cv.addEventListener('click', () => { if (game.mode === 'desk' && !desk.locked) lockPointer(cv); });
   document.addEventListener('pointerlockchange', () => { desk.locked = document.pointerLockElement === cv; });
   document.addEventListener('mousemove', e => { if (!desk.locked || game.mode !== 'desk') return;
     desk.yaw -= e.movementX * 0.0022; desk.pitch -= e.movementY * 0.0022;
     desk.pitch = Math.max(-1.35, Math.min(1.35, desk.pitch)); });
-  document.addEventListener('mousedown', e => { if (desk.locked && game.mode === 'desk' && e.button === 0) triggerDown(p); });
-  document.addEventListener('mouseup', e => { if (game.mode === 'desk' && e.button === 0) triggerUp(p); });
+  document.addEventListener('mousedown', e => { if (desk.locked && game.mode === 'desk' && e.button === 0) handFire(desk.hand, true, 'trigger'); });
+  document.addEventListener('mouseup', e => { if (game.mode === 'desk' && e.button === 0) handFire(desk.hand, false, 'trigger'); });
   document.addEventListener('keydown', e => { desk.keys[e.code] = true;
-    if (e.code === 'KeyB' && game.mode === 'desk' && desk.batleth) swapWeapon({ phaser: desk.phaser, batleth: desk.batleth }); });
+    if (game.mode !== 'desk' || !desk.hand) return;
+    if (e.code === 'KeyB' || e.code === 'KeyQ') cycleWeapon(desk.hand, 1);
+    if (e.code === 'Digit1' || e.code === 'Digit2' || e.code === 'Digit3') {
+      const want = Number(e.code.slice(5)) - 1;
+      if (want !== desk.hand.idx) cycleWeapon(desk.hand, want - desk.hand.idx);
+    } });
   document.addEventListener('keyup', e => { desk.keys[e.code] = false; });
 }
 function deskTick(dt) {
@@ -991,7 +1084,8 @@ renderer.setAnimationLoop((time) => {
   const dt = Math.min(0.05, lastT ? t - lastT : 0.016); lastT = t; perf = t;
 
   vrControllers.forEach(c => c.visible = renderer.xr.isPresenting);
-  if (desk.phaser) desk.phaser.visible = game.mode === 'desk';
+  if (desk.hand) desk.hand.weapons.forEach((w, i) => w.visible = (game.mode === 'desk' && i === desk.hand.idx));
+  if (renderer.xr.isPresenting) pollHandButtons();
   if (game.mode === 'desk') deskTick(dt);
   if (game.running || game.over) {
     remoteTick(dt);

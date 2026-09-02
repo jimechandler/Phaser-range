@@ -73,6 +73,8 @@
   .row label{font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;font-size:12.5px;color:var(--ink)}
   .row output{font-family:var(--display);font-size:16px;color:var(--grid);text-align:right;font-variant-numeric:tabular-nums}
   .row input[type=range]{width:100%;accent-color:var(--amber);background:transparent}
+  .row select{font-family:var(--display);letter-spacing:.06em;font-size:14px;color:var(--ink);background:var(--panel);
+    border:1px solid var(--edge);border-radius:6px;padding:6px 8px;width:100%}
   .row .hint{grid-column:1 / -1;font-size:11.5px;color:var(--dim);margin:-4px 0 2px}
   .racklist{display:flex;flex-wrap:wrap;gap:8px 18px}
   .racklist label{display:flex;align-items:center;gap:7px;font-size:13.5px;color:var(--ink);cursor:pointer}
@@ -198,6 +200,18 @@
         <div class="row"><label for="s-bri">Brightness</label>
           <input type="range" id="s-bri" min="0.3" max="1" step="0.05"><output id="o-bri"></output></div>
 
+        <h2>Display</h2>
+        <div class="row"><label for="s-fps">Refresh</label>
+          <select id="s-fps">
+            <option value="auto">Headset default</option>
+            <option value="60">60 Hz</option>
+            <option value="72">72 Hz</option>
+            <option value="80">80 Hz</option>
+            <option value="90">90 Hz</option>
+            <option value="120">120 Hz</option>
+          </select><output id="o-fps"></output></div>
+        <p class="hint">Asks the headset for this refresh rate when the range starts (Quest usually defaults to 72 Hz). Rates it does not offer are rounded to the nearest it does. The panel in the range shows the frame rate you are actually getting.</p>
+
         <button id="btn-reset" type="button">Restore defaults</button>
       </div>
       <dl class="legend">
@@ -214,10 +228,11 @@
         <dt>Your body</dt><dd>Dodge stun bolts physically — sidestep, duck</dd>
         <dt>Holsters</dt><dd>Two on the hips, two over the shoulders &mdash; any weapon fits. The bat'leth wants the <b>left shoulder</b>; either hand draws it, both hands span it. It deflects stun bolts even held still; a returned bolt that hits the remote pays 200</dd>
         <dt>The sash</dt><dd>A Klingon baldric over the <b>right shoulder</b>, six sheaths down the chest, <b>d'k tahgs only</b>. Let a knife go against your chest and it seats in the nearest empty sheath</dd>
-        <dt>Throw a blade</dt><dd>Let go mid-swing and it <b>flies and sticks</b> where it lands &mdash; grip near it again to pull it free. A gentle release just drops it (desktop: G throws, F recovers)</dd>
+        <dt>Throw a blade</dt><dd>Let go mid-swing and it flies. It <b>plants only point-first</b>, at speed &mdash; land it flat and it bounces, skids and lies where it stops, like anything else you drop. Heavier weapons throw shorter and tumble slower. Grip near anything lying about to pick it up (desktop: G throws, F recovers)</dd>
+        <dt>The line</dt><dd>Empty hand, squeeze grip with nothing in reach: a hook fires from the <b>wrist bracer</b>. Cast it toward a lost weapon and it homes, latches and <b>reels it back into your hand</b>. Cast at nothing and it is a rope dart &mdash; swing it and the hook hits what a blade would. Let go of grip to reel in (desktop: T)</dd>
         <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD roams the whole room · Shift sprint · <b>Space dash</b> (dodge!) · C duck · wheel sets power · B or 1–6 weapon · X drops it · in the lobby, click a pad or press Enter · P pause</dd>
       </dl>
-      <p class="footnote">M0.18 feel prototype — telegraph timing, phaser feel, a physical armory, the sash, and the Onshape bat'leth. On Quest, open this
+      <p class="footnote">M0.19 feel prototype — telegraph timing, phaser feel, a physical armory with real throws, the sash, the line, and the Onshape bat'leth. On Quest, open this
         page in the headset browser. If the Enter button stays unavailable inside an embedded viewer,
         open the page in its own tab.</p>
       <p class="footnote" id="diag" style="font-family:monospace;font-size:11px;color:#6a6a5c;line-height:1.6"></p>
@@ -250,6 +265,7 @@
     <div class="stat"><div class="lab" id="lab-wave">Wave</div><div class="val" id="h-wave">1</div></div>
     <div class="stat"><div class="lab">Tolerance</div><div id="pips"><span class="pip"></span><span class="pip"></span><span class="pip"></span></div></div>
     <div class="stat"><div class="lab">Weapon</div><div class="val" id="h-weap">—</div></div>
+    <div class="stat"><div class="lab">FPS</div><div class="val" id="h-fps">—</div></div>
   </div>
   <div id="vignette"></div>
   <div id="reticle"></div>
@@ -359,8 +375,23 @@ const TUNE = {
   bladeSwingSpeed: 1.2,    // m/s blade speed needed to pop a target (desktop: 0.8)
   throwSpeed: 1.5,         // m/s of hand movement that turns a release into a throw (peak over ~90 ms)
   throwBoost: 1.35,
-  throwGravity: 7.5,
-  dropGravity: 9.8,        // a let-go weapon just falls
+  gravity: 9.8,
+  // — flight: what happens when something leaves your hand —
+  // Each weapon has a mass (kg) and a bounce (restitution) in ARMORY. Heavy things
+  // leave the hand slower and spin slower. Only a blade sticks, and only point-first
+  // at speed; everything else bounces, skids, tumbles and comes to rest.
+  stickSpeed: 3.2,         // m/s into the surface for a blade to plant
+  stickEmbed: 0.07,        // m of blade buried when it does
+  slideFriction: 0.45,     // tangential speed lost per bounce
+  restSpeed: 0.7,          // m/s below which a thing on the floor stops moving
+  // — the line: a hook on a rope from the wrist —
+  lineLength: 7.0,         // m of rope
+  lineCast: 15,            // m/s the hook leaves the wrist
+  lineReel: 8.0,           // m/s it hauls a latched weapon back
+  lineHoming: 4.0,         // rad/s the hook can turn toward a lost weapon it was cast at
+  lineCone: 0.80,          // rad half-angle the cast looks for a lost weapon in
+  lineLatch: 0.32,         // m — how close the hook has to pass a lost weapon to take it
+  hookSpeed: 2.5,          // m/s the hook needs to be moving to hit anything
   // — grip reach: how close a release has to be to seat in something —
   holsterReach: 0.26,      // m, hips and shoulders
   sashReach: 0.16,         // m, a sheath on the sash (tighter — they sit close together)
@@ -436,6 +467,14 @@ const AudioKit = (() => {
     wallHit(){ blip('sine', 520, 300, 0.07, 0.10); },
     discHit(){ blip('triangle', 1500, 700, 0.11, 0.20); blip('sine', 2600, 1600, 0.08, 0.10); },
     clang(){ blip('square', 2400, 1500, 0.10, 0.18); blip('triangle', 5100, 3400, 0.07, 0.09, 0.01); },
+    // a thing hitting the floor or a wall: bright steel for a knife, a thud for something heavy
+    impact(s, heavy){ const v = Math.max(0, Math.min(1, s));
+      if (heavy) { blip('triangle', 150, 55, 0.20, 0.30 * v); blip('square', 95, 40, 0.14, 0.12 * v); blip('square', 1600, 900, 0.04, 0.08 * v); }
+      else { blip('square', 2600, 1400, 0.07, 0.16 * v); blip('triangle', 5200, 3200, 0.05, 0.07 * v, 0.005); } },
+    stick(){ blip('square', 1700, 240, 0.09, 0.22); blip('sine', 2650, 2500, 0.32, 0.07, 0.03); },
+    cast(){ blip('sawtooth', 420, 1500, 0.14, 0.09); blip('sine', 2400, 900, 0.10, 0.05, 0.02); },
+    latch(){ blip('sine', 900, 1500, 0.07, 0.13); blip('sine', 1500, 1500, 0.06, 0.11, 0.07); },
+    reelIn(){ blip('square', 380, 620, 0.08, 0.06); },
     deflect(){ this.clang(); blip('triangle', 800, 2600, 0.15, 0.12, 0.05); },
     hit(){ blip('sawtooth', 160, 60, 0.45, 0.30); blip('square', 90, 60, 0.4, 0.15); },
     ackBeep(){ blip('sine', 660, 660, 0.07, 0.1); blip('sine', 880, 880, 0.07, 0.1, 0.09); },
@@ -1495,6 +1534,8 @@ function drawHUD() {
   c.fillStyle = '#ff9c00'; roundRect(c, 24, 24, 60, H - 48, 28); c.fill();
   const dsp = (px, w) => `${w || 600} ${px}px Antonio, "Arial Narrow", sans-serif`;
   c.textBaseline = 'top';
+  if (fpsAvg) { c.textAlign = 'right'; c.fillStyle = '#8d8a7b'; c.font = dsp(30, 400);
+    c.fillText(Math.round(fpsAvg) + ' FPS', W - 40, 36); c.textAlign = 'left'; }
   const vmode = game.program === 'velocity';
   const cols = [{ lab: 'SCORE', val: game.score }, { lab: 'STREAK', val: game.streak },
                 { lab: vmode ? 'SPEED' : 'WAVE', val: game.wave }];
@@ -1725,12 +1766,14 @@ function beamPowerScale(w) { return 0.4 + 0.12 * ((w.userData.power || 5)); }
    in flight, or lying where it fell. Grip holds it; let go and it goes wherever
    your hand is — a holster, the table, or the floor. */
 const ARMORY = [
-  { id: 'fc',      label: 'PHASER · FIRST CONTACT', build: buildPhaser,    isGun: true,  hands: 1, cap: 1.0, grip: 'forward', lay: 'side' },
-  { id: 'tng',     label: 'PHASER · TNG TYPE 2',    build: buildType2TNG,  isGun: true,  hands: 1, cap: 1.0, grip: 'forward', lay: 'flat' },
-  { id: 'rifle',   label: 'PHASER RIFLE',           build: buildRifle,     isGun: true,  hands: 2, cap: 1.9, grip: 'forward', lay: 'side' },
-  { id: 'comp',    label: 'COMPRESSION RIFLE',      build: buildCompRifle, isGun: true,  hands: 2, cap: 1.6, grip: 'forward', lay: 'side' },
-  { id: 'batleth', label: "BAT'LETH",               build: buildBatleth,   isGun: false, hands: 2, grip: 'span', lay: 'flat' },
-  { id: 'dktahg',  label: "D'K TAHG",               build: buildDkTahg,    isGun: false, hands: 1, grip: 'span', lay: 'flat', count: 6 },
+  // mass in kg, bounce = restitution, reach = m from the grip to the point (blades),
+  // stick = how squarely the point has to meet a surface to plant (1 = dead on)
+  { id: 'fc',      label: 'PHASER · FIRST CONTACT', build: buildPhaser,    isGun: true,  hands: 1, cap: 1.0, grip: 'forward', lay: 'side', mass: 0.45, bounce: 0.30 },
+  { id: 'tng',     label: 'PHASER · TNG TYPE 2',    build: buildType2TNG,  isGun: true,  hands: 1, cap: 1.0, grip: 'forward', lay: 'flat', mass: 0.40, bounce: 0.25 },
+  { id: 'rifle',   label: 'PHASER RIFLE',           build: buildRifle,     isGun: true,  hands: 2, cap: 1.9, grip: 'forward', lay: 'side', mass: 3.2,  bounce: 0.20 },
+  { id: 'comp',    label: 'COMPRESSION RIFLE',      build: buildCompRifle, isGun: true,  hands: 2, cap: 1.6, grip: 'forward', lay: 'side', mass: 2.8,  bounce: 0.20 },
+  { id: 'batleth', label: "BAT'LETH",               build: buildBatleth,   isGun: false, hands: 2, grip: 'span', lay: 'flat', mass: 2.4,  bounce: 0.30, reach: 0.30, stick: 0.30 },
+  { id: 'dktahg',  label: "D'K TAHG",               build: buildDkTahg,    isGun: false, hands: 1, grip: 'span', lay: 'flat', mass: 0.5,  bounce: 0.40, reach: 0.255, stick: 0.50, count: 6 },
 ];
 const arms = {};                       // instance id → the weapon ('fc', 'dktahg3', …)
 const ARMS = [];                       // every instance, in table order
@@ -2014,13 +2057,16 @@ function handGrip(i) {
       if (ow.userData.def.hands === 2 && ow.userData.support === null) {
         ow.userData.support = i; AudioKit.ackBeep(); toast('TWO-HANDED · ' + ow.userData.label);
       } else { giveTo(ow, i); AudioKit.ackBeep(); toast('SWITCHED HANDS'); }
+      return;
     }
   }
+  if (game.phase !== 'idle') castLine(i);                       // nothing in reach: the line goes out
 }
 /* Let go: a supporting hand just comes off; a holding hand releases the weapon into
    whatever is there — a holster, a sheath, the air. */
 function handGripEnd(i) {
   for (const w of ARMS) if (w.userData.support === i) w.userData.support = null;
+  if (lineActive(i)) { releaseLine(i); return; }
   const w = heldBy(i); if (!w) return;
   releaseWeapon(w, i);
 }
@@ -2051,47 +2097,54 @@ function handPeakVel(hand, out) {
   return best;
 }
 
-/* A blade let go hard enough leaves your hand and sticks where it lands; anything
-   let go gently just falls. */
+/* ═══════════════ flight: everything that leaves a hand ═══════════════
+   A blade let go hard enough flies and, if it meets a surface point-first at
+   speed, plants there. Anything else — a blade that lands flat, a dropped
+   phaser — bounces off whatever it hits, skids, tumbles and comes to rest.
+   Heavier things leave the hand slower and spin slower. */
 const thrown = [];
 const _thv = new THREE.Vector3(), _tsp = new THREE.Vector3();
+/* how much of the hand's speed a weapon of this mass carries away */
+function throwFactor(mass) { return Math.max(0.5, Math.min(1.15, Math.pow(0.5 / (mass || 0.5), 0.35))); }
+function launch(w, vel, spinAxis, spinRate) {
+  const u = w.userData;
+  cancelTrigger(w);
+  u.holder = 'flight'; u.support = null; u.useCameraRay = false;
+  u.vel = u.vel || new THREE.Vector3(); u.vel.copy(vel);
+  u.spinAxis = (u.spinAxis || new THREE.Vector3()).copy(spinAxis).normalize();
+  u.spinRate = spinRate; u.flightT = 0; u.bounces = 0; u.prevValid = false;
+  if (u.samples) u.samples.forEach((s, k) => s.getWorldPosition(u.prev[k]));
+  if (thrown.indexOf(w) < 0) thrown.push(w);
+  refreshHeld(); hudDirty = true;
+}
 function throwWeapon(w, i, vel) {
   if (!w || w.userData.isGun) return false;      // you do not throw a phaser
   if (heldBy(i) !== w) return false;             // …nor one that is not in that hand
   if (!vel) return false;
   const speed = vel.length();
   if (speed < TUNE.throwSpeed) return false;
-  cancelTrigger(w);
-  w.userData.holder = 'flight'; w.userData.dropped = false;
-  w.userData.support = null;
-  w.userData.vel = w.userData.vel || new THREE.Vector3();
-  w.userData.vel.copy(vel).multiplyScalar(TUNE.throwBoost);
-  w.userData.spinAxis = (w.userData.spinAxis || new THREE.Vector3()).set(
-    0.2 + Math.random() * 0.3, 1, 0.1).normalize();
-  w.userData.spinRate = 9 + speed * 1.2;
-  w.userData.flightT = 0;
-  w.userData.prevValid = false;
-  if (w.userData.samples) w.userData.samples.forEach((s, k) => s.getWorldPosition(w.userData.prev[k]));
-  thrown.push(w);
-  refreshHeld(); hudDirty = true;
+  const u = w.userData, m = u.def.mass || 0.5;
+  _tsp.copy(vel).multiplyScalar(TUNE.throwBoost * throwFactor(m));
+  // end over end, about an axis across the throw — the way a blade actually tumbles
+  _thv.crossVectors(_tsp, _upv);
+  if (_thv.lengthSq() < 1e-6) _thv.set(1, 0, 0);
+  launch(w, _tsp, _thv, (4 + speed * 0.6) * throwFactor(m));
+  u.dropped = false;
   AudioKit.feintOff(); haptic(w, 0.6, 50);
-  toast('THROWN · ' + w.userData.label);
+  toast('THROWN · ' + u.label);
   return true;
 }
 function dropWeapon(w, i) {
   const u = w.userData, hand = handOf(i);
-  cancelTrigger(w);
-  u.holder = 'flight'; u.support = null; u.dropped = true; u.useCameraRay = false;
-  u.vel = u.vel || new THREE.Vector3();
-  if (hand && hand.vel) u.vel.copy(hand.vel).multiplyScalar(0.6); else u.vel.set(0, 0, 0);
-  if (u.vel.length() > 1.2) u.vel.setLength(1.2);          // it slips out; it is not flung
-  u.spinAxis = (u.spinAxis || new THREE.Vector3()).set(1, 0.3, 0.2).normalize();
-  u.spinRate = 1.5; u.flightT = 0; u.prevValid = false;
-  thrown.push(w);
-  refreshHeld(); hudDirty = true;
+  _tsp.set(0, 0, 0);
+  if (hand && hand.vel) _tsp.copy(hand.vel).multiplyScalar(0.6);
+  if (_tsp.length() > 1.2) _tsp.setLength(1.2);          // it slips out; it is not flung
+  _thv.set(1, 0.3, 0.2);
+  launch(w, _tsp, _thv, 1.5);
+  u.dropped = true;
   toast('DROPPED · ' + u.label);
 }
-/* Where a falling thing comes to rest: the table top if it is over the table, else the floor. */
+/* Where a lying thing's grip sits: on the table top if it is over the table, else the floor. */
 function restHeight(x, y, z) {
   if (stageTable.visible && y > TABLE_TOP - 0.02) {
     const lx = x - stageTable.position.x, lz = z - stageTable.position.z;
@@ -2106,65 +2159,100 @@ function layToRest(w) {
   const yaw = Math.hypot(_fwd.x, _fwd.z) > 0.2 ? Math.atan2(-_fwd.x, -_fwd.z) : Math.random() * Math.PI * 2;
   w.rotation.set(0, yaw, w.userData.def.lay === 'side' ? Math.PI / 2 : 0);
 }
+/* The deepest penetration of a point into any surface of the room: the floor, the
+   table top (lobby), the court walls and ceiling (Velocity) or the range's edge.
+   Fills `n` with the surface normal; returns the depth (≤ 0 means clear). */
+const _n = new THREE.Vector3(), _pt = new THREE.Vector3(), _tan = new THREE.Vector3(), _spinKick = new THREE.Vector3();
+function surfaceDepth(p, clearance, n) {
+  let depth = clearance - p.y; n.set(0, 1, 0);                        // the floor is everywhere
+  if (stageTable.visible && p.y > TABLE_TOP - 0.05) {                  // the table catches what falls on it
+    const lx = p.x - stageTable.position.x, lz = p.z - stageTable.position.z;
+    if (Math.abs(lx) < TABLE_W / 2 && Math.abs(lz) < TABLE_D / 2) {
+      const d = TABLE_TOP + clearance - p.y; if (d > depth) { depth = d; n.set(0, 1, 0); } }
+  }
+  if (game.program === 'velocity') {
+    const X = TUNE.courtX - 0.03, Z = TUNE.courtZ - 0.03, Y = TUNE.courtY - 0.03;
+    let d;
+    d = p.x - X;  if (d > depth) { depth = d; n.set(-1, 0, 0); }
+    d = -X - p.x; if (d > depth) { depth = d; n.set( 1, 0, 0); }
+    d = p.z - Z;  if (d > depth) { depth = d; n.set(0, 0, -1); }
+    d = -Z - p.z; if (d > depth) { depth = d; n.set(0, 0,  1); }
+    d = p.y - Y;  if (d > depth) { depth = d; n.set(0, -1, 0); }
+  } else {
+    const R = TUNE.arenaRMax + 1.2, r = Math.hypot(p.x, p.z);        // the holodeck wall, out in the dark
+    let d = r - R; if (d > depth && r > 1e-6) { depth = d; n.set(-p.x / r, 0, -p.z / r); }
+    d = p.y - 4.9; if (d > depth) { depth = d; n.set(0, -1, 0); }     // and its ceiling
+  }
+  return depth;
+}
 const _twp = new THREE.Vector3(), _tq = new THREE.Quaternion();
 function thrownTick(dt) {
-  for (let n = thrown.length - 1; n >= 0; n--) {
-    const w = thrown[n], u = w.userData;
-    if (u.holder !== 'flight') { thrown.splice(n, 1); continue; }
-    const plants = !u.dropped && !u.isGun;               // only a thrown blade cuts, and sticks in walls
+  for (let k = thrown.length - 1; k >= 0; k--) {
+    const w = thrown[k], u = w.userData, def = u.def;
+    if (u.holder !== 'flight') { thrown.splice(k, 1); continue; }
+    const blade = !u.isGun && !!def.reach;
     u.flightT += dt;
-    u.vel.y -= (plants ? TUNE.throwGravity : TUNE.dropGravity) * dt;
+    u.vel.y -= TUNE.gravity * dt;
     w.position.addScaledVector(u.vel, dt);
     _tq.setFromAxisAngle(u.spinAxis, u.spinRate * dt);
     w.quaternion.multiplyQuaternions(_tq, w.quaternion);
     w.visible = true;
 
-    let stuck = false;
-    // it cuts whatever it passes through on the way
-    if (game.running && plants) {
+    // a thrown blade cuts whatever it passes through
+    if (game.running && blade && !u.dropped) {
       for (let j = targets.length - 1; j >= 0; j--) {
-        if (targets[j].position.distanceTo(w.position) < targetRadius() + 0.22) {
-          onTargetPop(j, TUNE.ptsMeleePop * 2); break;
-        }
+        if (targets[j].position.distanceTo(w.position) < targetRadius() + 0.22) { onTargetPop(j, TUNE.ptsMeleePop * 2); break; }
       }
       if (game.program === 'velocity') {
         for (const D of VEL.discs) {
           if (!D.live) continue;
-          if (D.mesh.position.distanceTo(w.position) < TUNE.discRadius + 0.2) {
-            _tsp.copy(u.vel);
-            discBladeHit(w.position, _tsp, D);
-            break;
-          }
+          if (D.mesh.position.distanceTo(w.position) < TUNE.discRadius + 0.2) { _tsp.copy(u.vel); discBladeHit(w.position, _tsp, D); break; }
         }
       } else if (w.position.distanceTo(remote.pos) < REMOTE_RADIUS + 0.22) {
         if (remote.state === 'vulnerable') onRemoteTagged(); else onRemoteChipped();
         u.vel.multiplyScalar(-0.3);
       }
     }
-    // …and then it plants itself in whatever stops it — or, if it merely fell, slides down it
-    if (game.program === 'velocity') {
-      const X = TUNE.courtX - 0.04, Z = TUNE.courtZ - 0.04, Y = TUNE.courtY - 0.04;
-      let wall = false;
-      if (w.position.x >  X) { w.position.x =  X; wall = true; u.vel.x = Math.min(0, u.vel.x); }
-      if (w.position.x < -X) { w.position.x = -X; wall = true; u.vel.x = Math.max(0, u.vel.x); }
-      if (w.position.z >  Z) { w.position.z =  Z; wall = true; u.vel.z = Math.min(0, u.vel.z); }
-      if (w.position.z < -Z) { w.position.z = -Z; wall = true; u.vel.z = Math.max(0, u.vel.z); }
-      if (w.position.y >  Y) { w.position.y =  Y; wall = true; u.vel.y = Math.min(0, u.vel.y); }
-      if (wall && plants) stuck = true;
-    } else {
-      const r = Math.hypot(w.position.x, w.position.z);
-      if (r > TUNE.arenaRMax + 1.2 && plants) stuck = true;
+
+    // contact: the grip (any weapon) and the point (a blade) are each tested; deepest wins
+    _fwd.set(0, 0, -1).applyQuaternion(w.quaternion);
+    let depth = surfaceDepth(w.position, 0.04, _n), atTip = false;
+    if (blade) {
+      _pt.copy(w.position).addScaledVector(_fwd, def.reach * (w.scale.x || 1));
+      const dTip = surfaceDepth(_pt, 0.0, _twp);
+      if (dTip > depth) { depth = dTip; _n.copy(_twp); atTip = true; }
     }
-    const rest = restHeight(w.position.x, w.position.y, w.position.z);
-    let landed = false;
-    if (w.position.y <= rest) { w.position.y = rest; stuck = true; landed = true; }
-    if (u.flightT > 6) stuck = true;
-    if (stuck) {
-      u.holder = 'stuck';
-      u.vel.set(0, 0, 0);
-      thrown.splice(n, 1);
-      if (!plants) layToRest(w);                            // a thrown blade keeps whatever angle it struck at
-      AudioKit.clang(); popEffect(w.position, 0xc3c8d2);
+    if (u.flightT > 14) {                                 // nothing flies for a quarter minute; put it down
+      u.holder = 'stuck'; u.vel.set(0, 0, 0); thrown.splice(k, 1);
+      layToRest(w); w.position.y = restHeight(w.position.x, w.position.y, w.position.z); hudDirty = true; continue;
+    }
+    if (depth <= 0) continue;
+
+    const vn = u.vel.dot(_n), speedIn = -vn;              // how hard it is going into the surface
+    const align = atTip ? -_fwd.dot(_n) : 0;              // how squarely the point meets it
+    if (blade && !u.dropped && atTip && speedIn > TUNE.stickSpeed && align > def.stick) {
+      // point-first, fast enough: it plants, buried to stickEmbed, at the angle it struck
+      w.position.addScaledVector(_n, depth - TUNE.stickEmbed);
+      u.holder = 'stuck'; u.vel.set(0, 0, 0); thrown.splice(k, 1);
+      AudioKit.stick(); popEffect(_pt, 0xc3c8d2); hudDirty = true;
+      continue;
+    }
+    // otherwise it bounces: push out, reflect the normal part, lose some skid, tumble
+    w.position.addScaledVector(_n, depth);
+    if (vn < 0) {
+      _tan.copy(u.vel).addScaledVector(_n, -vn).multiplyScalar(1 - TUNE.slideFriction);
+      u.vel.copy(_tan).addScaledVector(_n, speedIn * (def.bounce || 0.3));
+      u.bounces++;
+      _spinKick.crossVectors(_n, _tan);
+      if (_spinKick.lengthSq() > 1e-6) u.spinAxis.lerp(_spinKick.normalize(), 0.6).normalize();
+      u.spinRate = u.spinRate * 0.5 + _tan.length() * 3.0 * throwFactor(def.mass);
+      if (speedIn > 0.5) { const s = Math.min(1, speedIn / 6) * (0.45 + 0.55 * Math.min(1, def.mass / 2.5));
+        AudioKit.impact(s, def.mass > 1.2); }
+    }
+    // on a floor-like surface and barely moving: it is down for good
+    if (_n.y > 0.7 && u.vel.length() < TUNE.restSpeed) {
+      u.holder = 'stuck'; u.vel.set(0, 0, 0); thrown.splice(k, 1);
+      layToRest(w); w.position.y = restHeight(w.position.x, w.position.y, w.position.z);
       hudDirty = true;
     }
   }
@@ -2179,6 +2267,157 @@ function pickUpThrown(pos, maxD) {
   }
   return best;
 }
+
+/* ═══════════════ the line: a hook on a rope, from the wrist ═══════════════
+   An empty hand squeezing grip with nothing in reach casts it. Cast toward a lost
+   weapon it homes, latches and hauls it back into the still-squeezing hand. Cast
+   at nothing it is a rope dart: the hook whips with the swing and hits what a
+   blade would. Let go of grip and it reels in. One per hand; the rope is a short
+   verlet chain so it sags, cracks and wraps like a rope. */
+const LINE_SEGS = 10;
+const lines = [];
+function makeLine(i) {
+  const pts = [], prev = [];
+  for (let k = 0; k <= LINE_SEGS; k++) { pts.push(new THREE.Vector3()); prev.push(new THREE.Vector3()); }
+  const geo = new THREE.BufferGeometry();
+  const arr = new Float32Array((LINE_SEGS + 1) * 3);
+  geo.setAttribute('position', new THREE.BufferAttribute(arr, 3));
+  const mat = new THREE.LineBasicMaterial({ color: 0x99ccff, transparent: true, opacity: 0.9 }); mat.name = 'Mat_LineRope';
+  const rope = new THREE.Line(geo, mat); rope.name = 'LineRope' + i; rope.frustumCulled = false; rope.visible = false; scene.add(rope);
+  const steel = new THREE.MeshStandardMaterial({ color: 0xaab0ba, metalness: 0.9, roughness: 0.3 }); steel.name = 'Mat_HookSteel';
+  const hook = new THREE.Group(); hook.name = 'LineHook' + i; hook.visible = false; scene.add(hook);
+  const shank = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.06, 8), steel);
+  shank.name = 'HookShank'; shank.rotation.x = Math.PI / 2; shank.position.z = -0.03; hook.add(shank);
+  [0, 1, 2].forEach(k => {                                   // three tines, splayed forward
+    const tine = new THREE.Mesh(new THREE.ConeGeometry(0.007, 0.05, 6), steel);
+    tine.name = 'HookTine' + (k + 1); const a = k * Math.PI * 2 / 3;
+    tine.position.set(Math.cos(a) * 0.02, Math.sin(a) * 0.02, -0.07);
+    const d = new THREE.Vector3(Math.cos(a) * 0.35, Math.sin(a) * 0.35, -1).normalize();
+    tine.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d); hook.add(tine);
+  });
+  const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.009, 8, 8), new THREE.MeshBasicMaterial({ color: 0x99ccff }));
+  lamp.material.name = 'Mat_HookLamp'; lamp.name = 'HookLamp'; lamp.position.z = -0.045; hook.add(lamp);
+  return { i, pts, prev, rope, hook, arr, state: 'idle', len: 0, target: null, latched: null, t: 0, dir: new THREE.Vector3() };
+}
+for (let i = 0; i < 3; i++) lines.push(makeLine(i));
+function lineActive(i) { return lines[i] && lines[i].state !== 'idle'; }
+function lineHand(L, out, outQ) { return handPose(L.i, out, outQ); }
+/* a lost weapon: lying or stuck somewhere, in nobody's hand and not already on a line */
+function isLost(w) { const h = w.userData.holder; return h === 'stuck' || h === 'flight'; }
+const _lp = new THREE.Vector3(), _lq = new THREE.Quaternion(), _ld = new THREE.Vector3(), _lv = new THREE.Vector3(), _lt = new THREE.Vector3();
+function castLine(i) {
+  const L = lines[i]; if (!L || L.state !== 'idle') return false;
+  if (!lineHand(L, _lp, _lq)) return false;
+  if (i === 2) camera.getWorldDirection(_ld); else _ld.set(0, 0, -1).applyQuaternion(_lq);
+  // does it have a lost weapon to go for? nearest one inside the cone
+  let best = null, bd = Infinity;
+  for (const w of ARMS) { if (!isLost(w)) continue;
+    _lt.copy(w.position).sub(_lp); const d = _lt.length(); if (d > TUNE.lineLength || d < 1e-6) continue;
+    const ang = Math.acos(Math.max(-1, Math.min(1, _lt.dot(_ld) / d)));
+    if (ang < TUNE.lineCone && d < bd) { bd = d; best = w; } }
+  L.target = best; L.latched = null; L.state = 'cast'; L.t = 0; L.len = TUNE.lineLength; L.dir.copy(_ld);
+  for (let k = 0; k <= LINE_SEGS; k++) { L.pts[k].copy(_lp); L.prev[k].copy(_lp); }
+  L.prev[LINE_SEGS].addScaledVector(_ld, -TUNE.lineCast * dtNow);   // the hook leaves at cast speed
+  L.rope.visible = true; L.hook.visible = true;
+  AudioKit.cast(); haptic({ userData: { inputSource: hands[i] ? hands[i].src : null } }, 0.4, 40);
+  toast(best ? 'LINE · ' + best.userData.label : 'LINE');
+  return true;
+}
+function releaseLine(i) {
+  const L = lines[i]; if (!L || L.state === 'idle') return;
+  if (L.latched) { const w = L.latched; L.latched = null;                 // whatever was on the hook falls where it is
+    _lv.copy(L.pts[LINE_SEGS]).sub(L.prev[LINE_SEGS]).multiplyScalar(1 / Math.max(dtNow, 1e-3));
+    if (_lv.length() > 3) _lv.setLength(3);
+    _lt.set(1, 0.3, 0.2); launch(w, _lv, _lt, 2); w.userData.dropped = true; }
+  L.target = null; L.state = 'retract';
+}
+function lineTick(dt) {
+  for (const L of lines) {
+    if (L.state === 'idle') continue;
+    if (!lineHand(L, _lp, _lq)) { L.state = 'idle'; L.rope.visible = L.hook.visible = false; continue; }
+    L.t += dt;
+    const N = LINE_SEGS, tip = L.pts[N], tipPrev = L.prev[N];
+    // reeling: the rope shortens; retracting: fast
+    if (L.state === 'reel') L.len = Math.max(0.12, L.len - TUNE.lineReel * dt);
+    if (L.state === 'retract') L.len = Math.max(0, L.len - 22 * dt);
+    // verlet step for every point but the wrist
+    for (let k = 1; k <= N; k++) {
+      const p = L.pts[k], q = L.prev[k];
+      _lv.copy(p).sub(q).multiplyScalar(k === N ? 0.995 : 0.97);
+      q.copy(p); p.add(_lv);
+      p.y -= TUNE.gravity * (k === N ? 1.0 : 0.6) * dt * dt;
+    }
+    // homing: on the cast, the hook can turn toward the weapon it was thrown at
+    if (L.state === 'cast' && L.target) {
+      if (!isLost(L.target)) L.target = null;
+      else {
+        _lv.copy(tip).sub(tipPrev); const sp = _lv.length();
+        if (sp > 1e-6) { _lt.copy(L.target.position).sub(tip).normalize();
+          _lv.multiplyScalar(1 / sp).lerp(_lt, Math.min(1, TUNE.lineHoming * dt)).normalize().multiplyScalar(sp);
+          tipPrev.copy(tip).sub(_lv); }
+      }
+    }
+    // rope constraints: the wrist pins the first point, every segment has a maximum length
+    const seg = L.len / N;
+    for (let it = 0; it < 4; it++) {
+      L.pts[0].copy(_lp);
+      for (let k = 0; k < N; k++) {
+        const a = L.pts[k], b = L.pts[k + 1];
+        _ld.copy(b).sub(a); const d = _ld.length(); if (d <= seg || d < 1e-9) continue;
+        _ld.multiplyScalar((d - seg) / d);
+        if (k === 0) b.sub(_ld); else { a.addScaledVector(_ld, 0.5); b.addScaledVector(_ld, -0.5); }
+      }
+    }
+    for (let k = 1; k <= N; k++) if (L.pts[k].y < 0.03) L.pts[k].y = 0.03;
+    // the hook: what it does depends on the state
+    _lv.copy(tip).sub(tipPrev).multiplyScalar(1 / Math.max(dt, 1e-4));   // hook velocity
+    const hookSpeed = _lv.length();
+    if (L.state === 'cast' || L.state === 'whip') {
+      // latch onto any lost weapon it passes
+      let near = null, nd = TUNE.lineLatch;
+      for (const w of ARMS) { if (!isLost(w)) continue; const d = w.position.distanceTo(tip); if (d < nd) { nd = d; near = w; } }
+      if (near) { const wf = thrown.indexOf(near); if (wf >= 0) thrown.splice(wf, 1);
+        near.userData.holder = 'tethered'; near.userData.vel && near.userData.vel.set(0, 0, 0);
+        L.latched = near; L.target = null; L.state = 'reel'; AudioKit.latch();
+        haptic({ userData: { inputSource: hands[L.i] ? hands[L.i].src : null } }, 0.5, 40); refreshHeld(); }
+      else if (L.state === 'cast' && (L.t > 0.9 || tip.distanceTo(_lp) > L.len * 0.97)) L.state = 'whip';
+      // and it strikes like a blade when it is moving
+      if (game.running && hookSpeed > TUNE.hookSpeed) {
+        for (let j = targets.length - 1; j >= 0; j--) {
+          if (targets[j].position.distanceTo(tip) < targetRadius() + 0.16) { game.shots++; game.hits++; onTargetPop(j, TUNE.ptsMeleePop); break; }
+        }
+        if (game.program === 'velocity') {
+          for (const D of VEL.discs) { if (!D.live) continue;
+            if (D.mesh.position.distanceTo(tip) < TUNE.discRadius + 0.16) { discBladeHit(tip, _lv, D); tipPrev.copy(tip); break; } }
+        } else if (tip.distanceTo(remote.pos) < REMOTE_RADIUS + 0.18) {
+          if (remote.state === 'vulnerable') onRemoteTagged(); else onRemoteChipped();
+          tipPrev.copy(tip).addScaledVector(_lv, dt * 0.4);              // it bounces off
+        }
+      }
+    }
+    if (L.state === 'reel' && L.latched) {
+      const w = L.latched;
+      w.position.copy(tip); w.visible = true;
+      _tq.setFromAxisAngle(_upv, 2.5 * dt); w.quaternion.multiplyQuaternions(_tq, w.quaternion);   // it turns slowly on the hook
+      if (tip.distanceTo(_lp) < 0.32) {                                   // home: into the hand
+        w.userData.holder = 'stuck';                                      // giveTo expects it loose
+        L.latched = null;
+        if (giveTo(w, L.i)) { AudioKit.ackBeep(); toast('RECOVERED · ' + w.userData.label); }
+        L.state = 'retract';
+      }
+    }
+    if (L.state === 'retract' && L.len <= 0.001) {
+      L.state = 'idle'; L.rope.visible = L.hook.visible = false; continue;
+    }
+    // draw it
+    for (let k = 0; k <= N; k++) { const p = L.pts[k]; L.arr[k * 3] = p.x; L.arr[k * 3 + 1] = p.y; L.arr[k * 3 + 2] = p.z; }
+    L.rope.geometry.attributes.position.needsUpdate = true;
+    L.hook.position.copy(tip);
+    _ld.copy(tip).sub(L.pts[N - 1]);
+    if (_ld.lengthSq() > 1e-8) { _lt.copy(tip).add(_ld); L.hook.lookAt(_lt); L.hook.rotateY(Math.PI); }
+  }
+}
+function retractAllLines() { lines.forEach(L => { if (L.state !== 'idle') { L.latched = null; L.state = 'idle'; L.rope.visible = L.hook.visible = false; } }); }
 
 /* Put every weapon where its holder says it should be. */
 const _gx = new THREE.Vector3(), _gy = new THREE.Vector3(), _gz = new THREE.Vector3(),
@@ -2221,7 +2460,7 @@ function loadoutTick(dt) {
 
   for (const w of ARMS) {
     const u = w.userData, hold = u.holder;
-    if (hold === 'flight' || hold === 'stuck') { w.visible = true; continue; }
+    if (hold === 'flight' || hold === 'stuck' || hold === 'tethered') { w.visible = true; continue; }
     if (hold === 'table') {
       w.visible = selecting;
       if (selecting) {
@@ -2407,6 +2646,16 @@ for (let i = 0; i < 2; i++) {
   c.addEventListener('selectend', () => handFire(hand, false, 'trigger'));
   c.addEventListener('squeezestart', () => handGrip(i));
   c.addEventListener('squeezeend', () => handGripEnd(i));
+  // the bracer the line fires from: a steel band round the wrist with a pale-blue emitter
+  const bracer = new THREE.Group(); bracer.name = 'GrappleBracer' + (i === 0 ? 'L' : 'R');
+  const bandMat = new THREE.MeshStandardMaterial({ color: 0x6f7480, metalness: 0.85, roughness: 0.4 }); bandMat.name = 'Mat_BracerSteel';
+  const band = new THREE.Mesh(new THREE.TorusGeometry(0.036, 0.006, 8, 20), bandMat);
+  band.name = 'BracerBand'; band.position.z = 0.045; bracer.add(band);
+  const port = new THREE.Mesh(new THREE.CylinderGeometry(0.007, 0.009, 0.02, 10), bandMat);
+  port.name = 'BracerPort'; port.rotation.x = Math.PI / 2; port.position.set(0, -0.036, 0.03); bracer.add(port);
+  const portLamp = new THREE.Mesh(new THREE.SphereGeometry(0.004, 8, 8), new THREE.MeshBasicMaterial({ color: 0x99ccff }));
+  portLamp.material.name = 'Mat_BracerLamp'; portLamp.name = 'BracerLamp'; portLamp.position.set(0, -0.036, 0.018); bracer.add(portLamp);
+  c.add(bracer);
   playerRig.add(c); vrControllers.push(c); hands.push(hand);
 }
 
@@ -2532,6 +2781,7 @@ function setupDesk() {
         throwWeapon(cur, 2, _gz);
       } else if (cur) { returnToTable(cur); toast('EMPTY HANDS'); } }
     if (e.code === 'KeyX') { const cur = heldBy(2); if (cur) dropWeapon(cur, 2); }
+    if (e.code === 'KeyT') { if (lineActive(2)) releaseLine(2); else if (!heldBy(2)) castLine(2); }
     if (e.code === 'KeyF') { const p2 = pickUpThrown(camera.getWorldPosition(new THREE.Vector3()), 2.2);
       if (p2 && !heldBy(2)) { giveTo(p2, 2); AudioKit.ackBeep(); toast('RECOVERED · ' + p2.userData.label); } }
     if (e.code === 'KeyB' || e.code === 'KeyQ') {   // step through the armory
@@ -2594,7 +2844,7 @@ function deskTick(dt) {
    The dials worth arguing about live here, not in the code. Saved per browser. */
 const DEFAULTS = { telegraph: 0.55, assist: 2.5, targetScale: 0.75, agility: 1.0, brightness: 0.72,
                    targetHP: 3, fleeSpeed: 3.4, discSpeed: 3.0, courtSize: 3.4, phaserVol: 0.45,
-                   beamSweep: 0.10, v: 2 };
+                   beamSweep: 0.10, refresh: 'auto', v: 2 };
 const SETTINGS = JSON.parse(JSON.stringify(DEFAULTS));
 function loadSettings() {
   try {
@@ -2840,7 +3090,7 @@ function startProgram(mode) {
     lockPointer(renderer.domElement); }
   game.phase = 'select';
   game.running = false; game.over = false; game.paused = false;
-  parkRemote(); drawTableConsole();
+  parkRemote(); drawTableConsole(); retractAllLines();
   applyProgram();
   flashGrid(0.35); AudioKit.ackBeep();
   toast('THE LOBBY · ARM YOURSELF FROM THE TABLE · TRIGGER ON A PAD');
@@ -2849,9 +3099,9 @@ function startProgram(mode) {
    body if `toBody` and one fits (a restart mid-program), otherwise to its place on
    the table (the lobby). */
 function recallLoose(toBody) {
-  thrown.length = 0;
+  thrown.length = 0; retractAllLines();
   for (const w of ARMS) { const u = w.userData;
-    if (u.holder !== 'flight' && u.holder !== 'stuck') continue;
+    if (u.holder !== 'flight' && u.holder !== 'stuck' && u.holder !== 'tethered') continue;
     u.dropped = false; if (u.vel) u.vel.set(0, 0, 0);
     let k = -1;
     if (toBody) k = HOLSTERS.findIndex((h, j) => holsterAccepts(h, w) && !holsterOccupant(j) && (u.def.id !== 'dktahg' || h.accepts === 'dktahg'));
@@ -2887,13 +3137,14 @@ if (hasRealURL) btnPop.href = location.href; // a real link escapes the viewer f
 
 /* diagnostic readout — big enough to read in-headset, easy to report back */
 const diagEl = document.getElementById('diag');
-let lastVRError = '—';
+let lastVRError = '—', refreshNote = '';
 function drawDiag(supported) {
   diagEl.textContent =
     'DIAG · frame:' + (isFramed ? 'EMBEDDED' : 'standalone') +
     ' · url:' + (hasRealURL ? location.protocol.replace(':','') : 'NONE(' + location.protocol + ')') +
     ' · webxr:' + (navigator.xr ? 'yes' : 'NO') +
     ' · immersive-vr:' + supported +
+    ' · rates:' + (refreshNote || '—') +
     ' · lastError:' + lastVRError;
 }
 drawDiag('checking');
@@ -2934,6 +3185,7 @@ btnVR.addEventListener('click', async () => {
     }
     playerRig.position.y = (refType === 'local') ? 1.6 : 0; // 'local' starts at head, not floor
     startProgram('vr');
+    applyRefresh();
     session.addEventListener('end', () => {
       game.running = false; game.phase = 'idle'; game.mode = null; AudioKit.humStop(); AudioKit.beamStop();
       lobbyEl.style.display = 'flex'; hudEl.style.display = 'none';
@@ -2993,6 +3245,8 @@ function syncSettingsUI() {
     el.value = SETTINGS[c.key];
     document.getElementById(c.out).textContent = c.fmt(Number(SETTINGS[c.key]));
   });
+  document.getElementById('s-fps').value = String(SETTINGS.refresh || 'auto');
+  document.getElementById('o-fps').textContent = !SETTINGS.refresh || SETTINGS.refresh === 'auto' ? 'auto' : SETTINGS.refresh + ' Hz';
 }
 CONTROLS.forEach(c => {
   document.getElementById(c.id).addEventListener('input', e => {
@@ -3001,6 +3255,24 @@ CONTROLS.forEach(c => {
     applySettings(); saveSettings();
   });
 });
+const fpsSel = document.getElementById('s-fps');
+fpsSel.addEventListener('change', e => { SETTINGS.refresh = e.target.value; saveSettings(); syncSettingsUI(); applyRefresh(); });
+/* Ask the running headset session for the chosen refresh rate. */
+function applyRefresh() {
+  const sess = renderer.xr.getSession && renderer.xr.getSession();
+  if (!sess) return;
+  const rates = sess.supportedFrameRates ? Array.prototype.slice.call(sess.supportedFrameRates) : null;
+  refreshNote = rates ? rates.map(r => Math.round(r)).join('/') : 'n/a';
+  if (SETTINGS.refresh === 'auto' || typeof sess.updateTargetFrameRate !== 'function') { drawDiag(refreshNote); return; }
+  const want = Number(SETTINGS.refresh);
+  const rate = rates && rates.length ? rates.reduce((a, b) => Math.abs(b - want) < Math.abs(a - want) ? b : a) : want;
+  let pr;
+  try { pr = sess.updateTargetFrameRate(rate); }
+  catch (err) { refreshNote += ' (refused: ' + (err && err.message || err) + ')'; drawDiag(refreshNote); return; }
+  Promise.resolve(pr)
+    .then(() => { refreshNote += ' → ' + Math.round(rate); drawDiag(refreshNote); toast(Math.round(rate) + ' HZ'); })
+    .catch(err => { refreshNote += ' (refused: ' + (err && err.message || err) + ')'; drawDiag(refreshNote); });
+}
 document.getElementById('btn-reset').addEventListener('click', () => {
   Object.assign(SETTINGS, JSON.parse(JSON.stringify(DEFAULTS)));
   syncSettingsUI(); applySettings(); saveSettings();
@@ -3033,19 +3305,23 @@ function drawDomHud() {
     : nm + ' · PWR ' + w.userData.power +
       ' · CELL ' + Math.round(100 * w.userData.battery / w.userData.batteryMax) + '%';
   pipEls.forEach((el, i) => el.classList.toggle('lost', i >= game.pips));
+  document.getElementById('h-fps').textContent = fpsAvg ? Math.round(fpsAvg) : '—';
 }
 
 /* ───────────────────── main loop ───────────────────── */
 let perf = 0, gt = 0, lastT = 0, hudClock = 0; // perf is wall clock; gt is PROGRAM time — it freezes with pause
+let fpsAvg = 0, fpsClock = 0;
 drawHUD();
 renderer.setAnimationLoop((time) => {
   const t = time * 0.001;
   const dt = Math.min(0.05, lastT ? t - lastT : 0.016); lastT = t; perf = t;
   if (!game.paused) gt += dt;
+  if (dt > 0) { const f = 1 / dt; fpsAvg = fpsAvg ? fpsAvg + (f - fpsAvg) * 0.06 : f; }
+  fpsClock += dt; if (fpsClock > 0.5) { fpsClock = 0; hudDirty = true; }
 
   vrControllers.forEach(c => c.visible = renderer.xr.isPresenting);
   if (game.mode) loadoutTick(dt);
-  if (!game.paused) thrownTick(dt);
+  if (!game.paused) { thrownTick(dt); if (game.mode) lineTick(dt); }
   if (game.phase === 'select') {
     lobbyPads.forEach(p => {
       if (p.id === 'begin') p.mat.color.setHSL(0.09, 1, 0.45 + 0.25 * Math.sin(perf * 4));

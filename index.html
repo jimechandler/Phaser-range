@@ -209,7 +209,21 @@
           <input type="range" id="s-mus" min="0" max="1" step="0.05"><output id="o-mus"></output></div>
         <p class="hint">Firing volume, and the music — a different loop for each room. Every dial here is also on the pause menu, mid-program.</p>
 
+        <h2>Starting level</h2>
+        <div class="row"><label for="s-wave">Range</label>
+          <input type="range" id="s-wave" min="1" max="10" step="1"><output id="o-wave"></output></div>
+        <div class="row"><label for="s-spd">Velocity</label>
+          <input type="range" id="s-spd" min="1" max="8" step="1"><output id="o-spd"></output></div>
+        <p class="hint">Where the drill and the court start — experienced players skip the early waves.</p>
+
         <h2>Calisthenics</h2>
+        <div class="row"><label for="s-cdiff">Difficulty</label>
+          <select id="s-cdiff"><option value="cadet">Cadet</option><option value="officer">Officer</option><option value="warrior">Warrior</option><option value="dahar">Dahar master</option></select><output id="o-cdiff"></output></div>
+        <div class="row"><label for="s-cspeed">Speed</label>
+          <input type="range" id="s-cspeed" min="0.7" max="1.6" step="0.1"><output id="o-cspeed"></output></div>
+        <div class="row"><label for="s-cenemy">Enemies</label>
+          <input type="range" id="s-cenemy" min="1" max="3" step="1"><output id="o-cenemy"></output></div>
+        <p class="hint">Difficulty sets how hard they come and how much they take; speed scales everything they do; enemies is how many are on you at once. Levels climb with every kill either way.</p>
         <div class="row"><label for="s-world">World</label>
           <select id="s-world"><option value="arena">The arena, high noon</option><option value="qonos">Qo'noS, by lava</option></select><output id="o-world"></output></div>
         <p class="hint">The ruins run out to the horizon under a hard sun, or a volcanic night under the green moon with the fight lit by lava.</p>
@@ -252,22 +266,22 @@
         <dt>Thumb key</dt><dd>B / Y fires as well &mdash; the way the swept TNG shell is meant to be worked</dd>
         <dt>Grip</dt><dd><b>Hold it to hold it.</b> Squeeze near anything &mdash; on the table, in a holster, on the sash, on the floor &mdash; to take it. Let go at a holster or sash sheath and it stows; let go anywhere else and it <b>drops</b> (over the table, onto the table). A second hand on a rifle or the bat'leth steadies it</dd>
         <dt>A / X</dt><dd><b>Hold 0.6&thinsp;s to pause</b>; a fresh press on the pause card walks you back to the lobby</dd>
-        <dt>The lobby</dt><dd>The arch and the table are one room. Three pads on the table's front edge: <b>Phaser Range</b>, <b>Velocity</b>, <b>Begin</b> &mdash; trigger with a hand over one. Whatever is on your body comes with you</dd>
+        <dt>The lobby</dt><dd>The arch and the table are one room. The console at the table's front edge picks the program &mdash; <b>Phaser Range</b>, <b>Velocity</b>, <b>Calisthenics</b>, <b>Resume</b>, <b>Begin</b> &mdash; touch a button or point at it and pull the trigger. Whatever is on your body comes with you</dd>
         <dt>Thumbstick</dt><dd>Flick right to raise the power setting, left to lower it &mdash; ten detents, stun to kill, the lamp runs green to red (desktop: mouse wheel)</dd>
         <dt>Your body</dt><dd>Dodge stun bolts physically — sidestep, duck</dd>
         <dt>Holsters</dt><dd>Two on the hips, two over the shoulders &mdash; any weapon fits. The bat'leth wants the <b>left shoulder</b>; either hand draws it, both hands span it. It deflects stun bolts even held still; a returned bolt that hits the remote pays 200</dd>
         <dt>The sash</dt><dd>A Klingon baldric over the <b>right shoulder</b>, six sheaths down the chest, <b>d'k tahgs only</b>. Let a knife go against your chest and it seats in the nearest empty sheath</dd>
         <dt>Throw a blade</dt><dd>Let go mid-swing and it flies. It <b>plants only point-first</b>, at speed &mdash; land it flat and it bounces, skids and lies where it stops, like anything else you drop. Heavier weapons throw shorter and tumble slower. Grip near anything lying about to pick it up (desktop: G throws, F recovers)</dd>
-        <dt>Calisthenics</dt><dd>Worf's program. BEGIN arms you: a <b>d'k tahg on each hip, the bat'leth over the left shoulder</b>, no sash. Two worlds in Settings &mdash; the arena at high noon, run out to the horizon, or Qo'noS at night with the fight lit by lava. A Klingon warrior with a bat'leth: <b>duck the sweep, sidestep the overhead cut</b>, or meet its blade with yours to parry. After a swing it is open &mdash; three hits fell it. Klingon armor and weapons only; a hit in its wind-up breaks the attack</dd>
+        <dt>Calisthenics</dt><dd>Worf's program. Difficulty, enemy speed and how many come at once are in Settings; from level 2 <b>Nausicaans</b> join &mdash; taller, quicker, a long blade in one hand: a thrust you sidestep, a neck-high slash you duck. <b>Headshots</b> count double. A blade's killing blow takes the head, or the arm it landed on; a thrown knife <b>stays in</b> an open enemy until you pull it out. BEGIN arms you: a <b>d'k tahg on each hip, the bat'leth over the left shoulder</b>, no sash. Two worlds in Settings &mdash; the arena at high noon, run out to the horizon, or Qo'noS at night with the fight lit by lava. A Klingon warrior with a bat'leth: <b>duck the sweep, sidestep the overhead cut</b>, or meet its blade with yours to parry. After a swing it is open &mdash; three hits fell it. Klingon armor and weapons only; a hit in its wind-up breaks the attack</dd>
         <dt>Catching</dt><dd>Toss a blade and squeeze as it comes back &mdash; it is caught <b>exactly as it lands in your hand</b>, no snap. Re-seat it by holstering and drawing. With a blade in hand the thumbstick trims how it sits: forward/back pitches it toward the knuckles or back, left/right twists it about its length, 10° a flick, remembered</dd>
         <dt>Two hands on a pistol</dt><dd>Grip near a pistol your other hand holds and the second hand <b>steadies it</b>; let go with the first and it passes across</dd>
         <dt>The drones</dt><dd>Tag the remote in its window three times and it <b>bursts</b>; the next one comes in from the dark a little tougher. Five strikes burst the Velocity disc; the court always serves another. The range runs on a <b>four-minute clock</b></dd>
         <dt>Saved games</dt><dd>A running program saves itself every few seconds and whenever you pause or leave. <b>RESUME</b> on the table picks it up, kit and all. Finished runs go in the record: best score per program, on the arch</dd>
-        <dt>The wardrobe</dt><dd>The console behind the table: <b>point at a button and pull the trigger</b> &mdash; gender, species, affiliation, trousers or skirt. The mannequin beside it wears your choices; so do you, down to the boots</dd>
+        <dt>The wardrobe</dt><dd>Turn round from the table &mdash; the console is behind you, the mannequin beside it: <b>point at a button and pull the trigger</b> &mdash; gender, species, affiliation, trousers or skirt. The mannequin beside it wears your choices; so do you, down to the boots</dd>
         <dt>The line</dt><dd>Empty hand, squeeze grip with nothing in reach: a hook fires from the <b>wrist bracer</b>. Cast it toward a lost weapon and it homes, latches and <b>reels it back into your hand</b>. Cast at nothing and it is a rope dart &mdash; swing it and the hook hits what a blade would. Let go of grip to reel in (desktop: T)</dd>
         <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD roams the whole room · Shift sprint · <b>Space dash</b> (dodge!) · C duck · wheel sets power · B or 1–9 weapon · X drops it · in the lobby, click a pad or press Enter · P pause</dd>
       </dl>
-      <p class="footnote">M0.23 feel prototype — the drill (on a clock), Velocity and Calisthenics with two worlds and its own opera; settings on the pause menu, music in every room; a physical armory with real throws and catches, the sash, the line, the Onshape bat'leth, a body with a wardrobe, saved games and a record book. On Quest, open this
+      <p class="footnote">M0.24 feel prototype — the drill (on a clock), Velocity and Calisthenics with two worlds, squads of Klingons and Nausicaans, and its own opera; settings on the pause menu, music in every room; a physical armory with real throws and catches, the sash, the line, the Onshape bat'leth, a body with a wardrobe, saved games and a record book. On Quest, open this
         page in the headset browser. If the Enter button stays unavailable inside an embedded viewer,
         open the page in its own tab.</p>
       <p class="footnote" id="diag" style="font-family:monospace;font-size:11px;color:#6a6a5c;line-height:1.6"></p>
@@ -427,12 +441,13 @@ const TUNE = {
   slideFriction: 0.45,     // tangential speed lost per bounce
   restSpeed: 0.7,          // m/s below which a thing on the floor stops moving
   // — the line: a hook on a rope from the wrist —
-  lineLength: 7.0,         // m of rope
-  lineCast: 15,            // m/s the hook leaves the wrist
-  lineReel: 8.0,           // m/s it hauls a latched weapon back
-  lineHoming: 4.0,         // rad/s the hook can turn toward a lost weapon it was cast at
+  lineLength: 8.0,         // m of rope
+  lineCast: 24,            // m/s the hook leaves the wrist — a shot, not a lob
+  lineReel: 12.0,          // m/s it hauls a latched weapon back
+  lineHoming: 7.0,         // rad/s the hook can turn toward a lost weapon it was cast at
   lineCone: 0.80,          // rad half-angle the cast looks for a lost weapon in
-  lineLatch: 0.32,         // m — how close the hook has to pass a lost weapon to take it
+  lineLatch: 0.45,         // m — how close the hook has to pass a lost weapon to take it
+  lineSag: 0.45,           // how much of gravity the rope feels — a taut cable, not a washing line
   hookSpeed: 2.5,          // m/s the hook needs to be moving to hit anything
   fistTilt: 55,            // ° the fist's handle axis leans forward of the aim ray's vertical (Touch: the handle sits behind the ring)
   // — catching —
@@ -1782,7 +1797,7 @@ function fireBolt(phaser, energy) {
   getMuzzleRay(phaser, _rayO, _rayD);
   const charged = E / Math.max(0.001, phaser.userData.batteryMax || 1);
   game.shots++; AudioKit.phaserBolt(charged); haptic(phaser, 0.5 + 0.5 * charged, 40 + 60 * charged);
-  let bestD = Infinity, bestKind = null, bestIdx = -1, hitPoint = null, bestDisc = null;
+  let bestD = Infinity, bestKind = null, bestIdx = -1, hitPoint = null, bestDisc = null, bestWarrior = null, bestHead = false;
   const asst = boltAssist();
   targets.forEach((t, i) => { const d = rayHit(_rayO, _rayD, t.position, targetRadius(), 0, asst);
     if (d > 0 && d < bestD) { bestD = d; bestKind = 'target'; bestIdx = i; } });
@@ -1792,9 +1807,11 @@ function fireBolt(phaser, energy) {
     const nd = nearestLiveDisc(_rayO, _rayD);
     if (nd && nd.dist < bestD) { bestD = nd.dist; bestKind = 'disc'; bestDisc = nd.d; }
   } else if (game.program === 'calisthenics') {
-    if (warrior.state !== 'off' && warrior.state !== 'dead') {
-      const d = rayHit(_rayO, _rayD, warriorCenter(_wS), 0.38, 0, asst);
-      if (d > 0 && d < bestD) { bestD = d; bestKind = 'warrior'; } }
+    for (const W of warriors) { if (W.state === 'off' || W.state === 'dead') continue;
+      let d = rayHit(_rayO, _rayD, warriorHeadPos(W, _wS), 0.17, 0, asst);
+      if (d > 0 && d < bestD) { bestD = d; bestKind = 'warrior'; bestWarrior = W; bestHead = true; }
+      d = rayHit(_rayO, _rayD, warriorCenter(W, _wS), 0.38, 0, asst);
+      if (d > 0 && d < bestD) { bestD = d; bestKind = 'warrior'; bestWarrior = W; bestHead = false; } }
   } else if (remote.state !== 'dead') { const d = rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS, 0, asst); // remote is a target any time now
     if (d > 0 && d < bestD) { bestD = d; bestKind = (remote.state === 'vulnerable') ? 'remote' : 'chip'; } }
   if (bestKind) { game.hits++; hitPoint = _rayO.clone().add(_rayD.clone().multiplyScalar(bestD)); }
@@ -1816,7 +1833,7 @@ function fireBolt(phaser, energy) {
     addScore(TUNE.ptsBoltDown); bumpStreak(); toast('BOLT INTERCEPTED'); }
   else if (bestKind === 'remote') onRemoteTagged();
   else if (bestKind === 'chip') onRemoteChipped();
-  else if (bestKind === 'warrior') { game.hits--; if (warriorStruck('bolt')) game.hits++; }
+  else if (bestKind === 'warrior') { game.hits--; if (warriorStruck(bestWarrior, hitPoint, 'bolt', bestHead, null)) game.hits++; }
   else if (bestKind === 'disc') onDiscStruck(_rayD, E, bestDisc);
   hudDirty = true;
 }
@@ -1848,7 +1865,9 @@ function beamTick(phaser, dt) {
     return;
   }
   if (game.program === 'calisthenics') {
-    if (warrior.state !== 'off' && warrior.state !== 'dead' && rayHit(_rayO, _rayD, warriorCenter(_wS), 0.38, TUNE.beamSweep) > 0) warriorStruck('beam');
+    for (const W of warriors) { if (W.state === 'off' || W.state === 'dead') continue;
+      if (rayHit(_rayO, _rayD, warriorHeadPos(W, _wS), 0.17, TUNE.beamSweep) > 0) { warriorStruck(W, _wS, 'beam', true, null); break; }
+      if (rayHit(_rayO, _rayD, warriorCenter(W, _wS), 0.38, TUNE.beamSweep) > 0) { warriorStruck(W, _wS, 'beam', false, null); break; } }
     return;
   }
   if (remote.state !== 'dead' && rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS, TUNE.beamSweep) > 0) { // the beam counter-attacks too
@@ -1905,7 +1924,7 @@ function drawHUD() {
     c.textAlign = 'left';
     c.fillStyle = '#99ccff'; c.font = dsp(32, 600);
     c.fillText('GRIP HOLDS · LET GO AT A HOLSTER TO STOW · ELSEWHERE IT DROPS', 140, 392);
-    c.fillText('PADS: RANGE · VELOCITY · CALISTHENICS · RESUME · BEGIN', 140, 432);
+    c.fillText('THE CONSOLE AT THE TABLE PICKS THE PROGRAM · THE WARDROBE IS BEHIND YOU', 140, 432);
     worldHUD.tex.needsUpdate = true; return;
   }
   { const B = bestFor(game.program); if (B.best) { c.textAlign = 'right'; c.fillStyle = '#8d8a7b'; c.font = dsp(26, 400);
@@ -1971,6 +1990,11 @@ const PAUSE_ROWS = [
   { key: 'phaserVol',  label: 'PHASER VOLUME',  min: 0,    max: 1,    step: 0.05, fmt: pct, preview: () => AudioKit.phaserBolt() },
   { key: 'musicVol',   label: 'MUSIC',          min: 0,    max: 1,    step: 0.05, fmt: pct },
   { key: 'calisWorld', label: 'CALISTHENICS WORLD', list: [['arena', 'HIGH NOON ARENA'], ['qonos', "QO'NOS · LAVA"]] },
+  { key: 'calisDifficulty', label: 'DIFFICULTY', list: [['cadet', 'CADET'], ['officer', 'OFFICER'], ['warrior', 'WARRIOR'], ['dahar', 'DAHAR MASTER']] },
+  { key: 'calisSpeed',  label: 'ENEMY SPEED',    min: 0.7,  max: 1.6,  step: 0.1,  fmt: v => '×' + v.toFixed(1) },
+  { key: 'calisEnemies',label: 'ENEMIES AT ONCE', min: 1,    max: 3,    step: 1,    fmt: v => String(v) },
+  { key: 'startWave',   label: 'RANGE STARTS AT', min: 1,    max: 10,   step: 1,    fmt: v => 'WAVE ' + v },
+  { key: 'startSpeed',  label: 'VELOCITY STARTS AT', min: 1, max: 8,    step: 1,    fmt: v => 'SPEED ' + v },
   { key: 'telegraph',  label: 'TELEGRAPH',      min: 0.35, max: 0.8,  step: 0.05, fmt: v => v.toFixed(2) + ' S' },
   { key: 'agility',    label: 'REMOTE',         min: 0.6,  max: 2,    step: 0.1,  fmt: v => '×' + v.toFixed(1) },
   { key: 'targetHP',   label: 'TARGET CHARGE',  min: 1,    max: 6,    step: 1,    fmt: v => v + (v === 1 ? ' HIT' : ' HITS') },
@@ -2000,6 +2024,7 @@ function pauseAdjust(dir) {
   applySettings(); saveSettings(); syncSettingsUI();
   if (r.key === 'refresh') applyRefresh();
   if (r.key === 'calisWorld') applyProgram();
+  if ((r.key === 'calisEnemies' || r.key === 'calisDifficulty' || r.key === 'calisSpeed') && game.program === 'calisthenics' && game.running) warriorsSpawn(calis.level);
   if (r.preview) r.preview(); else AudioKit.ackBeep();
   drawPauseCard();
 }
@@ -2329,7 +2354,11 @@ function bodyDims(g) {   // subtle: shoulder half-width, hip half-width, torso w
                         : { shoulder: 0.19, hip: 0.125, torsoW: 0.33 };
 }
 function bodyPalette(a) {
-  const skin = a.species === 'klingon' ? 0x8b5a3c : 0xd9a679, hair = a.species === 'klingon' ? 0x14100e : 0x3a2a1e;
+  const skin = a.species === 'klingon' ? 0x8b5a3c : a.species === 'nausicaan' ? 0x6f6d58 : 0xd9a679,
+        hair = a.species === 'klingon' ? 0x14100e : a.species === 'nausicaan' ? 0x0c0a0a : 0x3a2a1e;
+  if (a.species === 'nausicaan')                                   // dark leather, spiked, grey-olive skin
+    return { skin, hair, torso: 0x241d1a, yoke: 0x3a2f2a, collar: 0x2a221e, sleeve: 0x2f2622, legs: 0x241d1a,
+             boot: 0x15100e, skirt: 0x3a2f2a, tights: 0x241d1a, metal: 0x55534e, badge: 0x55534e };
   if (a.affiliation === 'starfleet')
     return { skin, hair, torso: 0x101014, yoke: 0xc9a227, collar: 0x7d7d80, sleeve: 0x101014, legs: 0x101014,
              boot: 0x0c0c0e, skirt: 0xc9a227, tights: 0x101014, metal: 0xd8d0b8, badge: 0xd4af37 };
@@ -2337,7 +2366,8 @@ function bodyPalette(a) {
              boot: 0x1a1a1c, skirt: 0x4a4a50, tights: 0x2b2a2c, metal: 0x7a7a80, badge: 0x7a7a80 };
 }
 function buildBody(a, withHead, withBracers) {
-  const P = bodyPalette(a), D = bodyDims(a.gender);
+  const P = bodyPalette(a), D = bodyDims(a.species === 'nausicaan' ? 'male' : a.gender);
+  if (a.species === 'nausicaan') D.shoulder += 0.02;
   const mat = (name, color, metal) => { const m = new THREE.MeshStandardMaterial({ color, metalness: metal ? 0.7 : 0.1, roughness: metal ? 0.4 : 0.85 }); m.name = 'Mat_' + name; return m; };
   const M = { skin: mat('Skin', P.skin), hair: mat('Hair', P.hair), torso: mat('Uniform', P.torso), yoke: mat('UniformYoke', P.yoke),
               collar: mat('Collar', P.collar), sleeve: mat('Sleeve', P.sleeve), legs: mat('Trousers', P.legs), boot: mat('Boot', P.boot),
@@ -2378,9 +2408,20 @@ function buildBody(a, withHead, withBracers) {
            rig.skirtMesh.name = 'Skirt'; rig.skirtMesh.material.side = THREE.DoubleSide; g.add(rig.skirtMesh); }
   }
   if (withHead) {
-    rig.head = new THREE.Mesh(new THREE.SphereGeometry(0.105, 16, 12), M.skin); rig.head.name = 'Head'; g.add(rig.head);
-    rig.hair = box('Hair', 0.20, a.species === 'klingon' ? 0.34 : 0.10, a.species === 'klingon' ? 0.16 : 0.20, M.hair);
+    const big = a.species === 'nausicaan';
+    rig.head = new THREE.Mesh(new THREE.SphereGeometry(big ? 0.115 : 0.105, 16, 12), M.skin); rig.head.name = 'Head'; g.add(rig.head);
+    rig.hair = box('Hair', 0.20, a.species === 'human' ? 0.10 : 0.36, a.species === 'human' ? 0.20 : 0.16, M.hair);
     if (a.species === 'klingon') rig.ridge = box('ForeheadRidge', 0.07, 0.05, 0.03, M.skin);
+    if (big) {                                                       // a heavy brow, and the tusks
+      rig.ridge = box('BrowRidge', 0.16, 0.04, 0.05, M.skin);
+      rig.tusks = [box('TuskL', 0.014, 0.05, 0.014, M.metal), box('TuskR', 0.014, 0.05, 0.014, M.metal)];
+      rig.tusks.forEach(t => { t.material = mat('Tusk', 0xe8e0c8); });
+    }
+  }
+  if (empire && a.species === 'nausicaan') {                         // spikes on the pauldrons
+    rig.spikes = [];
+    [rig.shoulderL, rig.shoulderR].forEach((p, k) => { if (!p) return;
+      for (let j = 0; j < 3; j++) { const sp = new THREE.Mesh(new THREE.ConeGeometry(0.012, 0.06, 6), M.metal); sp.name = 'Spike' + (k ? 'R' : 'L') + (j + 1); g.add(sp); rig.spikes.push({ sp, side: k ? 1 : -1, j }); } });
   }
   return rig;
 }
@@ -2426,7 +2467,9 @@ function poseBody(rig, F) {
     l.quaternion.copy(F.q); l.rotateY(a); l.scale.set(s, s, s); });
   if (rig.head) { setBox(rig.head, 0, eye + 0.02 * s, z - 0.05 * s); rig.head.quaternion.copy(F.q);
     setBox(rig.hair, 0, eye + (rig.ridge ? -0.06 : 0.09) * s, z + (rig.ridge ? 0.08 : 0.0) * s);
-    if (rig.ridge) setBox(rig.ridge, 0, eye + 0.07 * s, z - 0.13 * s); }
+    if (rig.ridge) setBox(rig.ridge, 0, eye + (rig.tusks ? 0.05 : 0.07) * s, z - (rig.tusks ? 0.15 : 0.13) * s);
+    if (rig.tusks) rig.tusks.forEach((t, k) => setBox(t, (k ? 0.035 : -0.035) * s, eye - 0.06 * s, z - 0.15 * s)); }
+  if (rig.spikes) rig.spikes.forEach(({ sp, side, j }) => { F.local(side * (D.shoulder + 0.02 + j * 0.03) * s, sh + (0.07 + j * 0.015) * s, z, sp.position); sp.quaternion.copy(F.q); sp.rotateZ(side * -0.5); sp.scale.set(s, s, s); });
   // legs: hips to feet planted under them; knees bend forward as the hips come down
   [[-1, rig.thighL, rig.shinL, rig.bootL], [1, rig.thighR, rig.shinR, rig.bootR]].forEach(([side, thigh, shin, boot]) => {
     F.local(side * D.hip * 0.8 * s, hip - 0.05 * s, z, _lA);
@@ -2470,7 +2513,7 @@ function poseBody(rig, F) {
     });
 }
 /* the player's own body, and the mannequin in the lobby */
-const avatar = { rig: null, stand: 1.5, dummy: null, dummyAt: new THREE.Vector3(0.62, 0, -1.95) };
+const avatar = { rig: null, stand: 1.5, dummy: null, dummyAt: new THREE.Vector3(0.62, 0, 1.95) };
 const _avP = new THREE.Vector3(), _avQ = new THREE.Quaternion(), _avM = new THREE.Matrix4();
 function handForSide(side) {
   for (const h of hands) if (h.src && h.src.handedness === side) return h.index;
@@ -2482,7 +2525,7 @@ const playerFrame = {
   wrist(side, outP, outQ) { const i = handForSide(side); return fistPose(i, outP, outQ); },
 };
 const dummyFrame = {
-  eye: 1.60, q: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI),
+  eye: 1.60, q: new THREE.Quaternion(),                              // it faces the table, and you, from behind
   local(x, y, z, out) { out.set(x, y, z).applyQuaternion(this.q); return out.add(avatar.dummyAt); },
   wrist() { return false; },
 };
@@ -2509,10 +2552,9 @@ function bodyTick() {
 
 /* The staging table: the whole armory laid out, and the three lobby pads along its
    front edge — the arch and the table are one room now. */
-const TABLE_W = 2.4, TABLE_D = 1.0, TABLE_TOP = 0.945;
+const TABLE_W = 2.4, TABLE_D = 1.0, TABLE_TOP = 0.945, CONSOLE_W = 1.6, CONSOLE_H = 0.44;
 const stageTable = new THREE.Group(); stageTable.name = 'WeaponTable';
 stageTable.position.set(0, 0, -0.85); scene.add(stageTable);
-const lobbyPads = [];
 const _lz = new THREE.Vector3(), _ly = new THREE.Vector3(), _lx = new THREE.Vector3(), _lm = new THREE.Matrix4();
 function orientAnchor(a, zDir, yDir) {                      // local Z → zDir, local Y → yDir
   _lz.set(zDir[0], zDir[1], zDir[2]).normalize();
@@ -2548,47 +2590,67 @@ function orientAnchor(a, zDir, yDir) {                      // local Z → zDir,
   slot(arms.t1,       -0.41,  0.25, 0.028, [ 0, 0, 1], [-1, 0, 0]);
   slot(arms.disruptor, -0.18, 0.25, 0.028, [ 0, 0, 1], [-1, 0, 0]);
   instancesOf('dktahg').forEach((w, k) => slot(w, 0.06 + k * 0.19, 0.25, 0.015));   // six in a row, blades away
-  // the pads: which program, and go
-  [{ id: 'range', label: 'PHASER RANGE', x: -0.8, color: 0xcc99cc },
-   { id: 'velocity', label: 'VELOCITY', x: -0.4, color: 0x99ccff },
-   { id: 'calisthenics', label: 'CALISTHENICS', x: 0, color: 0xe5484d },
-   { id: 'resume', label: 'RESUME', x: 0.4, color: 0x7de07a },
-   { id: 'begin', label: 'BEGIN', x: 0.8, color: 0xff9c00 }].forEach(def => {
-    const mat = new THREE.MeshBasicMaterial({ color: def.color }); mat.name = 'Mat_Pad_' + def.id;
-    const pad = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.02, 20), mat);
-    pad.name = 'Pad_' + def.id; pad.position.set(def.x, TABLE_TOP + 0.012, 0.42); stageTable.add(pad);
-    lobbyPads.push({ id: def.id, label: def.label, x: def.x, mesh: pad, mat, base: new THREE.Color(def.color) });
-  });
+  // the program console: an LCARS panel standing at the front edge, tilted up to you
+  const conMat = new THREE.MeshStandardMaterial({ color: 0x565a63, metalness: 0.7, roughness: 0.4 }); conMat.name = 'Mat_ConsoleFrame';
+  const conFrame = new THREE.Mesh(new THREE.BoxGeometry(CONSOLE_W + 0.06, CONSOLE_H + 0.06, 0.03), conMat);
+  conFrame.name = 'ProgramConsoleFrame'; conFrame.position.set(0, TABLE_TOP + 0.20, TABLE_D / 2 - 0.05); conFrame.rotation.x = -0.62; stageTable.add(conFrame);
 }
-/* Labels for the pads, a strip standing at the table's front edge. */
 const tableConsole = (() => {
-  const cv = document.createElement('canvas'); cv.width = 1600; cv.height = 64;
+  const cv = document.createElement('canvas'); cv.width = 1600; cv.height = 440;
   const tex = new THREE.CanvasTexture(cv);
-  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true }); mat.name = 'Mat_TableConsole';
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 0.08), mat); mesh.name = 'TableConsole';
-  mesh.position.set(0, TABLE_TOP + 0.045, TABLE_D / 2 - 0.005); mesh.rotation.x = -0.35;   // leans back toward the pads
+  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true }); mat.name = 'Mat_ProgramConsole';
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(CONSOLE_W, CONSOLE_H), mat); mesh.name = 'ProgramConsole';
+  mesh.position.set(0, TABLE_TOP + 0.20, TABLE_D / 2 - 0.05 + 0.017); mesh.rotation.x = -0.62;
   stageTable.add(mesh);
-  return { cv, ctx: cv.getContext('2d'), tex, mesh };
+  return { cv, ctx: cv.getContext('2d'), tex, mesh, W: CONSOLE_W, H: CONSOLE_H, buttons: [] };
 })();
+/* the buttons, in canvas pixels; each also gets an anchor in the world so a hand can touch it */
+const CONSOLE_BUTTONS = [
+  { id: 'range', label: 'PHASER RANGE', x: 40, y: 64, w: 490, h: 120, color: '#cc99cc' },
+  { id: 'velocity', label: 'VELOCITY', x: 555, y: 64, w: 490, h: 120, color: '#99ccff' },
+  { id: 'calisthenics', label: 'CALISTHENICS', x: 1070, y: 64, w: 490, h: 120, color: '#e5484d' },
+  { id: 'resume', label: 'RESUME', x: 40, y: 250, w: 740, h: 130, color: '#7de07a' },
+  { id: 'begin', label: 'BEGIN', x: 820, y: 250, w: 740, h: 130, color: '#ff9c00' },
+];
+const lobbyPads = CONSOLE_BUTTONS.map(b => {
+  const a = new THREE.Object3D(); a.name = 'ConsoleButton_' + b.id;
+  a.position.set(((b.x + b.w / 2) / 1600 - 0.5) * CONSOLE_W, (0.5 - (b.y + b.h / 2) / 440) * CONSOLE_H, 0.01);
+  tableConsole.mesh.add(a);
+  return { id: b.id, label: b.label, mesh: a, def: b };
+});
+tableConsole.buttons = CONSOLE_BUTTONS;
 function drawTableConsole() {
   const c = tableConsole.ctx, W = tableConsole.cv.width, H = tableConsole.cv.height;
   c.clearRect(0, 0, W, H);
-  c.textBaseline = 'middle'; c.textAlign = 'center';
-  lobbyPads.forEach(p => {
-    const on = p.id === 'begin' || game.program === p.id || (p.id === 'resume' && !!loadSave());
-    c.fillStyle = on ? '#' + p.base.getHexString() : '#5a5a68';
-    c.font = (on ? '700 ' : '400 ') + '44px Antonio, "Arial Narrow", sans-serif';
-    c.fillText(p.label, W * (0.5 + p.x / 2.0), H / 2 + 2);
+  c.fillStyle = 'rgba(12,12,19,0.94)'; roundRect(c, 0, 0, W, H, 30); c.fill();
+  const dsp = (px, w) => (w || 600) + ' ' + px + 'px Antonio, "Arial Narrow", sans-serif';
+  c.textBaseline = 'top'; c.textAlign = 'left';
+  c.fillStyle = '#8d8a7b'; c.font = dsp(24, 400); c.fillText('HOLODECK PROGRAMS', 44, 22);
+  c.textAlign = 'right'; c.fillText('POINT OR TOUCH · TRIGGER', W - 44, 22); c.textAlign = 'left';
+  const sv = loadSave();
+  CONSOLE_BUTTONS.forEach(b => {
+    const on = b.id === game.program, isBegin = b.id === 'begin', isResume = b.id === 'resume';
+    const enabled = !isResume || !!sv;
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    if (on || isBegin || (isResume && sv)) { c.fillStyle = b.color; roundRect(c, b.x, b.y, b.w, b.h, 40); c.fill();
+      c.fillStyle = '#140b00'; c.font = dsp(isBegin ? 58 : 46, 700); }
+    else { c.strokeStyle = enabled ? b.color : '#3a3a48'; c.lineWidth = 4; roundRect(c, b.x, b.y, b.w, b.h, 40); c.stroke();
+      c.fillStyle = enabled ? '#e8e4d8' : '#5a5a68'; c.font = dsp(44, 600); }
+    let label = b.label;
+    if (isResume && sv) label = 'RESUME · ' + PROG_TITLE[sv.program].toUpperCase() + ' · ' + sv.score;
+    c.fillText(label, b.x + b.w / 2, b.y + b.h / 2 + 2);
+    c.textAlign = 'left'; c.textBaseline = 'top';
   });
   tableConsole.tex.needsUpdate = true;
 }
 
 /* ═══════════════ the wardrobe: a console behind the table, the mannequin beside it ═══════════════
-   Point a hand at a button and pull the trigger (desktop: look and click). Every
-   choice redresses you and the mannequin and is remembered with the settings. */
+   It stands behind you when you face the table — turn round. Point a hand at a button and
+   pull the trigger (desktop: look and click). Every choice redresses you and the mannequin
+   and is remembered with the settings. */
 const WARDROBE_W = 1.0, WARDROBE_H = 0.72;
 const wardrobe = (() => {
-  const g = new THREE.Group(); g.name = 'Wardrobe'; g.position.set(-0.55, 0, -1.92); scene.add(g);
+  const g = new THREE.Group(); g.name = 'Wardrobe'; g.position.set(-0.55, 0, 1.92); g.rotation.y = Math.PI; scene.add(g);   // behind you: turn round from the table
   const frameMat = new THREE.MeshStandardMaterial({ color: 0x565a63, metalness: 0.7, roughness: 0.4 }); frameMat.name = 'Mat_WardrobeFrame';
   const pedestal = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.95, 0.18), frameMat);
   pedestal.name = 'WardrobePedestal'; pedestal.position.set(0, 0.475, 0); g.add(pedestal);
@@ -2630,9 +2692,9 @@ function drawWardrobe() {
 }
 /* where a ray meets the panel: the button under it, if any */
 const _wo = new THREE.Vector3(), _wn = new THREE.Vector3(), _wx = new THREE.Vector3(), _wy = new THREE.Vector3(), _wq = new THREE.Quaternion(), _wp = new THREE.Vector3();
-function wardrobeHit(origin, dir, outPoint) {
-  if (!wardrobe.g.visible) return null;
-  const P = wardrobe.panel;
+/* where a ray meets a canvas panel (mesh, metres W×H, canvas, buttons in pixels) */
+function panelHit(P, meshW, meshH, cv, buttons, origin, dir, outPoint) {
+  if (!P.visible) return null; for (let o = P.parent; o; o = o.parent) if (!o.visible) return null;
   P.getWorldQuaternion(_wq); P.getWorldPosition(_wo);
   _wn.set(0, 0, 1).applyQuaternion(_wq);
   const denom = dir.dot(_wn); if (Math.abs(denom) < 1e-6) return null;
@@ -2640,12 +2702,14 @@ function wardrobeHit(origin, dir, outPoint) {
   _wp.copy(origin).addScaledVector(dir, t).sub(_wo);
   _wx.set(1, 0, 0).applyQuaternion(_wq); _wy.set(0, 1, 0).applyQuaternion(_wq);
   const lx = _wp.dot(_wx), ly = _wp.dot(_wy);
-  if (Math.abs(lx) > WARDROBE_W / 2 || Math.abs(ly) > WARDROBE_H / 2) return null;
-  const px = (lx / WARDROBE_W + 0.5) * wardrobe.cv.width, py = (0.5 - ly / WARDROBE_H) * wardrobe.cv.height;
+  if (Math.abs(lx) > meshW / 2 || Math.abs(ly) > meshH / 2) return null;
+  const px = (lx / meshW + 0.5) * cv.width, py = (0.5 - ly / meshH) * cv.height;
   if (outPoint) outPoint.copy(_wp).add(_wo);
-  const button = wardrobe.buttons.find(b => px >= b.x && px <= b.x + b.w && py >= b.y && py <= b.y + b.h) || null;
+  const button = buttons.find(b => px >= b.x && px <= b.x + b.w && py >= b.y && py <= b.y + b.h) || null;
   return { button, px, py, t };
 }
+function wardrobeHit(origin, dir, outPoint) { return panelHit(wardrobe.panel, WARDROBE_W, WARDROBE_H, wardrobe.cv, wardrobe.buttons, origin, dir, outPoint); }
+function consoleHit(origin, dir, outPoint) { return panelHit(tableConsole.mesh, tableConsole.W, tableConsole.H, tableConsole.cv, tableConsole.buttons, origin, dir, outPoint); }
 function setAvatarOption(key, value) {
   if (!AVATAR_OPTIONS[key] || !AVATAR_OPTIONS[key].some(o => o[0] === value)) return;
   if (key === 'affiliation' && value !== 'empire' && game.program === 'calisthenics') {
@@ -2674,7 +2738,7 @@ function pointersTick() {
   const selecting = game.phase === 'select' && renderer.xr.isPresenting;
   lobbyPointers.forEach((pt, i) => {
     let hit = null;
-    if (selecting && handPose(i, _hp, _hq)) { _gz.set(0, 0, -1).applyQuaternion(_hq); hit = wardrobeHit(_hp, _gz, _ppt); }
+    if (selecting && handPose(i, _hp, _hq)) { _gz.set(0, 0, -1).applyQuaternion(_hq); hit = consoleHit(_hp, _gz, _ppt) || wardrobeHit(_hp, _gz, _ppt); }
     pt.line.visible = pt.dot.visible = !!hit;
     if (!hit) return;
     pt.arr[0] = _hp.x; pt.arr[1] = _hp.y; pt.arr[2] = _hp.z; pt.arr[3] = _ppt.x; pt.arr[4] = _ppt.y; pt.arr[5] = _ppt.z;
@@ -2837,32 +2901,27 @@ function applyLighting() {
     keyLight.color.setHex(0xfff2d0); keyLight.intensity = 0.5; keyLight.position.set(2, 4, 1);
   }
 }
-const warrior = { rig: null, blade: null, pos: new THREE.Vector3(0, 0, -3.4), yaw: 0, state: 'off', timer: 0, hp: CALIS.hp,
-  level: 1, tempo: 1, kind: 'overhead', swingT: 0, strafe: 1, strafeT: 0, sink: 0, chipCd: 0, hitThisSwing: false, parried: false,
-  q: new THREE.Quaternion(), bladeQ: new THREE.Quaternion(), bladeP: new THREE.Vector3(), samplesW: [] };
-const warriorFrame = {
-  eye: 1.62, q: warrior.q,
-  local(x, y, z, out) { out.set(x, y - warrior.sink, z).applyQuaternion(warrior.q); return out.add(warrior.pos); },
-  wrist(side, outP, outQ) {
-    if (!warrior.blade) return false;
-    warrior.blade.localToWorld(outP.set(side === 'left' ? -0.328 : 0.328, 0, -0.0977));
-    warrior.blade.getWorldQuaternion(outQ); return true;
-  },
+/* ── the enemies: as many as the setting asks for, of two kinds ──
+   A KLINGON WARRIOR with a bat'leth, two-handed: an edge-on overhead cut and a chest-high
+   sweep. A NAUSICAAN, taller and quicker, with a long blade in one hand: a straight thrust
+   at the chest and a diagonal slash. Difficulty sets their tempo and how much they take;
+   speed scales everything; levels climb with every kill. */
+const ENEMY = {
+  klingon:   { name: 'KLINGON WARRIOR', eye: 1.62, hp: 3, tempo: 1.0,  keepDist: 1.15, attackDist: 1.5,  weapon: 'batleth', twoHanded: true,
+               body: { gender: 'male', species: 'klingon', affiliation: 'empire', uniform: 'pants' } },
+  nausicaan: { name: 'NAUSICAAN',       eye: 1.85, hp: 4, tempo: 1.2,  keepDist: 1.0,  attackDist: 1.35, weapon: 'sword',   twoHanded: false,
+               body: { gender: 'male', species: 'nausicaan', affiliation: 'empire', uniform: 'pants' } },
 };
-function buildWarrior() {
-  if (warrior.rig) scene.remove(warrior.rig.g);
-  if (warrior.blade) scene.remove(warrior.blade);
-  warrior.rig = buildBody({ gender: 'male', species: 'klingon', affiliation: 'empire', uniform: 'pants' }, true);
-  warrior.rig.g.name = 'KlingonWarrior'; warrior.rig.g.visible = false; scene.add(warrior.rig.g);
-  warrior.blade = buildBatleth(); warrior.blade.name = 'WarriorBatleth'; warrior.blade.visible = false; scene.add(warrior.blade);
-  warrior.samplesW = warrior.blade.userData.samples.map(() => new THREE.Vector3());
-}
-buildWarrior();
-/* the bat'leth's poses in the warrior's own frame: position, and an Euler tilt on top of its yaw */
-// the overhead cut comes down edge-on — the bar vertical, one end leading, the hands one
-// above the other — so it is a narrow stripe you sidestep, and it lands at the chest whether
-// you stand or crouch. The sweep passes at about 1.45 m at its widest: duck under it or
-// step back; a sidestep will not save you.
+const DIFFICULTY = { cadet: { tempo: 0.8, hp: 0 }, officer: { tempo: 1.0, hp: 0 }, warrior: { tempo: 1.25, hp: 1 }, dahar: { tempo: 1.5, hp: 2 } };
+function calisDifficulty() { return DIFFICULTY[SETTINGS.calisDifficulty] || DIFFICULTY.officer; }
+function calisSpeed() { return Number(SETTINGS.calisSpeed) || 1; }
+function calisEnemies() { return Math.max(1, Math.min(3, Number(SETTINGS.calisEnemies) || 1)); }
+const warriors = [];
+const calis = { level: 1 };
+/* the weapon's poses in the enemy's own frame: position, and an Euler tilt on top of its yaw.
+   Bat'leth (two hands): the overhead cut comes down edge-on — a narrow stripe you sidestep;
+   the sweep passes at about 1.45 m — duck or step back. Sword (one hand): a straight thrust
+   at the chest — step aside — and a diagonal slash from high right — duck or step back. */
 const BLADE_POSE = {
   guard:   { p: [0.05, 1.05, -0.42], e: [-0.35, 0, 0.15] },
   back:    { p: [0.10, 1.00, -0.20], e: [-0.90, 0.40, 0.50] },
@@ -2872,64 +2931,206 @@ const BLADE_POSE = {
   through: { p: [-0.80, 1.40, -0.55], e: [0.10, 1.25, -0.20] },
   sweepMid:{ p: [0.00, 1.45, -1.05], e: [0.10, 0, 0] },
 };
+const SWORD_POSE = {
+  guard:   { p: [0.28, 1.05, -0.35], e: [-0.60, 0.30, 0] },
+  back:    { p: [0.35, 1.00, -0.15], e: [-1.20, 0.50, 0.30] },
+  raise:   { p: [0.32, 1.25, -0.05], e: [ 0.00, 0.15, 0] },      // thrust: pulled back, point forward…
+  cut:     { p: [0.05, 1.32, -1.05], e: [ 0.00, 0, 0] },         // …and driven at the chest
+  wind:    { p: [0.55, 1.85, -0.20], e: [-0.90, -0.90, 0.30] },  // slash: high right…
+  through: { p: [-0.45, 1.40, -0.90], e: [0.60, 0.90, -0.40] },  // …across at the neck — duck it, or step back
+  sweepMid:{ p: [0.05, 1.50, -1.00], e: [0.10, 0, 0] },
+};
 const _bpA = new THREE.Vector3(), _bpB = new THREE.Vector3(), _bpE = new THREE.Euler(), _bpQa = new THREE.Quaternion(), _bpQb = new THREE.Quaternion();
 const smooth = t => t * t * (3 - 2 * t);
-function bladePoseQ(pose, out) { _bpE.set(pose.e[0], pose.e[1], pose.e[2]); return out.copy(warrior.q).multiply(_bpQb.setFromEuler(_bpE)); }
+function makeWarrior(kind) {
+  const def = ENEMY[kind] || ENEMY.klingon;
+  const W = { kind, def, rig: null, blade: null, samplesW: [], pos: new THREE.Vector3(0, 0, -3.4), yaw: 0, state: 'off', timer: 0,
+    hp: def.hp, hpMax: def.hp, tempo: 1, swing: 'overhead', swingT: 0, strafe: 1, strafeT: 0, sink: 0, chipCd: 0, hitThisSwing: false, parried: false,
+    q: new THREE.Quaternion(), bladeQ: new THREE.Quaternion(), bladeP: new THREE.Vector3(), severed: new Set(), poses: def.twoHanded ? BLADE_POSE : SWORD_POSE };
+  W.frame = { eye: def.eye, q: W.q,
+    local(x, y, z, out) { out.set(x, y - W.sink, z).applyQuaternion(W.q); return out.add(W.pos); },
+    wrist(side, outP, outQ) {
+      if (!W.blade) return false;
+      if (def.twoHanded) { W.blade.localToWorld(outP.set(side === 'left' ? -0.328 : 0.328, 0, -0.0977)); W.blade.getWorldQuaternion(outQ); return true; }
+      if (side !== 'right') return false;                                  // the sword hand; the other hangs
+      W.blade.localToWorld(outP.set(0, 0, 0.04)); W.blade.getWorldQuaternion(outQ); return true;
+    } };
+  W.rig = buildBody(def.body, true); W.rig.g.name = 'Enemy_' + kind; W.rig.g.visible = false; scene.add(W.rig.g);
+  if (def.twoHanded) { W.blade = buildBatleth(); W.blade.name = 'EnemyBatleth'; }
+  else { W.blade = buildDkTahg(); W.blade.name = 'EnemySword'; W.blade.scale.setScalar(1.7); }   // a long Nausicaan blade
+  W.blade.visible = false; scene.add(W.blade);
+  W.samplesW = W.blade.userData.samples.map(() => new THREE.Vector3());
+  return W;
+}
+function bladePoseQ(W, pose, out) { _bpE.set(pose.e[0], pose.e[1], pose.e[2]); return out.copy(W.q).multiply(_bpQb.setFromEuler(_bpE)); }
 /* blend between two poses (optionally through a third) at t in 0..1 */
-function setBladePose(a, b, t, via) {
-  warriorFrame.local(a.p[0], a.p[1], a.p[2], _bpA); warriorFrame.local(b.p[0], b.p[1], b.p[2], _bpB);
-  if (via) { warriorFrame.local(via.p[0], via.p[1], via.p[2], warrior.bladeP);
-    const u = 1 - t; warrior.bladeP.multiplyScalar(2 * u * t).addScaledVector(_bpA, u * u).addScaledVector(_bpB, t * t); }
-  else warrior.bladeP.lerpVectors(_bpA, _bpB, t);
-  bladePoseQ(a, _bpQa); bladePoseQ(b, warrior.bladeQ);
-  warrior.bladeQ.slerp(_bpQa, 1 - t);
-  warrior.blade.position.copy(warrior.bladeP); warrior.blade.quaternion.copy(warrior.bladeQ);
+function setBladePose(W, a, b, t, via) {
+  W.frame.local(a.p[0], a.p[1], a.p[2], _bpA); W.frame.local(b.p[0], b.p[1], b.p[2], _bpB);
+  if (via) { W.frame.local(via.p[0], via.p[1], via.p[2], W.bladeP);
+    const u = 1 - t; W.bladeP.multiplyScalar(2 * u * t).addScaledVector(_bpA, u * u).addScaledVector(_bpB, t * t); }
+  else W.bladeP.lerpVectors(_bpA, _bpB, t);
+  bladePoseQ(W, a, _bpQa); bladePoseQ(W, b, W.bladeQ);
+  W.bladeQ.slerp(_bpQa, 1 - t);
+  W.blade.position.copy(W.bladeP); W.blade.quaternion.copy(W.bladeQ);
 }
 function warriorSetLevel(level) {
-  warrior.level = Math.max(1, level | 0); warrior.tempo = 1 + CALIS.tempoPerLevel * (warrior.level - 1); game.wave = warrior.level;
+  calis.level = Math.max(1, level | 0); game.wave = calis.level;
+  warriors.forEach(W => { W.tempo = warriorTempo(W); });
 }
-function warriorSpawn(level) {
+function warriorTempo(W) { return (1 + CALIS.tempoPerLevel * (calis.level - 1)) * W.def.tempo * calisDifficulty().tempo * calisSpeed(); }
+/* the kind that comes next: Klingons at first, Nausicaans from level 2 and in mixed squads */
+function nextKind() {
+  if (calis.level < 2 && calisEnemies() < 2) return 'klingon';
+  const n = warriors.filter(W => W.state !== 'off' && W.state !== 'dead' && W.kind === 'nausicaan').length;
+  if (calisEnemies() >= 2 && n === 0) return 'nausicaan';                 // a squad always has one
+  return (Math.random() < 0.45 && n < 2) ? 'nausicaan' : 'klingon';
+}
+function spawnWarrior(kind, slot) {
+  let W = warriors[slot];
+  if (!W || W.kind !== kind) { if (W) { scene.remove(W.rig.g); scene.remove(W.blade); } W = makeWarrior(kind); warriors[slot] = W; }
+  W.tempo = warriorTempo(W); W.hpMax = W.def.hp + calisDifficulty().hp; W.hp = W.hpMax;
+  const a = Math.random() * Math.PI * 2, r = 3.4 + slot * 0.4;
+  W.pos.set(Math.cos(a) * r, 0, Math.sin(a) * r); W.sink = 0; W.severed.clear();
+  W.rig.g.traverse(o => { if (o.isMesh || o.type === 'Mesh') o.visible = true; });
+  W.state = 'approach'; W.timer = (CALIS.stalkMin + Math.random() * (CALIS.stalkMax - CALIS.stalkMin)) / W.tempo + slot * 0.8;
+  W.chipCd = 0; W.strafe = Math.random() < 0.5 ? -1 : 1; W.strafeT = 2 + Math.random() * 2;
+  W.rig.g.visible = true; W.blade.visible = true;
+  setBladePose(W, W.poses.guard, W.poses.guard, 0);
+  return W;
+}
+function warriorsSpawn(level) {
   warriorSetLevel(level);
-  const a = Math.random() * Math.PI * 2, r = 3.4;
-  warrior.pos.set(Math.cos(a) * r, 0, Math.sin(a) * r); warrior.sink = 0; warrior.hp = CALIS.hp;
-  warrior.state = 'approach'; warrior.timer = (CALIS.stalkMin + Math.random() * (CALIS.stalkMax - CALIS.stalkMin)) / warrior.tempo;
-  warrior.chipCd = 0; warrior.strafe = Math.random() < 0.5 ? -1 : 1; warrior.strafeT = 2 + Math.random() * 2;
-  warrior.rig.g.visible = true; warrior.blade.visible = true;
-  setBladePose(BLADE_POSE.guard, BLADE_POSE.guard, 0);
+  const n = calisEnemies();
+  for (let k = 0; k < n; k++) spawnWarrior(k === 0 && calis.level < 2 ? 'klingon' : nextKind(), k);
+  for (let k = n; k < warriors.length; k++) { const W = warriors[k]; W.state = 'off'; W.rig.g.visible = false; W.blade.visible = false; }
 }
-function warriorHide() { warrior.state = 'off'; if (warrior.rig) warrior.rig.g.visible = false; if (warrior.blade) warrior.blade.visible = false; }
-/* the warrior takes a hit from anything of yours: open (after a swing, or staggered) it counts;
-   winding up it breaks the attack; otherwise it is a chip */
-function warriorStruck(kind) {
-  const W = warrior;
-  if (W.state === 'off' || W.state === 'dead') return false;
+function warriorHide() {
+  warriors.forEach(W => { W.state = 'off'; if (W.rig) W.rig.g.visible = false; if (W.blade) W.blade.visible = false; });
+  ARMS.forEach(w => { if (w.userData.stuckTo) dropFromWarrior(w); });
+  gibs.forEach(g => scene.remove(g.mesh)); gibs.length = 0;
+}
+const liveWarriors = () => warriors.filter(W => W.state !== 'off' && W.state !== 'dead');
+/* ── hits on an enemy ── */
+const _wHead = new THREE.Vector3(), _wTo = new THREE.Vector3(), _wPerp = new THREE.Vector3(), _wS = new THREE.Vector3(), _wB = new THREE.Vector3(), _wH = new THREE.Vector3();
+const _sgA = new THREE.Vector3(), _sgB = new THREE.Vector3();
+function segDist(p, a, b) {
+  _sgA.copy(b).sub(a); const L2 = _sgA.lengthSq(); if (L2 < 1e-9) return p.distanceTo(a);
+  const t = Math.max(0, Math.min(1, _sgB.copy(p).sub(a).dot(_sgA) / L2));
+  _sgB.copy(a).addScaledVector(_sgA, t); return p.distanceTo(_sgB);
+}
+function warriorHeadPos(W, out) { const s = W.rig.s || 1; return W.frame.local(0, W.def.eye + 0.02 * s, BODY.torsoZ * s - 0.05 * s, out); }
+function warriorCenter(W, out) { return W.frame.local(0, 1.2, BODY.torsoZ * (W.rig.s || 1), out); }
+/* which enemy a point is on, and whether it is the head */
+function warriorAt(p, extra) {
+  for (const W of warriors) {
+    if (W.state === 'off' || W.state === 'dead') continue;
+    warriorHeadPos(W, _wH);
+    if (p.distanceTo(_wH) < 0.17 + (extra || 0)) return { W, head: true };
+    const s = W.rig.s || 1; W.frame.local(0, W.def.eye - 0.18 * s, BODY.torsoZ * s, _wS); W.frame.local(0, 0.85 * s, BODY.torsoZ * s, _wB);
+    if (segDist(p, _wS, _wB) < CALIS.bodyReach + (extra || 0)) return { W, head: false };
+  }
+  return null;
+}
+function warriorBodyHit(p, extra) { return warriorAt(p, extra); }
+/* an enemy takes a hit from anything of yours. Open (after a swing, or staggered) it counts,
+   twice for the head; winding up, the attack breaks; otherwise a chip. A killing blow from a
+   blade takes a limb: the head if that is where it landed, else the arm on that side. */
+function warriorStruck(W, hitPos, kind, head, blade) {
+  if (!W || W.state === 'off' || W.state === 'dead') return false;
   if (W.chipCd > 0) return false;
   W.chipCd = 0.35;
-  if (W.state === 'recover' || W.state === 'stagger') {
-    W.hp--; game.hits++; addScore(CALIS.ptsHit); bumpStreak();
-    AudioKit.impact(0.9, true); warriorFrame.local(0, 1.2, 0, _bpA); popEffect(_bpA, 0xe5484d);
+  const open = W.state === 'recover' || W.state === 'stagger';
+  if (open) {
+    const dmg = head ? 2 : 1;
+    W.hp -= dmg; game.hits++; addScore(head ? CALIS.ptsHit * 2 : CALIS.ptsHit); bumpStreak();
+    AudioKit.impact(0.9, true); popEffect(hitPos || warriorCenter(W, _bpA), head ? 0xfff3d6 : 0xe5484d);
     if (W.hp <= 0) {
       W.state = 'dead'; W.timer = CALIS.deathTime; game.kills = (game.kills || 0) + 1; addScore(CALIS.ptsKill);
-      AudioKit.roar(); flashGrid(0.5); toast('WARRIOR DOWN +' + CALIS.ptsKill);
-    } else { W.state = 'stagger'; W.timer = CALIS.stagger / W.tempo; toast('HIT ' + (CALIS.hp - W.hp) + '/' + CALIS.hp + ' +' + CALIS.ptsHit); }
+      if (blade) severLimb(W, head ? 'head' : nearestLimb(W, hitPos), hitPos, blade);
+      AudioKit.roar(); flashGrid(0.5); toast((head ? 'HEADSHOT · ' : '') + W.def.name + ' DOWN +' + CALIS.ptsKill);
+      ARMS.forEach(w => { if (w.userData.stuckTo === W) dropFromWarrior(w); });
+    } else { W.state = 'stagger'; W.timer = CALIS.stagger / W.tempo; toast((head ? 'HEADSHOT ' : 'HIT ') + (W.hpMax - W.hp) + '/' + W.hpMax + ' +' + (head ? CALIS.ptsHit * 2 : CALIS.ptsHit)); }
     return true;
   }
-  if (W.state === 'telegraph') {                              // caught winding up: the attack is broken
+  if (W.state === 'telegraph') {
     W.state = 'stagger'; W.timer = CALIS.stagger * 0.8 / W.tempo; addScore(CALIS.ptsChip); bumpStreak();
     AudioKit.feintOff(); toast('ATTACK BROKEN +' + CALIS.ptsChip); return true;
   }
-  addScore(CALIS.ptsChip); AudioKit.clang(); toast('+' + CALIS.ptsChip);  // a glancing hit on its guard
+  addScore(CALIS.ptsChip); AudioKit.clang(); toast('+' + CALIS.ptsChip);
   return true;
 }
-const _wHead = new THREE.Vector3(), _wTo = new THREE.Vector3(), _wPerp = new THREE.Vector3(), _wS = new THREE.Vector3(), _wB = new THREE.Vector3();
-/* distance from point p to the segment a→b */
-function segDist(p, a, b) {
-  _wS.copy(b).sub(a); const L2 = _wS.lengthSq(); if (L2 < 1e-9) return p.distanceTo(a);
-  const t = Math.max(0, Math.min(1, _wB.copy(p).sub(a).dot(_wS) / L2));
-  _wB.copy(a).addScaledVector(_wS, t); return p.distanceTo(_wB);
+function nearestLimb(W, p) {
+  if (!p) return 'armR';
+  const s = W.rig.s || 1, D = W.rig.D; let best = 'armR', bd = Infinity;
+  [['armL', -D.shoulder * s, W.def.eye - 0.4 * s], ['armR', D.shoulder * s, W.def.eye - 0.4 * s], ['legL', -D.hip * s, 0.45 * s], ['legR', D.hip * s, 0.45 * s]]
+    .forEach(([name, x, y]) => { W.frame.local(x, y, BODY.torsoZ * s, _wS); const d = _wS.distanceTo(p); if (d < bd) { bd = d; best = name; } });
+  return best;
 }
-function warriorTick(dt) {
-  const W = warrior; if (W.state === 'off') return;
+/* ── dismemberment: the limb's meshes are hidden on the rig and clones of them are sent flying ── */
+const gibs = [];
+const LIMB_PARTS = { head: ['Head', 'Hair', 'ForeheadRidge', 'BrowRidge', 'TuskL', 'TuskR'], armL: ['UpperArmL', 'ForearmL', 'FistL'], armR: ['UpperArmR', 'ForearmR', 'FistR'],
+                     legL: ['ThighL', 'ShinL', 'BootL'], legR: ['ThighR', 'ShinR', 'BootR'] };
+function severLimb(W, limb, at, blade) {
+  const names = LIMB_PARTS[limb] || LIMB_PARTS.armR;
+  const vel = new THREE.Vector3(0, 2.2, 0);
+  if (blade && blade.userData && blade.userData.prev && blade.userData.samples) {   // carry the swing
+    const s0 = blade.userData.samples[Math.floor(blade.userData.samples.length / 2)];
+    const now = s0.getWorldPosition(new THREE.Vector3()), prev = blade.userData.prev[Math.floor(blade.userData.samples.length / 2)];
+    const v = now.clone().sub(prev).multiplyScalar(1 / Math.max(dtNow, 1e-3)); if (v.length() > 6) v.setLength(6); vel.add(v.multiplyScalar(0.7));
+  }
+  W.rig.g.children.forEach(m => {
+    if (!names.includes(m.name) || !m.visible) return;
+    W.severed.add(m.name); m.visible = false;
+    const c = m.clone(); c.name = 'Gib_' + m.name; c.position.copy(m.position); c.quaternion.copy(m.quaternion); c.scale.copy(m.scale); scene.add(c);
+    gibs.push({ mesh: c, vel: vel.clone().add(new THREE.Vector3((Math.random() - 0.5) * 1.5, Math.random() * 1.2, (Math.random() - 0.5) * 1.5)),
+      spinAxis: new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize(), spinRate: 4 + Math.random() * 6, t: 0, rest: false });
+  });
+  if (limb === 'head') { AudioKit.stick(); toast('DISMEMBERED'); popEffect(at || warriorHeadPos(W, _bpA), 0xe5484d); }
+  else { AudioKit.clang(); popEffect(at || warriorCenter(W, _bpA), 0xe5484d); }
+}
+const _gq = new THREE.Quaternion();
+function gibsTick(dt) {
+  for (let k = gibs.length - 1; k >= 0; k--) {
+    const g = gibs[k]; g.t += dt;
+    if (g.t > 9) { scene.remove(g.mesh); gibs.splice(k, 1); continue; }
+    if (g.rest) continue;
+    g.vel.y -= TUNE.gravity * dt; g.mesh.position.addScaledVector(g.vel, dt);
+    _gq.setFromAxisAngle(g.spinAxis, g.spinRate * dt); g.mesh.quaternion.multiplyQuaternions(_gq, g.mesh.quaternion);
+    if (g.mesh.position.y < 0.08) { g.mesh.position.y = 0.08;
+      if (Math.abs(g.vel.y) < 0.8) { g.rest = true; g.vel.set(0, 0, 0); }
+      else { g.vel.y = -g.vel.y * 0.3; g.vel.x *= 0.6; g.vel.z *= 0.6; g.spinRate *= 0.5; } }
+  }
+}
+/* a thrown knife that lands in an enemy stays in it, and rides it, until it falls or you pull it out */
+function stickInWarrior(w, W, head) {
+  const u = w.userData;
+  u.holder = 'stuck'; u.vel && u.vel.set(0, 0, 0); u.dropped = false;
+  const k = thrown.indexOf(w); if (k >= 0) thrown.splice(k, 1);
+  u.stuckTo = W;
+  _gq.copy(W.q).invert();
+  u.stuckLocal = (u.stuckLocal || new THREE.Vector3()).copy(w.position).sub(W.pos).applyQuaternion(_gq); u.stuckLocal.y += W.sink;
+  u.stuckQ = (u.stuckQ || new THREE.Quaternion()).copy(_gq).multiply(w.quaternion);
+  AudioKit.stick(); toast('STUCK IN · ' + W.def.name);
+  refreshHeld();
+}
+function dropFromWarrior(w) {
+  const u = w.userData; if (!u.stuckTo) return;
+  u.stuckTo = null;
+  launch(w, _bpA.set((Math.random() - 0.5) * 0.4, 0.5, (Math.random() - 0.5) * 0.4), _bpB.set(1, 0.3, 0.2), 2); u.dropped = true;
+}
+function stuckKnivesTick() {
+  for (const w of ARMS) { const u = w.userData; if (!u.stuckTo) continue;
+    const W = u.stuckTo;
+    if (u.holder !== 'stuck') { u.stuckTo = null; continue; }
+    if (W.state === 'off' || (W.state === 'dead' && W.sink > 0.5)) { dropFromWarrior(w); continue; }
+    W.frame.local(u.stuckLocal.x, u.stuckLocal.y, u.stuckLocal.z, w.position);
+    w.quaternion.copy(W.q).multiply(u.stuckQ);
+  }
+}
+/* ── the enemy's turn ── */
+function warriorTick(W, dt) {
+  if (W.state === 'off') return;
+  const def = W.def, P = W.poses;
   if (W.chipCd > 0) W.chipCd -= dt;
   camera.getWorldPosition(_wHead);
   _wTo.copy(_wHead).sub(W.pos); _wTo.y = 0; const dist = _wTo.length(); if (dist > 1e-4) _wTo.multiplyScalar(1 / dist);
@@ -2937,63 +3138,65 @@ function warriorTick(dt) {
   W.q.setFromAxisAngle(_upv, W.yaw);
   const moving = W.state === 'approach' || W.state === 'circle';
   if (moving || W.state === 'stagger') {
-    const radial = W.state === 'stagger' ? -0.9 : Math.max(-1, Math.min(1, (dist - CALIS.keepDist) * 1.6));
+    const radial = W.state === 'stagger' ? -0.9 : Math.max(-1, Math.min(1, (dist - def.keepDist) * 1.6));
     W.pos.addScaledVector(_wTo, radial * CALIS.approachSpeed * W.tempo * dt);
     if (moving && dist < 2.8) {
       _wPerp.set(-_wTo.z, 0, _wTo.x); W.pos.addScaledVector(_wPerp, W.strafe * CALIS.strafeSpeed * W.tempo * dt);
       W.strafeT -= dt; if (W.strafeT <= 0) { W.strafe = -W.strafe; W.strafeT = 1.5 + Math.random() * 2.5; }
     }
-    const r = Math.hypot(W.pos.x, W.pos.z), rMax = TUNE.arenaRMax - 0.3;     // it stays in the ruins
+    for (const O of warriors) { if (O === W || O.state === 'off') continue;                // room for each other
+      _wPerp.copy(W.pos).sub(O.pos); const d = _wPerp.length(); if (d < 1.1 && d > 1e-4) W.pos.addScaledVector(_wPerp.multiplyScalar(1 / d), (1.1 - d) * 0.5); }
+    const r = Math.hypot(W.pos.x, W.pos.z), rMax = TUNE.arenaRMax - 0.3;
     if (r > rMax) { W.pos.x *= rMax / r; W.pos.z *= rMax / r; }
-    if (dist < 0.9) W.pos.addScaledVector(_wTo, -(0.9 - dist));                 // and out of your face
+    if (dist < 0.9) W.pos.addScaledVector(_wTo, -(0.9 - dist));
   }
   W.timer -= dt;
   const tele = Math.max(CALIS.telegraphFloor, CALIS.telegraph / W.tempo);
   switch (W.state) {
     case 'approach': case 'circle':
-      setBladePose(BLADE_POSE.guard, BLADE_POSE.guard, 0);
-      if (W.timer <= 0 && dist < CALIS.attackDist) {
-        W.state = 'telegraph'; W.timer = tele; W.kind = Math.random() < 0.55 ? 'overhead' : 'sweep';
+      setBladePose(W, P.guard, P.guard, 0);
+      if (W.timer <= 0 && dist < def.attackDist) {
+        W.state = 'telegraph'; W.timer = tele; W.swing = Math.random() < 0.55 ? 'overhead' : 'sweep';
         W.hitThisSwing = false; W.parried = false; AudioKit.grunt();
-      } else if (W.timer <= 0) W.timer = 0.4;                                  // out of reach: keep coming
+      } else if (W.timer <= 0) W.timer = 0.4;
       break;
     case 'telegraph': {
       const t = smooth(1 - Math.max(0, W.timer / tele));
-      if (W.kind === 'overhead') setBladePose(BLADE_POSE.guard, BLADE_POSE.raise, t);
-      else setBladePose(BLADE_POSE.guard, BLADE_POSE.wind, t);
+      setBladePose(W, P.guard, W.swing === 'overhead' ? P.raise : P.wind, t);
       if (W.timer <= 0) { W.state = 'swing'; W.swingT = 0; AudioKit.whoosh(); }
       break; }
     case 'swing': {
       W.swingT += dt; const t = Math.min(1, W.swingT / (CALIS.swing / Math.sqrt(W.tempo)));
-      if (W.kind === 'overhead') setBladePose(BLADE_POSE.raise, BLADE_POSE.cut, t * t);
-      else setBladePose(BLADE_POSE.wind, BLADE_POSE.through, smooth(t), BLADE_POSE.sweepMid);
-      warriorSwingContacts();
+      if (W.swing === 'overhead') setBladePose(W, P.raise, P.cut, t * t);
+      else setBladePose(W, P.wind, P.through, smooth(t), P.sweepMid);
+      warriorSwingContacts(W);
       if (t >= 1) { W.state = 'recover'; W.timer = CALIS.recover / W.tempo * (W.parried ? 1.5 : 1);
         if (!W.hitThisSwing && !W.parried) { game.dodges++; addScore(CALIS.ptsDodge); bumpStreak(); } }
       break; }
     case 'recover': {
       const t = smooth(1 - Math.max(0, W.timer / (CALIS.recover / W.tempo)));
-      setBladePose(W.kind === 'overhead' ? BLADE_POSE.cut : BLADE_POSE.through, BLADE_POSE.guard, t);
+      setBladePose(W, W.swing === 'overhead' ? P.cut : P.through, P.guard, t);
       if (W.timer <= 0) { W.state = 'circle'; W.timer = (CALIS.stalkMin + Math.random() * (CALIS.stalkMax - CALIS.stalkMin)) / W.tempo; }
       break; }
     case 'stagger':
-      setBladePose(BLADE_POSE.back, BLADE_POSE.back, 0);
+      setBladePose(W, P.back, P.back, 0);
       if (W.timer <= 0) { W.state = 'circle'; W.timer = 0.6 / W.tempo; }
       break;
     case 'dead':
-      W.sink += dt * 1.3; setBladePose(BLADE_POSE.back, BLADE_POSE.back, 0);
-      if (W.timer <= 0) { warriorSpawn(W.level + 1); toast('LEVEL ' + W.level); AudioKit.ackBeep(); hudDirty = true; saveGame(); }
+      W.sink += dt * 1.3; setBladePose(W, P.back, P.back, 0);
+      if (W.timer <= 0) { const slot = warriors.indexOf(W); warriorSetLevel(calis.level + 1);
+        spawnWarrior(nextKind(), slot); toast('LEVEL ' + calis.level); AudioKit.ackBeep(); hudDirty = true; saveGame(); }
       break;
   }
-  poseBody(W.rig, warriorFrame);
-  if (W.rig.head) { W.rig.head.lookAt(_wHead); }                     // it watches you
+  poseBody(W.rig, W.frame);
+  W.rig.g.children.forEach(m => { if (W.severed.has(m.name)) m.visible = false; });
+  if (W.rig.head && W.rig.head.visible) W.rig.head.lookAt(_wHead);
 }
 /* during a swing: does the blade reach you, and does your blade meet it? */
-function warriorSwingContacts() {
-  const W = warrior;
+function warriorSwingContacts(W) {
   W.blade.userData.samples.forEach((o, k) => o.getWorldPosition(W.samplesW[k]));
   camera.getWorldPosition(_wHead);
-  _wB.copy(_wHead); _wB.y -= 0.75;                                     // the torso runs down from the head
+  _wB.copy(_wHead); _wB.y -= 0.75;
   if (!W.hitThisSwing && !W.parried) {
     for (const p of W.samplesW) {
       if (p.distanceTo(_wHead) < CALIS.headRadius || segDist(p, _wHead, _wB) < CALIS.torsoRadius) {
@@ -3001,7 +3204,7 @@ function warriorSwingContacts() {
       }
     }
   }
-  if (!W.parried) for (const b of activeBlades) {                     // your blade, in a hand, on its blade
+  if (!W.parried) for (const b of activeBlades) {
     if (!b.visible || !b.userData.holder || !b.userData.holder.startsWith('hand')) continue;
     let met = false;
     for (const o of b.userData.samples) { o.getWorldPosition(_wS);
@@ -3011,13 +3214,7 @@ function warriorSwingContacts() {
       AudioKit.deflect(); popEffect(_wS, 0xfff3d6); haptic(b, 0.9, 70); toast('PARRIED +' + CALIS.ptsParry); break; }
   }
 }
-/* is a point on the warrior's body? (head to hips) */
-function warriorBodyHit(p, extra) {
-  if (warrior.state === 'off' || warrior.state === 'dead') return false;
-  warriorFrame.local(0, 1.55, 0, _wS); warriorFrame.local(0, 0.85, 0, _wB);
-  return segDist(p, _wS, _wB) < CALIS.bodyReach + (extra || 0);
-}
-function warriorCenter(out) { return warriorFrame.local(0, 1.2, 0, out); }
+function warriorsTick(dt) { warriors.forEach(W => warriorTick(W, dt)); gibsTick(dt); stuckKnivesTick(); }
 
 const EMPTY_HAND = { userData: { isEmpty: true, label: 'NO WEAPON' } };
 function heldBy(i) { for (const w of ARMS) if (w.userData.holder === 'hand' + i) return w; return null; }
@@ -3045,7 +3242,7 @@ function giveTo(w, i, keepPose) {
   if (prev && prev !== w) return false;                    // that hand is full
   cancelTrigger(w);
   const u = w.userData;
-  u.custom = false;
+  u.custom = false; u.stuckTo = null;
   if (keepPose && i !== 2 && (u.isGun ? handPose(i, _gvP, _gvQ) : fistPose(i, _gvP, _gvQ))) {
     _gvQ.invert();
     u.holdQ = (u.holdQ || new THREE.Quaternion()).copy(_gvQ).multiply(w.quaternion);
@@ -3376,7 +3573,11 @@ function thrownTick(dt) {
           if (D.mesh.position.distanceTo(w.position) < TUNE.discRadius + 0.2) { _tsp.copy(u.vel); discBladeHit(w.position, _tsp, D); break; }
         }
       } else if (game.program === 'calisthenics') {
-        if (warriorBodyHit(w.position, 0.1) && warriorStruck('thrown')) u.vel.multiplyScalar(-0.3);
+        const hit = warriorAt(w.position, 0.1);
+        if (hit) { const open = hit.W.state === 'recover' || hit.W.state === 'stagger';
+          warriorStruck(hit.W, w.position, 'thrown', hit.head, null);
+          if (blade && u.vel.length() > 2.5 && (open || hit.head)) { stickInWarrior(w, hit.W, hit.head); continue; }   // it stays in
+          u.vel.multiplyScalar(-0.3); }
       } else if (remote.state !== 'dead' && w.position.distanceTo(remote.pos) < REMOTE_RADIUS + 0.22) {
         if (remote.state === 'vulnerable') onRemoteTagged(); else onRemoteChipped();
         u.vel.multiplyScalar(-0.3);
@@ -3493,7 +3694,7 @@ function castLine(i) {
     if (ang < TUNE.lineCone && d < bd) { bd = d; best = w; } }
   L.target = best; L.latched = null; L.state = 'cast'; L.t = 0; L.len = TUNE.lineLength; L.dir.copy(_ld);
   for (let k = 0; k <= LINE_SEGS; k++) { L.pts[k].copy(_lp); L.prev[k].copy(_lp); }
-  L.prev[LINE_SEGS].addScaledVector(_ld, -TUNE.lineCast * dtNow);   // the hook leaves at cast speed
+  L.hookVel = (L.hookVel || new THREE.Vector3()).copy(_ld).multiplyScalar(TUNE.lineCast); L.hookVel.y += 0.6;   // the hook is a shot until the rope snaps taut
   L.rope.visible = true; L.hook.visible = true;
   AudioKit.cast(); haptic({ userData: { inputSource: hands[i] ? hands[i].src : null } }, 0.4, 40);
   toast(best ? 'LINE · ' + best.userData.label : 'LINE');
@@ -3516,35 +3717,37 @@ function lineTick(dt) {
     // reeling: the rope shortens; retracting: fast
     if (L.state === 'reel') L.len = Math.max(0.12, L.len - TUNE.lineReel * dt);
     if (L.state === 'retract') L.len = Math.max(0, L.len - 22 * dt);
-    // verlet step for every point but the wrist
-    for (let k = 1; k <= N; k++) {
-      const p = L.pts[k], q = L.prev[k];
-      _lv.copy(p).sub(q).multiplyScalar(k === N ? 0.995 : 0.97);
-      q.copy(p); p.add(_lv);
-      p.y -= TUNE.gravity * (k === N ? 1.0 : 0.6) * dt * dt;
-    }
-    // homing: on the cast, the hook can turn toward the weapon it was thrown at
-    if (L.state === 'cast' && L.target) {
-      if (!isLost(L.target)) L.target = null;
-      else {
-        _lv.copy(tip).sub(tipPrev); const sp = _lv.length();
-        if (sp > 1e-6) { _lt.copy(L.target.position).sub(tip).normalize();
-          _lv.multiplyScalar(1 / sp).lerp(_lt, Math.min(1, TUNE.lineHoming * dt)).normalize().multiplyScalar(sp);
-          tipPrev.copy(tip).sub(_lv); }
+    if (L.state === 'cast') {
+      // the hook flies as a shot: straight, hard, barely falling; it can bend toward a lost
+      // weapon it was cast at. The rope is drawn taut behind it until it runs out
+      if (L.target && !isLost(L.target)) L.target = null;
+      if (L.target) { _lt.copy(L.target.position).sub(tip).normalize(); const sp = L.hookVel.length();
+        L.hookVel.multiplyScalar(1 / sp).lerp(_lt, Math.min(1, TUNE.lineHoming * dt)).normalize().multiplyScalar(sp); }
+      L.hookVel.y -= TUNE.gravity * 0.15 * dt;
+      tipPrev.copy(tip); tip.addScaledVector(L.hookVel, dt);
+      _ld.copy(tip).sub(_lp); const reach = _ld.length();
+      if (reach >= L.len) { _ld.multiplyScalar(L.len / reach); tip.copy(_lp).add(_ld); tipPrev.copy(tip).addScaledVector(L.hookVel, -dt * 0.35); L.state = 'whip'; }
+      for (let k = 0; k < N; k++) { L.pts[k].copy(_lp).lerp(tip, k / N); L.prev[k].copy(L.pts[k]); }
+    } else {
+      // a rope: verlet, a taut cable's share of gravity, the wrist pinning the first point
+      for (let k = 1; k <= N; k++) {
+        const p = L.pts[k], q = L.prev[k];
+        _lv.copy(p).sub(q).multiplyScalar(k === N ? 0.992 : 0.975);
+        q.copy(p); p.add(_lv);
+        p.y -= TUNE.gravity * TUNE.lineSag * (k === N ? 1.0 : 0.7) * dt * dt;
       }
-    }
-    // rope constraints: the wrist pins the first point, every segment has a maximum length
-    const seg = L.len / N;
-    for (let it = 0; it < 4; it++) {
-      L.pts[0].copy(_lp);
-      for (let k = 0; k < N; k++) {
-        const a = L.pts[k], b = L.pts[k + 1];
-        _ld.copy(b).sub(a); const d = _ld.length(); if (d <= seg || d < 1e-9) continue;
-        _ld.multiplyScalar((d - seg) / d);
-        if (k === 0) b.sub(_ld); else { a.addScaledVector(_ld, 0.5); b.addScaledVector(_ld, -0.5); }
+      const seg = L.len / N;
+      for (let it = 0; it < 5; it++) {
+        L.pts[0].copy(_lp);
+        for (let k = 0; k < N; k++) {
+          const a = L.pts[k], b = L.pts[k + 1];
+          _ld.copy(b).sub(a); const d = _ld.length(); if (d <= seg || d < 1e-9) continue;
+          _ld.multiplyScalar((d - seg) / d);
+          if (k === 0) b.sub(_ld); else { a.addScaledVector(_ld, 0.5); b.addScaledVector(_ld, -0.5); }
+        }
       }
+      for (let k = 1; k <= N; k++) if (L.pts[k].y < 0.03) L.pts[k].y = 0.03;
     }
-    for (let k = 1; k <= N; k++) if (L.pts[k].y < 0.03) L.pts[k].y = 0.03;
     // the hook: what it does depends on the state
     _lv.copy(tip).sub(tipPrev).multiplyScalar(1 / Math.max(dt, 1e-4));   // hook velocity
     const hookSpeed = _lv.length();
@@ -3553,10 +3756,10 @@ function lineTick(dt) {
       let near = null, nd = TUNE.lineLatch;
       for (const w of ARMS) { if (!isLost(w)) continue; const d = w.position.distanceTo(tip); if (d < nd) { nd = d; near = w; } }
       if (near) { const wf = thrown.indexOf(near); if (wf >= 0) thrown.splice(wf, 1);
-        near.userData.holder = 'tethered'; near.userData.vel && near.userData.vel.set(0, 0, 0);
+        near.userData.holder = 'tethered'; near.userData.stuckTo = null; near.userData.vel && near.userData.vel.set(0, 0, 0);
         L.latched = near; L.target = null; L.state = 'reel'; AudioKit.latch();
         haptic({ userData: { inputSource: hands[L.i] ? hands[L.i].src : null } }, 0.5, 40); refreshHeld(); }
-      else if (L.state === 'cast' && (L.t > 0.9 || tip.distanceTo(_lp) > L.len * 0.97)) L.state = 'whip';
+      else if (L.state === 'cast' && L.t > 1.2) L.state = 'whip';
       // and it strikes like a blade when it is moving
       if (game.running && hookSpeed > TUNE.hookSpeed) {
         for (let j = targets.length - 1; j >= 0; j--) {
@@ -3566,7 +3769,8 @@ function lineTick(dt) {
           for (const D of VEL.discs) { if (!D.live) continue;
             if (D.mesh.position.distanceTo(tip) < TUNE.discRadius + 0.16) { discBladeHit(tip, _lv, D); tipPrev.copy(tip); break; } }
         } else if (game.program === 'calisthenics') {
-          if (warriorBodyHit(tip, 0.05) && warriorStruck('hook')) tipPrev.copy(tip).addScaledVector(_lv, dt * 0.4);
+          const hit = warriorAt(tip, 0.05);
+          if (hit && warriorStruck(hit.W, tip, 'hook', hit.head, null)) tipPrev.copy(tip).addScaledVector(_lv, dt * 0.4);
         } else if (remote.state !== 'dead' && tip.distanceTo(remote.pos) < REMOTE_RADIUS + 0.18) {
           if (remote.state === 'vulnerable') onRemoteTagged(); else onRemoteChipped();
           tipPrev.copy(tip).addScaledVector(_lv, dt * 0.4);              // it bounces off
@@ -3715,30 +3919,26 @@ function handFire(hand, down, src) {
 }
 /* The lobby pads: trigger with a hand over one (desktop: look at it and click). */
 const _ray = new THREE.Raycaster();
-function padUnderGaze() {
-  camera.getWorldPosition(_hp); camera.getWorldDirection(_gz);
-  _ray.set(_hp, _gz); _ray.far = 3.5;
-  const hits = _ray.intersectObjects(lobbyPads.map(p => p.mesh), false);
-  if (!hits.length) return null;
-  return lobbyPads.find(p => p.mesh === hits[0].object) || null;
-}
 function tryLobbyPad(hand) {
   const i = hand && hand.index !== undefined ? hand.index : 2;
   let pad = null;
-  if (i === 2) pad = padUnderGaze();
-  else if (handPose(i, _hp, _hq)) {
-    let bd = 0.20;
+  if (i !== 2 && handPose(i, _hp, _hq)) {                      // a hand on a console button
+    let bd = 0.16;
     lobbyPads.forEach(p => { p.mesh.getWorldPosition(_ap); const d = _ap.distanceTo(_hp); if (d < bd) { bd = d; pad = p; } });
   }
   if (pad) { pressPad(pad); return; }
-  let hit = null;                                              // nothing under the hand: is it pointing at the wardrobe?
-  if (i === 2) { camera.getWorldPosition(_hp); camera.getWorldDirection(_gz); hit = wardrobeHit(_hp, _gz); }
-  else if (handPose(i, _hp, _hq)) { _gz.set(0, 0, -1).applyQuaternion(_hq); hit = wardrobeHit(_hp, _gz); }
+  if (i === 2) { camera.getWorldPosition(_hp); camera.getWorldDirection(_gz); }
+  else if (handPose(i, _hp, _hq)) _gz.set(0, 0, -1).applyQuaternion(_hq);
+  else return;
+  const ch = consoleHit(_hp, _gz);                            // or pointed at one
+  if (ch && ch.button) { const p = lobbyPads.find(p => p.id === ch.button.id); if (p) pressPad(p); return; }
+  const hit = wardrobeHit(_hp, _gz);                           // or at the wardrobe, behind you
   if (hit && hit.button) setAvatarOption(hit.button.key, hit.button.value);
 }
 function pressPad(pad) {
   if (pad.id === 'begin') { beginDrill(); return; }
   if (pad.id === 'resume') { resumeGame(); return; }
+  if (!PROG_TITLE[pad.id]) return;
   if (game.program !== pad.id) {
     setProgram(pad.id); AudioKit.ackBeep(); flashGrid(0.25);
     toast(PROG_TITLE[pad.id].toUpperCase() + (pad.id === 'calisthenics' ? ' · KLINGON ARMS ONLY' : ' · LOADED'));
@@ -3922,8 +4122,8 @@ function bladeTick(b, dt) {
   for (let i = 0; i < u.samples.length; i++) {
     u.samples[i].getWorldPosition(_bw);
     const speed = u.prevValid ? _bw.distanceTo(u.prev[i]) / dt : 0;
-    if (game.program === 'calisthenics') {                     // a real swing on the warrior's body
-      if (speed > minSpeed && warriorBodyHit(_bw, 0)) { if (warriorStruck('blade')) haptic(b, 0.7, 50); }
+    if (game.program === 'calisthenics') {                     // a real swing on an enemy's body
+      if (speed > minSpeed) { const hit = warriorAt(_bw, 0); if (hit && warriorStruck(hit.W, _bw, 'blade', hit.head, b)) haptic(b, 0.7, 50); }
       u.prev[i].copy(_bw); continue;
     }
     if (game.program === 'velocity') {
@@ -4052,7 +4252,8 @@ function deskTick(dt) {
    The dials worth arguing about live here, not in the code. Saved per browser. */
 const DEFAULTS = { telegraph: 0.55, assist: 2.5, targetScale: 0.75, agility: 1.0, brightness: 0.72,
                    targetHP: 3, fleeSpeed: 3.4, discSpeed: 3.0, courtSize: 3.4, phaserVol: 0.45,
-                   beamSweep: 0.10, refresh: 'auto', musicVol: 0.35, calisWorld: 'arena', v: 2 };
+                   beamSweep: 0.10, refresh: 'auto', musicVol: 0.35, calisWorld: 'arena',
+                   calisDifficulty: 'officer', calisSpeed: 1.0, calisEnemies: 1, startWave: 1, startSpeed: 1, v: 2 };
 const SETTINGS = JSON.parse(JSON.stringify(DEFAULTS));
 function loadSettings() {
   try {
@@ -4283,14 +4484,16 @@ function resetGame() {
     u.battery = u.batteryMax; u.wasDry = false; updateBatteryGauge(w); }
   recallLoose(game.phase === 'playing');           // a restart hands loose blades back; the first start does nothing
   game.kills = 0; game.parries = 0;
+  if (game.program === 'range') game.wave = Math.max(1, Number(SETTINGS.startWave) || 1);
   if (game.program === 'velocity') {
-    VEL.speed = TUNE.discSpeed; VEL.strikes = 0; VEL.splitT = 0;
+    const s0 = Math.max(1, Number(SETTINGS.startSpeed) || 1); game.wave = s0;
+    VEL.speed = Math.min(TUNE.discSpeedMax, TUNE.discSpeed * Math.pow(1.12, s0 - 1)); VEL.strikes = 0; VEL.splitT = 0;
     while (VEL.discs.length > 1) { const gone = VEL.discs.pop(); scene.remove(gone.mesh); }
     VEL.discs[0].sinceStrike = 0; VEL.discs[0].energy = 0; VEL.discs[0].hp = TUNE.discHP; VEL.discs[0].dead = false;
     VEL.discs[0].wobX = VEL.discs[0].wobZ = 0;
     velocityServe(1.6);
   } else if (game.program === 'calisthenics') {
-    warriorSpawn(1); warrior.timer += 1.2;                   // a breath before the first approach
+    warriorsSpawn(1); warriors.forEach(W => { W.timer += 1.2; });   // a breath before the first approach
   } else {
     remote.state = 'stalk'; remote.timer = 2.5; remote.hpMax = TUNE.remoteHP; remote.hp = TUNE.remoteHP; remote.g.visible = true;
     remote.pos.set(0, 1.6, -3.2); remote.base.copy(remote.pos); remotePickWaypoint();
@@ -4322,7 +4525,7 @@ function recallLoose(toBody) {
   thrown.length = 0; retractAllLines();
   for (const w of ARMS) { const u = w.userData;
     if (u.holder !== 'flight' && u.holder !== 'stuck' && u.holder !== 'tethered') continue;
-    u.dropped = false; if (u.vel) u.vel.set(0, 0, 0);
+    u.dropped = false; u.stuckTo = null; if (u.vel) u.vel.set(0, 0, 0);
     let k = -1;
     if (toBody) k = HOLSTERS.findIndex((h, j) => holsterAccepts(h, w) && !holsterOccupant(j) && (u.def.id !== 'dktahg' || h.accepts === 'dktahg'));
     if (toBody && k < 0) k = HOLSTERS.findIndex((h, j) => holsterAccepts(h, w) && !holsterOccupant(j));
@@ -4340,7 +4543,7 @@ function parkRemote() {
 let endedAt = 0;
 function endProgram() {
   game.running = false; game.over = true; endedAt = gt;
-  if (game.program === 'calisthenics') { warrior.state = 'off'; }
+  if (game.program === 'calisthenics') { warriors.forEach(W => { W.state = 'off'; }); }
   AudioKit.beamStop(); AudioKit.chargeStop();          // no whine left hanging past the end
   activePhasers.forEach(p => { p.userData.holding = false; p.userData.beaming = false; p.userData.charge = 0; });
   const record = recordRun(game.program, game.score, game.wave);
@@ -4380,6 +4583,7 @@ function loadSave() {
   catch (e) { saveExists = false; return null; }
 }
 function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} saveExists = false; if (typeof drawTableConsole === 'function') drawTableConsole(); }
+function noteSaved() { if (game.phase !== 'select' && typeof drawTableConsole === 'function') drawTableConsole(); }
 /* everything a program needs to pick up where it left off */
 function snapshotGame() {
   const kit = ARMS.map(w => [w.userData.id, w.userData.holder]);
@@ -4388,7 +4592,7 @@ function snapshotGame() {
     shots: game.shots, hits: game.hits, pops: game.pops, tags: game.tags, dodges: game.dodges, strikes: game.strikes,
     kills: game.kills || 0, parries: game.parries || 0, popsThisWave: game.popsThisWave, elapsed: gt - game.startTime, kit };
   if (game.program === 'velocity') { snap.velSpeed = VEL.speed; snap.velStrikes = VEL.strikes; }
-  if (game.program === 'calisthenics') { snap.level = warrior.level; }
+  if (game.program === 'calisthenics') { snap.level = calis.level; }
   return snap;
 }
 function saveGame() {
@@ -4418,7 +4622,7 @@ function resumeGame() {
     strikes: sv.strikes || 0, kills: sv.kills || 0, parries: sv.parries || 0, popsThisWave: sv.popsThisWave || 0,
     startTime: gt - (sv.elapsed || 0) });
   if (sv.program === 'velocity') { if (sv.velSpeed) VEL.speed = sv.velSpeed; VEL.strikes = sv.velStrikes || 0; }
-  if (sv.program === 'calisthenics') { warriorSetLevel(sv.level || sv.wave || 1); }
+  if (sv.program === 'calisthenics') { warriorsSpawn(sv.level || sv.wave || 1); }
   hudDirty = true; AudioKit.ackBeep();
   toast('RESUMED · ' + PROG_TITLE[sv.program].toUpperCase() + ' · ' + game.score);
   return true;
@@ -4555,6 +4759,10 @@ const CONTROLS = [
   { id: 's-court', out: 'o-court', key: 'courtSize', fmt: v => '±' + v.toFixed(1) + ' m' },
   { id: 's-vol', out: 'o-vol', key: 'phaserVol', fmt: v => v === 0 ? 'muted' : Math.round(v * 100) + '%' },
   { id: 's-mus', out: 'o-mus', key: 'musicVol', fmt: v => v === 0 ? 'muted' : Math.round(v * 100) + '%' },
+  { id: 's-wave', out: 'o-wave', key: 'startWave', fmt: v => 'wave ' + v },
+  { id: 's-spd', out: 'o-spd', key: 'startSpeed', fmt: v => 'speed ' + v },
+  { id: 's-cspeed', out: 'o-cspeed', key: 'calisSpeed', fmt: v => '×' + v.toFixed(1) },
+  { id: 's-cenemy', out: 'o-cenemy', key: 'calisEnemies', fmt: v => v + (v === 1 ? ' enemy' : ' enemies') },
 ];
 function syncSettingsUI() {
   CONTROLS.forEach(c => {
@@ -4562,6 +4770,8 @@ function syncSettingsUI() {
     el.value = SETTINGS[c.key];
     document.getElementById(c.out).textContent = c.fmt(Number(SETTINGS[c.key]));
   });
+  document.getElementById('s-cdiff').value = SETTINGS.calisDifficulty || 'officer';
+  document.getElementById('o-cdiff').textContent = { cadet: 'easy', officer: 'even', warrior: 'hard', dahar: 'brutal' }[SETTINGS.calisDifficulty] || 'even';
   document.getElementById('s-world').value = SETTINGS.calisWorld || 'arena';
   document.getElementById('o-world').textContent = SETTINGS.calisWorld === 'qonos' ? "Qo'noS" : 'arena';
   document.getElementById('s-fps').value = String(SETTINGS.refresh || 'auto');
@@ -4584,6 +4794,8 @@ for (const key in WARDROBE_SELECTS) {
   el.addEventListener('change', e => setAvatarOption(key, e.target.value));
 }
 syncWardrobeUI();
+const diffSel = document.getElementById('s-cdiff');
+diffSel.addEventListener('change', e => { SETTINGS.calisDifficulty = e.target.value; saveSettings(); syncSettingsUI(); });
 const worldSel = document.getElementById('s-world');
 worldSel.addEventListener('change', e => { SETTINGS.calisWorld = e.target.value; saveSettings(); syncSettingsUI(); applyProgram(); });
 const fpsSel = document.getElementById('s-fps');
@@ -4661,11 +4873,6 @@ renderer.setAnimationLoop((time) => {
   if (game.mode) { loadoutTick(dt); bodyTick(); pointersTick(); }
   if (!game.paused) { thrownTick(dt); if (game.mode) { catchTick(); lineTick(dt); } }
   if (game.phase === 'select') {
-    lobbyPads.forEach(p => {
-      if (p.id === 'begin') p.mat.color.setHSL(0.09, 1, 0.45 + 0.25 * Math.sin(perf * 4));
-      else if (p.id === 'resume') p.mat.color.copy(p.base).multiplyScalar(saveExists ? 0.75 + 0.25 * Math.sin(perf * 3) : 0.18);
-      else p.mat.color.copy(p.base).multiplyScalar(game.program === p.id ? 1.0 : 0.30);
-    });
     HOLSTERS.forEach(h => { if (h.ringMat) h.ringMat.opacity = 0.18 + 0.12 * Math.sin(perf * 3); });
   }
   if (calisQonos.visible) lavaLights.forEach(L => { L.light.intensity = 1.35 + 0.35 * Math.sin(perf * 6.3 + L.phase) + 0.2 * Math.sin(perf * 17 + L.phase * 3); });
@@ -4676,7 +4883,7 @@ renderer.setAnimationLoop((time) => {
     if (game.program === 'velocity') {
       if (game.running) velocityTick(dt);
     } else if (game.program === 'calisthenics') {
-      if (game.running) warriorTick(dt);
+      if (game.running) warriorsTick(dt);
     } else {
       remoteTick(dt);
       if (game.running) { boltsTick(dt); targetsTick(dt); }

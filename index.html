@@ -135,10 +135,10 @@
         A <b>training remote</b> orbits you: when its emitter glows and chimes, a stun bolt follows —
         <b>step aside or duck</b>, or shoot the bolt out of the air. The instant it fires, the remote
         flares white: <b>tag it then</b> for the big score. You can hit it any time to make it flinch —
-        counter-fire during the glow <b>breaks its attack</b>. Each hand cycles its own rack —
-        the First Contact pistol, the swept <b>TNG type 2</b> you hold flat like a remote, a
-        <b>bat'leth</b> that bats its bolts straight back, and empty hands if you want them.
-        Three hits ends the program.</p>
+        counter-fire during the glow <b>breaks its attack</b>. The whole armory waits on the
+        lobby table — two pistols, two rifles, a <b>bat'leth</b> that bats its bolts straight
+        back, and six d'k tahgs for the <b>sash</b>. Grip takes; let go at a holster to stow, let go
+        anywhere else and it drops. Three hits ends the program.</p>
       <p class="brief" id="brief-velocity" hidden>Voyager's court, walls lit in holodeck gold. An
         eight-inch disc runs the walls, ricocheting off every surface — and when it has run them
         long enough, it comes looking for you. <b>Shoot it</b> and it ricochets off your
@@ -198,12 +198,6 @@
         <div class="row"><label for="s-bri">Brightness</label>
           <input type="range" id="s-bri" min="0.3" max="1" step="0.05"><output id="o-bri"></output></div>
 
-        <h2>Hands</h2>
-        <div class="racklist">
-          <label><input type="radio" name="dom" id="dom-right" value="right"> Right-handed</label>
-          <label><input type="radio" name="dom" id="dom-left" value="left"> Left-handed</label>
-        </div>
-        <p class="hint">Your primary starts in this hand; the rest of the kit rides your hips and back. Rearrange it on the table before each drill.</p>
         <button id="btn-reset" type="button">Restore defaults</button>
       </div>
       <dl class="legend">
@@ -213,14 +207,17 @@
         <dt>Velocity</dt><dd>A bolt bounces the disc <i>and</i> dumps its charge into it &mdash; a full cell sends it screaming. Overfeed one and it <b>divides</b>. Take it in the head or chest and it costs a pip</dd>
         <dt>Keep holding</dt><dd>Stay on past a full charge and it vents as a sustained beam instead &mdash; no assist, just its own width</dd>
         <dt>Thumb key</dt><dd>B / Y fires as well &mdash; the way the swept TNG shell is meant to be worked</dd>
-        <dt>A / X or grip</dt><dd>Tap to cycle that hand's weapons &mdash; <b>hold A / X 0.6&thinsp;s to pause</b> (a fresh press on the pause card ends the program)</dd>
+        <dt>Grip</dt><dd><b>Hold it to hold it.</b> Squeeze near anything &mdash; on the table, in a holster, on the sash, on the floor &mdash; to take it. Let go at a holster or sash sheath and it stows; let go anywhere else and it <b>drops</b> (over the table, onto the table). A second hand on a rifle or the bat'leth steadies it</dd>
+        <dt>A / X</dt><dd><b>Hold 0.6&thinsp;s to pause</b>; a fresh press on the pause card walks you back to the lobby</dd>
+        <dt>The lobby</dt><dd>The arch and the table are one room. Three pads on the table's front edge: <b>Phaser Range</b>, <b>Velocity</b>, <b>Begin</b> &mdash; trigger with a hand over one. Whatever is on your body comes with you</dd>
         <dt>Thumbstick</dt><dd>Flick right to raise the power setting, left to lower it &mdash; ten detents, stun to kill, the lamp runs green to red (desktop: mouse wheel)</dd>
         <dt>Your body</dt><dd>Dodge stun bolts physically — sidestep, duck</dd>
-        <dt>Bat'leth</dt><dd>Over your <b>left shoulder</b>. Either hand, or both for a two-handed grip. Deflects stun bolts even held still; a returned bolt that hits the remote pays 200</dd>
-        <dt>Throw a blade</dt><dd>Grip while swinging hard and it <b>flies and sticks</b> where it lands &mdash; grip near it again to pull it free (desktop: G throws, F recovers)</dd>
-        <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD roams the whole room · Shift sprint · <b>Space dash</b> (dodge!) · C duck · wheel sets power · B or 1/2/3 weapon · P pause</dd>
+        <dt>Holsters</dt><dd>Two on the hips, two over the shoulders &mdash; any weapon fits. The bat'leth wants the <b>left shoulder</b>; either hand draws it, both hands span it. It deflects stun bolts even held still; a returned bolt that hits the remote pays 200</dd>
+        <dt>The sash</dt><dd>A Klingon baldric over the <b>right shoulder</b>, six sheaths down the chest, <b>d'k tahgs only</b>. Let a knife go against your chest and it seats in the nearest empty sheath</dd>
+        <dt>Throw a blade</dt><dd>Let go mid-swing and it <b>flies and sticks</b> where it lands &mdash; grip near it again to pull it free. A gentle release just drops it (desktop: G throws, F recovers)</dd>
+        <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD roams the whole room · Shift sprint · <b>Space dash</b> (dodge!) · C duck · wheel sets power · B or 1–6 weapon · X drops it · in the lobby, click a pad or press Enter · P pause</dd>
       </dl>
-      <p class="footnote">M0.17 feel prototype — telegraph timing, phaser feel, and a first bat'leth. On Quest, open this
+      <p class="footnote">M0.18 feel prototype — telegraph timing, phaser feel, a physical armory, the sash, and the Onshape bat'leth. On Quest, open this
         page in the headset browser. If the Enter button stays unavailable inside an embedded viewer,
         open the page in its own tab.</p>
       <p class="footnote" id="diag" style="font-family:monospace;font-size:11px;color:#6a6a5c;line-height:1.6"></p>
@@ -239,9 +236,10 @@
     </div>
     <div class="actions">
       <button class="lcars" id="btn-resume">Resume</button>
-      <button class="lcars alt" id="btn-quit">Main menu</button>
+      <button class="lcars alt" id="btn-quit">Back to the lobby</button>
+      <button class="lcars alt" id="btn-leave">Leave the holodeck</button>
     </div>
-    <p class="footnote">Desktop: P pauses. Headset: hold A / X 0.6&thinsp;s to pause; trigger resumes, a fresh A / X press returns here, and the thumbstick sets phaser volume.</p>
+    <p class="footnote">Desktop: P pauses. Headset: hold A / X 0.6&thinsp;s to pause; trigger resumes, a fresh A / X press returns you to the lobby, and the thumbstick sets phaser volume.</p>
   </div>
 </div>
 
@@ -343,7 +341,8 @@ const TUNE = {
   discEnergyDecay: 0.12,   // per second — absorbed charge bleeds off
   boltDrain: 0.055,        // (legacy) cell units a bolt cost before charging existed
   beamDrain: 0.30,         // cell units per second of beam at setting 5
-  batteryRegen: 0.035,     // trickle recharge per second while not firing
+  batteryRegen: 0.10,      // cell units back per second while not firing (v0.17: 0.035)
+  cellScale: 2.0,          // every cell holds this many times its v0.17 capacity
   discMax: 8,              // the court will not field more than this many
   discSplitEvery: 60,      // s of rally before the discs double
   discSeekDelay: 2.6,      // s of free ricochet before the disc starts hunting you
@@ -358,10 +357,15 @@ const TUNE = {
   // — bat'leth —
   ptsMeleePop: 35, ptsDeflect: 50, ptsReturn: 200,
   bladeSwingSpeed: 1.2,    // m/s blade speed needed to pop a target (desktop: 0.8)
-  throwSpeed: 2.2,         // m/s of hand movement that turns a release into a throw
+  throwSpeed: 1.5,         // m/s of hand movement that turns a release into a throw (peak over ~90 ms)
   throwBoost: 1.35,
   throwGravity: 7.5,
-  bladeScale: 1.25,        // the blade wanted more presence in the hand
+  dropGravity: 9.8,        // a let-go weapon just falls
+  // — grip reach: how close a release has to be to seat in something —
+  holsterReach: 0.26,      // m, hips and shoulders
+  sashReach: 0.16,         // m, a sheath on the sash (tighter — they sit close together)
+  tableReach: 0.30,        // m, taking a weapon off the table
+  bladeScale: 1.0,         // the bat'leth is the Onshape model at true size (1.11 m); 1.25 gave the old procedural one presence
   bladePopRadius: 0.16, bladeDeflectRadius: 0.22,
   deflectSpeedBoost: 1.6,  // returned bolts fly this much faster
   waveEvery: 8,            // target pops per wave
@@ -600,38 +604,50 @@ function buildType2TNG() {
   return g;
 }
 
-/* — the bat'leth: crescent blade, four points, three handholds —
+/* — the bat'leth: James's Onshape plate (the Bat'Leth part — 1.11 m tip to tip, 4 mm
+     steel, five points, three handhold cutouts, three small piercings), carried here as
+     its outline in tenths of a millimetre and extruded at build time. Authored flat in
+     XY with the centre grip bar at the origin: blade tips at −Y, handle edge at +Y; laid
+     horizontal below so the blade points away from you.
      (materials named & colored: brushed blade steel, dark leather wraps) */
+const BATLETH_OUTLINE = [
+  '-3601 -827 -3697 -806 -3869 -924 -4036 -1048 -4197 -1179 -4353 -1316 -4504 -1460 -4648 -1610 -4787 -1765 -4919 -1925 -5045 -2091 -5164 -2262 -5275 -2437 -5380 -2617 -5478 -2801 -5568 -2988 -5089 -2604 -4717 -2326 -4377 -2097 -4207 -1993 -4023 -1888 -3828 -1786 -3628 -1688 -3432 -1600 -3248 -1524 -3084 -1462 -2830 -1381 -2738 -1360 -2594 -1341 -2480 -1349 -2378 -1375 -2300 -1417 -2260 -1456 -2236 -1500 -2223 -1571 -2226 -1670 -2246 -1808 -2353 -1934 -2452 -2067 -2544 -2204 -2628 -2347 -2705 -2494 -2772 -2645 -2831 -2800 -2882 -2958 -2791 -2849 -2694 -2747 -2590 -2651 -2480 -2562 -2364 -2481 -2244 -2407 -2119 -2341 -1990 -2283 -1857 -2234 -1722 -2194 -1584 -2162 -1551 -1950 -1514 -1798 -1470 -1690 -1423 -1618 -1367 -1561 -1332 -1534 -1246 -1486 -1185 -1463 -1122 -1446 -1059 -1437 -1001 -1434 -945 -1436 -847 -1456 -792 -1475 -730 -1504 -671 -1538 -614 -1578 -559 -1624 -506 -1678 -455 -1737 -407 -1804 -318 -1960 -223 -2181 -114 -2499 0 -2883 114 -2499 223 -2181 318 -1960 407 -1804 455 -1737 506 -1678 559 -1624 614 -1578 671 -1538 730 -1504 792 -1475 847 -1456 945 -1436 1001 -1434 1059 -1437 1122 -1446 1185 -1463 1246 -1486 1332 -1534 1367 -1561 1423 -1618 1470 -1690 1514 -1798 1551 -1950 1584 -2162 1722 -2194 1857 -2234 1989 -2283 2119 -2341 2244 -2407 2364 -2481 2480 -2562 2590 -2651 2693 -2747 2791 -2849 2882 -2958 2831 -2800 2772 -2645 2704 -2494 2628 -2347 2544 -2204 2452 -2067 2353 -1934 2246 -1808 2226 -1670 2222 -1571 2236 -1500 2260 -1456 2300 -1417 2378 -1375 2480 -1349 2594 -1341 2738 -1360 2830 -1381 3084 -1462 3248 -1524 3432 -1600 3628 -1688 3827 -1786 4023 -1888 4207 -1993 4377 -2097 4717 -2326 5089 -2604 5568 -2988 5478 -2801 5380 -2617 5275 -2437 5163 -2262 5045 -2091 4919 -1925 4787 -1765 4648 -1610 4504 -1460 4353 -1316 4197 -1179 4036 -1048 3869 -924 3697 -806 3465 -855 3354 -874 3177 -889 3101 -888 2948 -867 2784 -820 2697 -788 2572 -727 2518 -685 2501 -660 2494 -637 2496 -606 2506 -584 2525 -563 2546 -549 2602 -526 2724 -498 2531 -395 2334 -301 2134 -214 1930 -137 1723 -68 1513 -8 1301 44 1087 86 871 119 654 143 436 158 218 164 0 161 -218 164 -436 158 -654 143 -871 119 -1087 86 -1301 44 -1513 -8 -1723 -68 -1930 -137 -2134 -214 -2335 -301 -2531 -395 -2724 -498 -2602 -526 -2546 -549 -2525 -563 -2506 -584 -2496 -606 -2494 -637 -2501 -660 -2518 -685 -2572 -727 -2697 -788 -2784 -820 -2948 -867 -3101 -888 -3177 -889 -3354 -874',
+  '517 -177 862 -201 1011 -219 1245 -262 1443 -318 1540 -356 1632 -400 1717 -447 1827 -523 1911 -599 1942 -647 1946 -684 1928 -720 1892 -760 1812 -821 1721 -867 1629 -893 1515 -901 1449 -898 1188 -867 1050 -836 841 -753 779 -740 748 -738 686 -742 655 -749 504 -802 381 -835 255 -859 128 -873 0 -878 -128 -873 -255 -859 -381 -835 -504 -802 -655 -749 -686 -742 -748 -738 -780 -740 -841 -753 -974 -808 -1118 -854 -1188 -867 -1449 -898 -1576 -899 -1674 -883 -1765 -848 -1812 -821 -1892 -760 -1928 -720 -1946 -684 -1947 -666 -1941 -642 -1911 -599 -1827 -523 -1717 -447 -1632 -400 -1540 -356 -1443 -318 -1245 -262 -1011 -219 -862 -201 -550 -178 0 -162',
+  '3773 -1512 3570 -1417 3373 -1332 3185 -1257 3023 -1199 2773 -1124 2679 -1104 2524 -1085 2454 -1085 2384 -1093 2265 -1121 2209 -1142 2132 -1186 2103 -1208 2056 -1256 2019 -1311 2006 -1340 1986 -1409 1981 -1452 1981 -1564 1989 -1630 2039 -1912 2125 -2009 2207 -2110 2070 -2050 1930 -1999 1787 -1956 1763 -1814 1723 -1661 1672 -1539 1608 -1439 1531 -1360 1433 -1291 1316 -1239 1246 -1218 1165 -1201 1134 -1188 1110 -1165 1099 -1146 1089 -1114 1091 -1081 1103 -1050 1124 -1025 1152 -1007 1196 -999 1238 -1011 1303 -1049 1362 -1076 1423 -1096 1486 -1110 1551 -1117 1615 -1117 1679 -1111 1743 -1098 1804 -1079 1863 -1053 1919 -1021 1972 -984 2020 -941 2064 -893 2102 -842 2135 -786 2162 -727 2197 -752 2240 -761 2282 -752 2317 -727 2319 -780 2340 -848 2366 -890 2406 -933 2468 -977 2519 -1004 2589 -1035 2771 -1097 2945 -1135 3110 -1148 3193 -1145 3381 -1121 3641 -1063 3802 -1174 3959 -1292 4111 -1416 4258 -1546 4400 -1681 4537 -1822 4668 -1968 4793 -2119 4509 -1926 4339 -1820 4163 -1716 3973 -1613',
+  '-2320 -1105 -2384 -1093 -2454 -1085 -2524 -1085 -2679 -1104 -2886 -1156 -3023 -1199 -3185 -1257 -3373 -1332 -3570 -1417 -3773 -1512 -3973 -1613 -4163 -1716 -4339 -1820 -4509 -1926 -4793 -2119 -4668 -1968 -4537 -1822 -4400 -1681 -4258 -1546 -4111 -1416 -3959 -1292 -3802 -1174 -3641 -1063 -3381 -1121 -3193 -1145 -3026 -1144 -2945 -1135 -2777 -1099 -2595 -1038 -2527 -1008 -2474 -980 -2410 -935 -2360 -881 -2336 -840 -2322 -795 -2317 -727 -2282 -752 -2240 -761 -2197 -752 -2162 -727 -2135 -786 -2102 -842 -2064 -893 -2020 -941 -1972 -984 -1920 -1021 -1863 -1053 -1804 -1079 -1743 -1098 -1679 -1111 -1615 -1117 -1551 -1117 -1487 -1110 -1424 -1096 -1362 -1076 -1303 -1049 -1238 -1011 -1196 -999 -1173 -1001 -1142 -1012 -1116 -1032 -1098 -1060 -1089 -1092 -1091 -1125 -1104 -1156 -1126 -1181 -1165 -1201 -1246 -1218 -1316 -1239 -1433 -1291 -1531 -1360 -1608 -1439 -1672 -1539 -1723 -1661 -1763 -1814 -1787 -1956 -1930 -1999 -2070 -2050 -2207 -2110 -2125 -2009 -2039 -1912 -1989 -1630 -1981 -1564 -1981 -1452 -1987 -1409 -2006 -1340 -2037 -1282 -2078 -1231 -2132 -1186 -2165 -1165 -2265 -1121',
+  '-306 -1144 -250 -1169 -175 -1192 -83 -1202 -37 -1201 -150 -1396 -219 -1357 -251 -1332 -280 -1305 -328 -1241 -363 -1169 -383 -1091',
+  '0 -1930 -118 -1469 0 -1264 118 -1469',
+  '194 -1295 141 -1381 37 -1201 120 -1160 210 -1137 303 -1132 395 -1144 305 -1192 264 -1222'
+];
 function buildBatleth() {
   const steel = new THREE.MeshStandardMaterial({ color: 0xb9bec8, metalness: 0.9, roughness: 0.35 }); steel.name = 'Mat_BladeSteel';
   const wrap  = new THREE.MeshStandardMaterial({ color: 0x2a2024, metalness: 0.1, roughness: 0.9 });  wrap.name  = 'Mat_HandleWrap';
   const g = new THREE.Group(); g.name = 'Batleth';
   const body = new THREE.Group(); body.name = 'BatlethBladeAssembly'; // authored flat in XY, laid horizontal below
-  const inner_add = (m) => body.add(m);
-  // one flat piece of steel: the handle side is a clean crescent, the blade side
-  // carries six points
-  const S = 0.58, N = 6, STEPS = N * 9;
-  const inner = (x) => 0.020 + 0.052 * (1 - (x / S) * (x / S));          // crescent you hold
-  const outer = (x, t) => -0.024 - 0.088 * (1 - (x / S) * (x / S))       // the belly of the blade
-                          - 0.055 * Math.abs(Math.sin(Math.PI * N * t)); // …scalloped into six points
-  const s = new THREE.Shape();
-  s.moveTo(-S, inner(-S));
-  for (let k = 1; k <= STEPS; k++) { const x = -S + 2 * S * (k / STEPS); s.lineTo(x, inner(x)); }
-  for (let k = STEPS; k >= 0; k--) { const t = k / STEPS; s.lineTo(-S + 2 * S * t, outer(-S + 2 * S * t, t)); }
-  s.lineTo(-S, inner(-S));
-  const blade = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth: 0.011, bevelEnabled: true,
-    bevelThickness: 0.0025, bevelSize: 0.0025, bevelSegments: 1, curveSegments: 2 }), steel);
-  blade.name = 'BatlethBlade'; blade.position.z = -0.0055; inner_add(blade);
-  [-0.30, 0, 0.30].forEach((x, i) => {        // three handholds along the crescent
-    const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.11, 10), wrap);
-    grip.name = 'BatlethGrip' + (i + 1);
-    grip.rotation.z = Math.PI / 2; grip.position.set(x, inner(x) + 0.018, 0); inner_add(grip);
-  });
-  const samples = [];                          // collision samples along the six-point edge
+  const loops = BATLETH_OUTLINE.map(str => { const n = str.split(' ').map(Number), pts = [];
+    for (let i = 0; i < n.length; i += 2) pts.push(new THREE.Vector2(n[i] * 1e-4, n[i + 1] * 1e-4)); return pts; });
+  const s = new THREE.Shape(loops[0]);                              // the outer edge…
+  for (let k = 1; k < loops.length; k++) s.holes.push(new THREE.Path(loops[k]));   // …and everything cut out of it
+  const T = 0.004, bevel = 0.001;                                   // the plate, with a light chamfer on every edge
+  const blade = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth: T - 2 * bevel, bevelEnabled: true,
+    bevelThickness: bevel, bevelSize: bevel, bevelSegments: 1 }), steel);
+  blade.name = 'BatlethBlade'; blade.position.z = -(T - 2 * bevel) / 2; body.add(blade);
+  // leather on the three grip bars: the ends, angled with the bars, and the centre
+  [[-0.328, -0.0977, 0.09, 0.014,  0.12], [0, 0, 0.13, 0.019, 0], [0.328, -0.0977, 0.09, 0.014, -0.084]]
+    .forEach(([x, y, L, r, slope], i) => {
+      const grip = new THREE.Mesh(new THREE.CylinderGeometry(r, r, L, 12), wrap);
+      grip.name = 'BatlethGrip' + (i + 1);
+      grip.rotation.z = Math.PI / 2 - Math.atan(slope); grip.position.set(x, y, 0); body.add(grip);
+    });
+  // collision samples along the blade edge: eleven across, each on the outermost point nearby
+  const outer = loops[0], samples = [];
   for (let i = 0; i <= 10; i++) {
-    const t = i / 10, x = -S + 2 * S * t;
+    const x = -0.545 + 1.09 * (i / 10);
+    let y = Infinity;
+    outer.forEach(p => { if (Math.abs(p.x - x) < 0.03 && p.y < -0.10 && p.y < y) y = p.y; });
+    if (y === Infinity) y = -0.20;
     const o = new THREE.Object3D(); o.name = 'BladeSample' + i;
-    o.position.set(x, outer(x, t) - 0.008, 0);
+    o.position.set(x, y - 0.005, 0);
     body.add(o); samples.push(o);
   }
   body.rotation.x = Math.PI / 2;               // lie flat: blade edge away, handholds toward you
@@ -1485,16 +1501,20 @@ function drawHUD() {
   cols.forEach((col, i) => { const x = 140 + i * 250;
     c.fillStyle = '#cc99cc'; c.font = dsp(34, 400); c.fillText(col.lab, x, 60);
     c.fillStyle = '#f2c14e'; c.font = dsp(110, 700); c.fillText(String(col.val), x, 110); });
+  if (game.phase === 'select') {                       // the lobby: what is loaded, and how the grip works
+    c.fillStyle = '#cc99cc'; c.font = dsp(34, 400); c.fillText('LOADED', 140, 280);
+    c.fillStyle = '#f2c14e'; c.font = dsp(64, 700); c.fillText(PROG_TITLE[game.program].toUpperCase(), 140, 314);
+    c.fillStyle = '#99ccff'; c.font = dsp(32, 600);
+    c.fillText('GRIP HOLDS · LET GO AT A HOLSTER TO STOW · ELSEWHERE IT DROPS', 140, 392);
+    c.fillText('PADS ON THE TABLE: PHASER RANGE · VELOCITY · BEGIN', 140, 432);
+    worldHUD.tex.needsUpdate = true; return;
+  }
   c.fillStyle = '#cc99cc'; c.font = dsp(34, 400); c.fillText('TOLERANCE', 140, 280);
   for (let i = 0; i < TUNE.pips; i++) { c.beginPath(); c.arc(170 + i * 90, 375, 30, 0, Math.PI * 2);
     c.fillStyle = i < game.pips ? '#f2c14e' : '#232330'; c.fill(); }
-  if (game.phase === 'select') {
-    c.fillStyle = '#99ccff'; c.font = dsp(40, 600);
-    c.fillText('GRIP TAKES · GRIP AT A HOLSTER STOWS', 140, 340);
-    c.fillText('TRIGGER ON THE AMBER PAD BEGINS', 140, 396);
-  } else if (game.paused) {
+  if (game.paused) {
     c.fillStyle = '#99ccff'; c.font = dsp(44, 600);
-    c.fillText('PAUSED — TRIGGER RESUMES · A / X ENDS PROGRAM', 140, 400);
+    c.fillText('PAUSED — TRIGGER RESUMES · A / X BACK TO THE LOBBY', 140, 400);
   } else if (game.over) {
     c.fillStyle = '#99ccff'; c.font = dsp(44, 600);
     c.fillText('PROGRAM COMPLETE — PULL TRIGGER TO RESTART', 140, 400);
@@ -1516,9 +1536,11 @@ const pausePanel = (() => {
   mesh.name = 'PauseMenu'; mesh.visible = false; scene.add(mesh);
   return { cv, ctx: cv.getContext('2d'), tex, mesh };
 })();
-/* The arch — the holodeck's doorway, called up whenever the program is suspended. */
+/* The arch — the holodeck's doorway. It frames the panel at the back of the lobby and
+   comes up again whenever the program is suspended. */
 const holoArch = (() => {
   const g = new THREE.Group(); g.name = 'HolodeckArch'; g.visible = false;
+  g.position.set(0, 0, -3.45);
   const frame = new THREE.MeshStandardMaterial({ color: 0x565a63, metalness: 0.7, roughness: 0.4 });
   frame.name = 'Mat_ArchFrame';
   const glow = new THREE.MeshBasicMaterial({ color: 0xf2c14e }); glow.name = 'Mat_ArchGlow';
@@ -1548,7 +1570,7 @@ function drawPauseCard() {
   c.fillStyle = '#f2c14e'; c.font = dsp(56, 700); c.fillText('PROGRAM SUSPENDED', 110, 40);
   c.fillStyle = '#e8e4d8'; c.font = dsp(34, 400);
   c.fillText('TRIGGER — RESUME', 110, 128);
-  c.fillText('A / X (FRESH PRESS) — MAIN MENU', 110, 174);
+  c.fillText('A / X (FRESH PRESS) — BACK TO THE LOBBY', 110, 174);
   // phaser volume, adjustable right here with the stick
   const vol = AudioKit.getPhaserVolume();
   c.fillStyle = '#cc99cc'; c.font = dsp(30, 400);
@@ -1573,11 +1595,6 @@ function showPausePanel() {
   pausePanel.mesh.position.y = Math.max(0.9, Math.min(2.3, pausePanel.mesh.position.y));
   pausePanel.mesh.lookAt(_phead);
   pausePanel.mesh.visible = true;
-  // the arch stands on the floor just past the card, framing it
-  holoArch.position.copy(_phead).addScaledVector(_pfwd, 2.4);
-  holoArch.position.y = 0;
-  holoArch.rotation.y = Math.atan2(-_pfwd.x, -_pfwd.z);
-  holoArch.visible = true;
 }
 
 function roundRect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y);
@@ -1624,7 +1641,6 @@ function setPause(on) {
   } else {
     pauseEl.hidden = true;
     pausePanel.mesh.visible = false;
-    holoArch.visible = false;
     if (game.mode === 'desk') lockPointer(renderer.domElement);
     AudioKit.resumeTone();
   }
@@ -1643,12 +1659,32 @@ function setPhaserVol(v, quiet) {
   if (game.paused && game.mode !== 'desk') drawPauseCard();   // redraw only — never move the card
   if (!quiet) AudioKit.phaserBolt();                          // hear what you just set
 }
+/* Back to the lobby — the arch and the table — without leaving the headset session.
+   (v0.17 ended the XR session here, which dropped you into the browser panel in
+   Meta Home; the lobby is a room in the program now.) */
 function quitToMenu() {
+  game.paused = false; game.running = false; game.over = false; game.phase = 'select';
+  AudioKit.beamStop(); AudioKit.chargeStop(); AudioKit.humStop();
+  activePhasers.forEach(p => { p.userData.holding = false; p.userData.beaming = false; p.userData.charge = 0; });
+  pauseEl.hidden = true; pausePanel.mesh.visible = false;
+  while (stunBolts.length) despawnBolt(0);
+  while (targets.length) { scene.remove(targets[0]); targets.splice(0, 1); }
+  targetRespawnQueue = [];
+  while (VEL.discs.length > 1) { const gone = VEL.discs.pop(); scene.remove(gone.mesh); }
+  VEL.discs[0].live = false; VEL.discs[0].mesh.visible = false;
+  parkRemote(); recallLoose(false);
+  if (game.mode === 'desk') { playerRig.position.set(0, 0, 0); lockPointer(renderer.domElement); }
+  applyProgram(); drawTableConsole();
+  flashGrid(0.35); AudioKit.ackBeep(); hudDirty = true;
+  toast('THE LOBBY · TRIGGER ON A PAD');
+}
+/* All the way out: end the headset session (desktop: back to the page). */
+function leaveHolodeck() {
   game.paused = false; game.running = false; game.over = false; game.phase = 'idle';
-  AudioKit.beamStop(); AudioKit.humStop();
-  pauseEl.hidden = true;
+  AudioKit.beamStop(); AudioKit.chargeStop(); AudioKit.humStop();
+  pauseEl.hidden = true; pausePanel.mesh.visible = false;
   const s = renderer.xr.getSession && renderer.xr.getSession();
-  if (s) { try { s.end(); } catch (e) {} return; }   // the session-end handler restores the lobby
+  if (s) { try { s.end(); } catch (e) {} return; }   // the session-end handler restores the page
   game.mode = null;
   hudEl.style.display = 'none'; lobbyEl.style.display = 'flex';
   try { document.exitPointerLock(); } catch (e) {}
@@ -1683,33 +1719,42 @@ function blipPower(n) { AudioKit.ackBeep(); }
 function boltDamage(w) { return TUNE.boltDamageBase + TUNE.boltDamagePerEnergy * chargeCapEnergy(w); }
 function beamPowerScale(w) { return 0.4 + 0.12 * ((w.userData.power || 5)); }
 
-/* ═══════════════ the armory, the holsters, and the table ═══════════════
-   One physical copy of each weapon. It is always somewhere: on the table, in a
-   holster on your body, or in a hand. Grip takes and stows; the off hand can add
-   to a two-handed grip or take the weapon outright. */
+/* ═══════════════ the armory, the holsters, the sash, and the table ═══════════════
+   Every weapon is a physical thing, and there are eleven of them. Each is always
+   somewhere: on the table, in a holster or a sash sheath on your body, in a hand,
+   in flight, or lying where it fell. Grip holds it; let go and it goes wherever
+   your hand is — a holster, the table, or the floor. */
 const ARMORY = [
-  { id: 'fc',      label: 'PHASER · FIRST CONTACT', build: buildPhaser,    isGun: true,  hands: 1, cap: 1.0, grip: 'forward' },
-  { id: 'tng',     label: 'PHASER · TNG TYPE 2',    build: buildType2TNG,  isGun: true,  hands: 1, cap: 1.0, grip: 'forward' },
-  { id: 'rifle',   label: 'PHASER RIFLE',           build: buildRifle,     isGun: true,  hands: 2, cap: 1.9, grip: 'forward' },
-  { id: 'comp',    label: 'COMPRESSION RIFLE',      build: buildCompRifle, isGun: true,  hands: 2, cap: 1.6, grip: 'forward' },
-  { id: 'batleth', label: "BAT'LETH",               build: buildBatleth,   isGun: false, hands: 2, grip: 'span' },
-  { id: 'dktahg',  label: "D'K TAHG",               build: buildDkTahg,    isGun: false, hands: 1, grip: 'span' },
+  { id: 'fc',      label: 'PHASER · FIRST CONTACT', build: buildPhaser,    isGun: true,  hands: 1, cap: 1.0, grip: 'forward', lay: 'side' },
+  { id: 'tng',     label: 'PHASER · TNG TYPE 2',    build: buildType2TNG,  isGun: true,  hands: 1, cap: 1.0, grip: 'forward', lay: 'flat' },
+  { id: 'rifle',   label: 'PHASER RIFLE',           build: buildRifle,     isGun: true,  hands: 2, cap: 1.9, grip: 'forward', lay: 'side' },
+  { id: 'comp',    label: 'COMPRESSION RIFLE',      build: buildCompRifle, isGun: true,  hands: 2, cap: 1.6, grip: 'forward', lay: 'side' },
+  { id: 'batleth', label: "BAT'LETH",               build: buildBatleth,   isGun: false, hands: 2, grip: 'span', lay: 'flat' },
+  { id: 'dktahg',  label: "D'K TAHG",               build: buildDkTahg,    isGun: false, hands: 1, grip: 'span', lay: 'flat', count: 6 },
 ];
-const arms = {};                       // id → the one instance of that weapon
+const arms = {};                       // instance id → the weapon ('fc', 'dktahg3', …)
+const ARMS = [];                       // every instance, in table order
 const activePhasers = [], activeBlades = [];
 ARMORY.forEach(def => {
-  const obj = def.build();
-  obj.userData.def = def;
-  obj.userData.label = def.label;
-  obj.userData.isGun = !!def.isGun;
-  obj.userData.holder = 'table';
-  obj.userData.support = null;
-  if (def.isGun) { obj.userData.batteryMax = def.cap; obj.userData.battery = def.cap;
-                   updateBatteryGauge(obj); updatePowerVisual(obj); activePhasers.push(obj); }
-  if (obj.userData.samples) activeBlades.push(obj);
-  scene.add(obj);
-  arms[def.id] = obj;
+  const n = def.count || 1;
+  for (let k = 0; k < n; k++) {
+    const obj = def.build();
+    const id = n > 1 ? def.id + (k + 1) : def.id;
+    if (n > 1) obj.name = obj.name + '_' + (k + 1);
+    obj.userData.def = def; obj.userData.id = id; obj.userData.nth = k;
+    obj.userData.label = n > 1 ? def.label + ' ' + (k + 1) : def.label;
+    obj.userData.isGun = !!def.isGun;
+    obj.userData.holder = 'table';
+    obj.userData.support = null;
+    obj.userData.dropped = false;
+    if (def.isGun) { obj.userData.batteryMax = def.cap * TUNE.cellScale; obj.userData.battery = obj.userData.batteryMax;
+                     updateBatteryGauge(obj); updatePowerVisual(obj); activePhasers.push(obj); }
+    if (obj.userData.samples) activeBlades.push(obj);
+    scene.add(obj);
+    arms[id] = obj; ARMS.push(obj);
+  }
 });
+function instancesOf(defId) { return ARMS.filter(w => w.userData.def.id === defId); }
 
 /* Your body: holsters ride a frame that follows where you are facing, not where you look. */
 const bodyFrame = new THREE.Group(); bodyFrame.name = 'BodyFrame'; playerRig.add(bodyFrame);
@@ -1724,6 +1769,7 @@ HOLSTERS.forEach((h, i) => {
   a.position.set(h.pos[0], h.pos[1], h.pos[2]);
   a.rotation.set(h.rot[0], h.rot[1], h.rot[2]);
   bodyFrame.add(a); h.anchor = a;
+  h.reach = () => TUNE.holsterReach;
   const ringMat = new THREE.MeshBasicMaterial({ color: 0xcc99cc, transparent: true, opacity: 0.22, side: THREE.DoubleSide });
   ringMat.name = 'Mat_HolsterRing';
   const ring = new THREE.Mesh(new THREE.RingGeometry(0.055, 0.075, 16), ringMat);
@@ -1731,48 +1777,153 @@ HOLSTERS.forEach((h, i) => {
   a.add(ring); h.ring = ring; h.ringMat = ringMat;
 });
 
-/* The staging table: everything laid out before the program runs. */
+/* The sash: a Klingon baldric over the right shoulder to the left hip, six sheaths
+   down the chest. Knives only — a phaser has no business on it. Sheaths are
+   holsters like any other; they just sit closer together and take only d'k tahgs.
+   (parts named, materials named & colored: dark bronze band, steel studs and plate,
+    hide sheaths) */
+const sash = new THREE.Group(); sash.name = 'KlingonSash'; sash.visible = false; bodyFrame.add(sash);
+{
+  const bronze = new THREE.MeshStandardMaterial({ color: 0x6b5232, metalness: 0.85, roughness: 0.45 }); bronze.name = 'Mat_SashBronze';
+  const steel  = new THREE.MeshStandardMaterial({ color: 0x9aa0aa, metalness: 0.9,  roughness: 0.35 }); steel.name  = 'Mat_SashSteel';
+  const hide   = new THREE.MeshStandardMaterial({ color: 0x241c1a, metalness: 0.1,  roughness: 0.9  }); hide.name   = 'Mat_SheathHide';
+  const S = new THREE.Vector3( 0.17, 1.43, -0.02);           // right shoulder
+  const H = new THREE.Vector3(-0.20, 0.99,  0.03);           // left hip
+  const along = H.clone().sub(S); const len = along.length(); along.normalize();   // shoulder → hip
+  const up = along.clone().negate();                                              // hip → shoulder
+  const out = new THREE.Vector3(0, 0, -1);                                         // off the chest
+  out.addScaledVector(up, -out.dot(up)).normalize();
+  const side = new THREE.Vector3().crossVectors(up, out).normalize();
+  const bq = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(side, up, out));
+  const band = new THREE.Mesh(new THREE.BoxGeometry(0.085, len, 0.012), bronze);
+  band.name = 'SashBand'; band.position.copy(S).add(H).multiplyScalar(0.5); band.quaternion.copy(bq); sash.add(band);
+  for (let k = 0; k < 7; k++) {                              // studs down both edges
+    const t = (k + 0.5) / 7;
+    [-1, 1].forEach((sgn, j) => {
+      const stud = new THREE.Mesh(new THREE.SphereGeometry(0.0075, 8, 6), steel);
+      stud.name = 'SashStud' + (k * 2 + j + 1);
+      stud.position.copy(S).addScaledVector(along, t * len).addScaledVector(side, sgn * 0.036).addScaledVector(out, 0.005);
+      sash.add(stud);
+    });
+  }
+  const plate = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.09, 0.016), steel);
+  plate.name = 'SashShoulderPlate';
+  plate.position.copy(S).addScaledVector(along, 0.035).addScaledVector(out, 0.004); plate.quaternion.copy(bq); sash.add(plate);
+  // six sheaths: the knives hang blade-down, handles up and out toward the shoulder side,
+  // layered like shingles so the guards clear each other
+  const kZ = new THREE.Vector3(0.32, 0.95, 0).normalize();  // where a sheathed knife's handle points (its +Z)
+  const kY = new THREE.Vector3(0, 0, -1);                    // its flat face, off the chest (its +Y)
+  kY.addScaledVector(kZ, -kY.dot(kZ)).normalize();
+  const kX = new THREE.Vector3().crossVectors(kY, kZ).normalize();
+  const kq = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(kX, kY, kZ));
+  for (let k = 0; k < 6; k++) {
+    const t = 0.16 + k * 0.135;                              // fraction of the band, shoulder → hip
+    const p = S.clone().addScaledVector(along, t * len).addScaledVector(out, 0.018 + (k % 2) * 0.016);
+    const sheath = new THREE.Mesh(new THREE.BoxGeometry(0.036, 0.018, 0.075), hide);
+    sheath.name = 'SashSheath' + (k + 1);
+    sheath.position.copy(p).addScaledVector(kZ, -0.075); sheath.quaternion.copy(kq); sash.add(sheath);
+    const a = new THREE.Object3D(); a.name = 'SashSlot' + (k + 1);
+    a.position.copy(p); a.quaternion.copy(kq); sash.add(a);
+    HOLSTERS.push({ id: 'sash' + (k + 1), label: 'SASH · ' + (k + 1), anchor: a, ring: null, ringMat: null,
+                    accepts: 'dktahg', reach: () => TUNE.sashReach });
+  }
+}
+
+/* The staging table: the whole armory laid out, and the three lobby pads along its
+   front edge — the arch and the table are one room now. */
+const TABLE_W = 2.4, TABLE_D = 1.0, TABLE_TOP = 0.945;
 const stageTable = new THREE.Group(); stageTable.name = 'WeaponTable';
-stageTable.position.set(0, 0, -1.15); scene.add(stageTable);
+stageTable.position.set(0, 0, -0.85); scene.add(stageTable);
+const lobbyPads = [];
+const _lz = new THREE.Vector3(), _ly = new THREE.Vector3(), _lx = new THREE.Vector3(), _lm = new THREE.Matrix4();
+function orientAnchor(a, zDir, yDir) {                      // local Z → zDir, local Y → yDir
+  _lz.set(zDir[0], zDir[1], zDir[2]).normalize();
+  _ly.set(yDir[0], yDir[1], yDir[2]); _ly.addScaledVector(_lz, -_ly.dot(_lz)).normalize();
+  _lx.crossVectors(_ly, _lz).normalize();
+  _lm.makeBasis(_lx, _ly, _lz); a.quaternion.setFromRotationMatrix(_lm);
+}
 {
   const wood = new THREE.MeshStandardMaterial({ color: 0x2c2f36, metalness: 0.4, roughness: 0.6 });
   wood.name = 'Mat_TableTop';
   const trim = new THREE.MeshBasicMaterial({ color: 0xf2c14e }); trim.name = 'Mat_TableTrim';
-  const top = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.05, 0.55), wood);
+  const top = new THREE.Mesh(new THREE.BoxGeometry(TABLE_W, 0.05, TABLE_D), wood);
   top.name = 'TableTop'; top.position.y = 0.92; stageTable.add(top);
-  const lip = new THREE.Mesh(new THREE.BoxGeometry(1.67, 0.008, 0.57), trim);
+  const lip = new THREE.Mesh(new THREE.BoxGeometry(TABLE_W + 0.02, 0.008, TABLE_D + 0.02), trim);
   lip.name = 'TableTrim'; lip.position.y = 0.947; stageTable.add(lip);
-  [-0.72, 0.72].forEach((x, i) => {
+  [[-1.08, -0.38], [1.08, -0.38], [-1.08, 0.38], [1.08, 0.38]].forEach(([x, z], i) => {
     const leg = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.9, 0.06), wood);
-    leg.name = 'TableLeg' + (i + 1); leg.position.set(x, 0.45, 0); stageTable.add(leg);
+    leg.name = 'TableLeg' + (i + 1); leg.position.set(x, 0.45, z); stageTable.add(leg);
   });
-  ARMORY.forEach((def, i) => {
-    const a = new THREE.Object3D(); a.name = 'TableSlot_' + def.id;
-    a.position.set(-0.68 + i * 0.272, 1.00, 0);
-    a.rotation.set(-Math.PI / 2, 0, 0);       // laid flat, muzzles away from you
-    stageTable.add(a); def.tableAnchor = a;
+  // where everything lies — three rows, back to front: the bat'leth, the rifles, the hand weapons
+  const slot = (w, x, z, lift, zDir, yDir) => {
+    const a = new THREE.Object3D(); a.name = 'TableSlot_' + w.userData.id;
+    a.position.set(x, TABLE_TOP + lift, z);
+    if (zDir) orientAnchor(a, zDir, yDir);
+    stageTable.add(a); w.userData.tableAnchor = a;
+  };
+  slot(arms.batleth, 0,     -0.30, 0.006);                             // flat, points away, handholds toward you
+  slot(arms.rifle,  -0.62,  -0.08, 0.035, [ 1, 0, 0], [0, 0, 1]);      // across the table, muzzle out left, grip away
+  slot(arms.comp,    0.62,  -0.08, 0.036, [-1, 0, 0], [0, 0, 1]);      // across the table, muzzle out right
+  slot(arms.fc,     -1.00,   0.25, 0.025, [ 0, 0, 1], [-1, 0, 0]);     // on its side, muzzle away
+  slot(arms.tng,    -0.74,   0.25, 0.020);                             // the wedge lies flat by nature
+  instancesOf('dktahg').forEach((w, k) => slot(w, -0.36 + k * 0.24, 0.25, 0.015));   // six in a row, blades away
+  // the pads: which program, and go
+  [{ id: 'range', label: 'PHASER RANGE', x: -0.5, color: 0xcc99cc },
+   { id: 'velocity', label: 'VELOCITY', x: 0, color: 0x99ccff },
+   { id: 'begin', label: 'BEGIN', x: 0.5, color: 0xff9c00 }].forEach(def => {
+    const mat = new THREE.MeshBasicMaterial({ color: def.color }); mat.name = 'Mat_Pad_' + def.id;
+    const pad = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.02, 20), mat);
+    pad.name = 'Pad_' + def.id; pad.position.set(def.x, TABLE_TOP + 0.012, 0.42); stageTable.add(pad);
+    lobbyPads.push({ id: def.id, label: def.label, x: def.x, mesh: pad, mat, base: new THREE.Color(def.color) });
   });
-  const padMat = new THREE.MeshBasicMaterial({ color: 0xff9c00 }); padMat.name = 'Mat_BeginPad';
-  const pad = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.02, 20), padMat);
-  pad.name = 'BeginPad'; pad.position.set(0, 0.96, 0.36); stageTable.add(pad);
-  stageTable.userData.pad = pad; stageTable.userData.padMat = padMat;
+}
+/* Labels for the pads, a strip standing at the table's front edge. */
+const tableConsole = (() => {
+  const cv = document.createElement('canvas'); cv.width = 1280; cv.height = 64;
+  const tex = new THREE.CanvasTexture(cv);
+  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true }); mat.name = 'Mat_TableConsole';
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.08), mat); mesh.name = 'TableConsole';
+  mesh.position.set(0, TABLE_TOP + 0.045, TABLE_D / 2 - 0.005); mesh.rotation.x = -0.35;   // leans back toward the pads
+  stageTable.add(mesh);
+  return { cv, ctx: cv.getContext('2d'), tex, mesh };
+})();
+function drawTableConsole() {
+  const c = tableConsole.ctx, W = tableConsole.cv.width, H = tableConsole.cv.height;
+  c.clearRect(0, 0, W, H);
+  c.textBaseline = 'middle'; c.textAlign = 'center';
+  lobbyPads.forEach(p => {
+    const on = p.id === 'begin' || game.program === p.id;
+    c.fillStyle = on ? '#' + p.base.getHexString() : '#5a5a68';
+    c.font = (on ? '700 ' : '400 ') + '46px Antonio, "Arial Narrow", sans-serif';
+    c.fillText(p.label, W * (0.5 + p.x / 1.6), H / 2 + 2);
+  });
+  tableConsole.tex.needsUpdate = true;
 }
 
 const EMPTY_HAND = { userData: { isEmpty: true, label: 'NO WEAPON' } };
-function heldBy(i) { for (const id in arms) if (arms[id].userData.holder === 'hand' + i) return arms[id]; return null; }
-function holsterOccupant(k) { for (const id in arms) if (arms[id].userData.holder === 'holster' + k) return arms[id]; return null; }
+function heldBy(i) { for (const w of ARMS) if (w.userData.holder === 'hand' + i) return w; return null; }
+function holsterOccupant(k) { for (const w of ARMS) if (w.userData.holder === 'holster' + k) return w; return null; }
+function holsterAccepts(h, w) { return !h.accepts || (!!w && w.userData.def.id === h.accepts); }
 function handWeapon(hand) { return (hand && hand.held) || EMPTY_HAND; }
+function handOf(i) { return i === 2 ? desk.hand : hands[i]; }
 function refreshHeld() { hands.forEach((h, i) => h.held = heldBy(i)); if (desk.hand) desk.hand.held = heldBy(2); }
+/* A weapon leaving the hand mid-charge does not fire — the charge is simply lost. */
+function cancelTrigger(w) {
+  const u = w.userData; if (!u.isGun || !u.holding) return;
+  u.holding = false; AudioKit.chargeStop();
+  if (u.beaming) { u.beaming = false; AudioKit.beamStop(); u.beamRecharging = true; }
+  u.charge = 0;
+}
 
 function giveTo(w, i) {
   const prev = heldBy(i);
   if (prev && prev !== w) return false;                    // that hand is full
-  if (w.userData.holding) { w.userData.holdSrc = 'trigger'; triggerUp(w); }
+  cancelTrigger(w);
   if (w.userData.support === i) w.userData.support = null;
   const wasFlying = thrown.indexOf(w);
   if (wasFlying >= 0) thrown.splice(wasFlying, 1);
   if (w.userData.vel) w.userData.vel.set(0, 0, 0);
-  w.userData.holder = 'hand' + i;
+  w.userData.holder = 'hand' + i; w.userData.dropped = false;
   w.userData.useCameraRay = (i === 2);
   if (w.userData.prevValid !== undefined) w.userData.prevValid = false;
   const hd = hands[i];
@@ -1781,14 +1932,17 @@ function giveTo(w, i) {
   return true;
 }
 function stowIn(w, k) {
-  if (w.userData.holding) { w.userData.holdSrc = 'trigger'; triggerUp(w); }
-  w.userData.holder = 'holster' + k; w.userData.support = null;
+  cancelTrigger(w);
+  w.userData.holder = 'holster' + k; w.userData.support = null; w.userData.dropped = false;
   w.userData.useCameraRay = false;
   refreshHeld(); hudDirty = true;
 }
 function returnToTable(w) {
-  if (w.userData.holding) { w.userData.holdSrc = 'trigger'; triggerUp(w); }
-  w.userData.holder = 'table'; w.userData.support = null;
+  cancelTrigger(w);
+  const wasFlying = thrown.indexOf(w);
+  if (wasFlying >= 0) thrown.splice(wasFlying, 1);
+  if (w.userData.vel) w.userData.vel.set(0, 0, 0);
+  w.userData.holder = 'table'; w.userData.support = null; w.userData.dropped = false;
   refreshHeld(); hudDirty = true;
 }
 
@@ -1805,42 +1959,50 @@ function handPose(i, outPos, outQuat) {
   c.getWorldPosition(outPos); c.getWorldQuaternion(outQuat);
   return true;
 }
-function nearestHolster(pos, maxD) {
-  let best = -1, bd = maxD;
-  HOLSTERS.forEach((h, k) => { h.anchor.getWorldPosition(_ap);
-    const d = _ap.distanceTo(pos); if (d < bd) { bd = d; best = k; } });
+/* An empty holster this weapon fits, within that holster's own reach; nearest by
+   fraction of reach, so a sheath wins over a hip when you are on the sash. */
+function nearestFreeHolster(pos, w) {
+  let best = -1, bd = Infinity;
+  HOLSTERS.forEach((h, k) => {
+    if (!holsterAccepts(h, w) || holsterOccupant(k)) return;
+    h.anchor.getWorldPosition(_ap);
+    const d = _ap.distanceTo(pos), r = h.reach();
+    if (d < r && d / r < bd) { bd = d / r; best = k; }
+  });
+  return best;
+}
+/* A stowed weapon within reach of the hand — drawing gets a little slack. */
+function nearestStowed(pos) {
+  let best = -1, bd = Infinity;
+  HOLSTERS.forEach((h, k) => {
+    if (!holsterOccupant(k)) return;
+    h.anchor.getWorldPosition(_ap);
+    const d = _ap.distanceTo(pos), r = h.reach() + 0.04;
+    if (d < r && d / r < bd) { bd = d / r; best = k; }
+  });
   return best;
 }
 function nearestTableWeapon(pos, maxD) {
   let best = null, bd = maxD;
-  ARMORY.forEach(def => { const w = arms[def.id];
+  ARMS.forEach(w => {
     if (w.userData.holder !== 'table') return;
-    def.tableAnchor.getWorldPosition(_ap);
+    w.userData.tableAnchor.getWorldPosition(_ap);
     const d = _ap.distanceTo(pos); if (d < bd) { bd = d; best = w; } });
   return best;
 }
 
-/* Grip: take, stow, lend a second hand, or pass the weapon across. */
+/* Squeeze: take whatever is under the hand — a stowed weapon, one lying where it
+   fell, one off the table, or the one your other hand is holding. */
 function handGrip(i) {
   AudioKit.unlock();
   if (!handPose(i, _hp, _hq)) return;
-  const held = heldBy(i);
-  if (held) {
-    const k = nearestHolster(_hp, 0.34);
-    if (k >= 0 && !holsterOccupant(k)) { stowIn(held, k); AudioKit.ackBeep(); toast('STOWED · ' + HOLSTERS[k].label); return; }
-    if (!held.userData.isGun && throwWeapon(held, i)) return;   // a hard release lets the blade fly
-    if (game.phase === 'select' && _hp.distanceTo(stageTable.position) < 1.2) {
-      returnToTable(held); AudioKit.ackBeep(); toast('RETURNED TO THE TABLE'); return;
-    }
-    return;
-  }
-  const k = nearestHolster(_hp, 0.34);
-  const hw = k >= 0 ? holsterOccupant(k) : null;
-  if (hw) { giveTo(hw, i); AudioKit.ackBeep(); toast('DREW · ' + hw.userData.label); return; }
-  const planted = pickUpThrown(_hp, 0.45);                     // pull it back out of the wall
+  if (heldBy(i)) return;                                        // that hand is already full
+  const k = nearestStowed(_hp);
+  if (k >= 0) { const hw = holsterOccupant(k); giveTo(hw, i); AudioKit.ackBeep(); toast('DREW · ' + hw.userData.label); return; }
+  const planted = pickUpThrown(_hp, 0.40);                     // off the floor, the table, or out of a wall
   if (planted) { giveTo(planted, i); AudioKit.ackBeep(); toast('RECOVERED · ' + planted.userData.label); return; }
   if (game.phase === 'select') {
-    const tw = nearestTableWeapon(_hp, 0.42);
+    const tw = nearestTableWeapon(_hp, TUNE.tableReach);
     if (tw) { giveTo(tw, i); AudioKit.ackBeep(); toast(tw.userData.label); return; }
   }
   const other = 1 - i;
@@ -1855,24 +2017,55 @@ function handGrip(i) {
     }
   }
 }
+/* Let go: a supporting hand just comes off; a holding hand releases the weapon into
+   whatever is there — a holster, a sheath, the air. */
 function handGripEnd(i) {
-  for (const id in arms) if (arms[id].userData.support === i) arms[id].userData.support = null;
+  for (const w of ARMS) if (w.userData.support === i) w.userData.support = null;
+  const w = heldBy(i); if (!w) return;
+  releaseWeapon(w, i);
+}
+function releaseWeapon(w, i) {
+  const u = w.userData;
+  const sup = u.support;
+  if (sup !== null && sup !== undefined && sup !== i) {        // the other hand is still on it — it keeps it
+    u.support = null; giveTo(w, sup); toast('PASSED · ' + u.label); return;
+  }
+  if (!handPose(i, _hp, _hq)) { dropWeapon(w, i); return; }
+  const speed = handPeakVel(handOf(i), _thv);                  // fastest recent frame: fingers open after the apex
+  if (!u.isGun && speed >= TUNE.throwSpeed && throwWeapon(w, i, _thv)) return;
+  const k = nearestFreeHolster(_hp, w);
+  if (k >= 0) { stowIn(w, k); AudioKit.ackBeep(); toast('STOWED · ' + HOLSTERS[k].label); return; }
+  dropWeapon(w, i);
+}
+/* The peak of the last few frames of hand velocity — a throw is decided by the swing,
+   not by the frame the grip button happened to open on. */
+function handPeakVel(hand, out) {
+  out.set(0, 0, 0);
+  if (!hand || !hand.velHist) return 0;
+  let best = 0;
+  const N = hand.velHist.length, take = Math.min(6, N);
+  for (let n = 1; n <= take; n++) {
+    const v = hand.velHist[(hand.velIdx - n + N) % N];
+    const sp = v.length(); if (sp > best) { best = sp; out.copy(v); }
+  }
+  return best;
 }
 
-/* A blade you let go of hard enough leaves your hand and sticks where it lands. */
+/* A blade let go hard enough leaves your hand and sticks where it lands; anything
+   let go gently just falls. */
 const thrown = [];
 const _thv = new THREE.Vector3(), _tsp = new THREE.Vector3();
-function throwWeapon(w, i) {
+function throwWeapon(w, i, vel) {
   if (!w || w.userData.isGun) return false;      // you do not throw a phaser
   if (heldBy(i) !== w) return false;             // …nor one that is not in that hand
-  const hand = i === 2 ? desk.hand : hands[i];
-  if (!hand || !hand.vel) return false;
-  const speed = hand.vel.length();
+  if (!vel) return false;
+  const speed = vel.length();
   if (speed < TUNE.throwSpeed) return false;
-  w.userData.holder = 'flight';
+  cancelTrigger(w);
+  w.userData.holder = 'flight'; w.userData.dropped = false;
   w.userData.support = null;
   w.userData.vel = w.userData.vel || new THREE.Vector3();
-  w.userData.vel.copy(hand.vel).multiplyScalar(TUNE.throwBoost);
+  w.userData.vel.copy(vel).multiplyScalar(TUNE.throwBoost);
   w.userData.spinAxis = (w.userData.spinAxis || new THREE.Vector3()).set(
     0.2 + Math.random() * 0.3, 1, 0.1).normalize();
   w.userData.spinRate = 9 + speed * 1.2;
@@ -1885,13 +2078,42 @@ function throwWeapon(w, i) {
   toast('THROWN · ' + w.userData.label);
   return true;
 }
+function dropWeapon(w, i) {
+  const u = w.userData, hand = handOf(i);
+  cancelTrigger(w);
+  u.holder = 'flight'; u.support = null; u.dropped = true; u.useCameraRay = false;
+  u.vel = u.vel || new THREE.Vector3();
+  if (hand && hand.vel) u.vel.copy(hand.vel).multiplyScalar(0.6); else u.vel.set(0, 0, 0);
+  if (u.vel.length() > 1.2) u.vel.setLength(1.2);          // it slips out; it is not flung
+  u.spinAxis = (u.spinAxis || new THREE.Vector3()).set(1, 0.3, 0.2).normalize();
+  u.spinRate = 1.5; u.flightT = 0; u.prevValid = false;
+  thrown.push(w);
+  refreshHeld(); hudDirty = true;
+  toast('DROPPED · ' + u.label);
+}
+/* Where a falling thing comes to rest: the table top if it is over the table, else the floor. */
+function restHeight(x, y, z) {
+  if (stageTable.visible && y > TABLE_TOP - 0.02) {
+    const lx = x - stageTable.position.x, lz = z - stageTable.position.z;
+    if (Math.abs(lx) < TABLE_W / 2 && Math.abs(lz) < TABLE_D / 2) return TABLE_TOP + 0.03;
+  }
+  return 0.06;
+}
+/* Lay a landed weapon on a surface: flat, or on its side, keeping its heading. */
+const _fwd = new THREE.Vector3();
+function layToRest(w) {
+  _fwd.set(0, 0, -1).applyQuaternion(w.quaternion);
+  const yaw = Math.hypot(_fwd.x, _fwd.z) > 0.2 ? Math.atan2(-_fwd.x, -_fwd.z) : Math.random() * Math.PI * 2;
+  w.rotation.set(0, yaw, w.userData.def.lay === 'side' ? Math.PI / 2 : 0);
+}
 const _twp = new THREE.Vector3(), _tq = new THREE.Quaternion();
 function thrownTick(dt) {
   for (let n = thrown.length - 1; n >= 0; n--) {
     const w = thrown[n], u = w.userData;
     if (u.holder !== 'flight') { thrown.splice(n, 1); continue; }
+    const plants = !u.dropped && !u.isGun;               // only a thrown blade cuts, and sticks in walls
     u.flightT += dt;
-    u.vel.y -= TUNE.throwGravity * dt;
+    u.vel.y -= (plants ? TUNE.throwGravity : TUNE.dropGravity) * dt;
     w.position.addScaledVector(u.vel, dt);
     _tq.setFromAxisAngle(u.spinAxis, u.spinRate * dt);
     w.quaternion.multiplyQuaternions(_tq, w.quaternion);
@@ -1899,7 +2121,7 @@ function thrownTick(dt) {
 
     let stuck = false;
     // it cuts whatever it passes through on the way
-    if (game.running) {
+    if (game.running && plants) {
       for (let j = targets.length - 1; j >= 0; j--) {
         if (targets[j].position.distanceTo(w.position) < targetRadius() + 0.22) {
           onTargetPop(j, TUNE.ptsMeleePop * 2); break;
@@ -1919,24 +2141,29 @@ function thrownTick(dt) {
         u.vel.multiplyScalar(-0.3);
       }
     }
-    // …and then it plants itself in whatever stops it
+    // …and then it plants itself in whatever stops it — or, if it merely fell, slides down it
     if (game.program === 'velocity') {
       const X = TUNE.courtX - 0.04, Z = TUNE.courtZ - 0.04, Y = TUNE.courtY - 0.04;
-      if (w.position.x >  X) { w.position.x =  X; stuck = true; }
-      if (w.position.x < -X) { w.position.x = -X; stuck = true; }
-      if (w.position.z >  Z) { w.position.z =  Z; stuck = true; }
-      if (w.position.z < -Z) { w.position.z = -Z; stuck = true; }
-      if (w.position.y >  Y) { w.position.y =  Y; stuck = true; }
+      let wall = false;
+      if (w.position.x >  X) { w.position.x =  X; wall = true; u.vel.x = Math.min(0, u.vel.x); }
+      if (w.position.x < -X) { w.position.x = -X; wall = true; u.vel.x = Math.max(0, u.vel.x); }
+      if (w.position.z >  Z) { w.position.z =  Z; wall = true; u.vel.z = Math.min(0, u.vel.z); }
+      if (w.position.z < -Z) { w.position.z = -Z; wall = true; u.vel.z = Math.max(0, u.vel.z); }
+      if (w.position.y >  Y) { w.position.y =  Y; wall = true; u.vel.y = Math.min(0, u.vel.y); }
+      if (wall && plants) stuck = true;
     } else {
       const r = Math.hypot(w.position.x, w.position.z);
-      if (r > TUNE.arenaRMax + 1.2) stuck = true;
+      if (r > TUNE.arenaRMax + 1.2 && plants) stuck = true;
     }
-    if (w.position.y <= 0.06) { w.position.y = 0.06; stuck = true; }
+    const rest = restHeight(w.position.x, w.position.y, w.position.z);
+    let landed = false;
+    if (w.position.y <= rest) { w.position.y = rest; stuck = true; landed = true; }
     if (u.flightT > 6) stuck = true;
     if (stuck) {
       u.holder = 'stuck';
       u.vel.set(0, 0, 0);
       thrown.splice(n, 1);
+      if (!plants) layToRest(w);                            // a thrown blade keeps whatever angle it struck at
       AudioKit.clang(); popEffect(w.position, 0xc3c8d2);
       hudDirty = true;
     }
@@ -1944,8 +2171,8 @@ function thrownTick(dt) {
 }
 function pickUpThrown(pos, maxD) {
   let best = null, bd = maxD;
-  for (const id in arms) {
-    const w = arms[id], h = w.userData.holder;
+  for (const w of ARMS) {
+    const h = w.userData.holder;
     if (h !== 'stuck' && h !== 'flight') continue;
     const d = w.position.distanceTo(pos);
     if (d < bd) { bd = d; best = w; }
@@ -1970,28 +2197,35 @@ function loadoutTick(dt) {
   while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2;
   bodyFrame.rotation.y += d * 0.12;
 
-  // every hand remembers how fast it is moving — that is what makes a release a throw
+  // every hand remembers how fast it has been moving over the last few frames —
+  // the peak of that window is what makes a release a throw
   [0, 1, 2].forEach(i => {
     const hand = i === 2 ? desk.hand : hands[i];
     if (!hand) return;
-    if (!hand.vel) { hand.vel = new THREE.Vector3(); hand.prevPos = new THREE.Vector3(); hand.posValid = false; }
+    if (!hand.vel) { hand.vel = new THREE.Vector3(); hand.prevPos = new THREE.Vector3(); hand.posValid = false;
+                     hand.velHist = []; for (let n = 0; n < 8; n++) hand.velHist.push(new THREE.Vector3()); hand.velIdx = 0; }
     if (handPose(i, _thv, _tq)) {
-      if (hand.posValid && dtNow > 0) hand.vel.copy(_thv).sub(hand.prevPos).multiplyScalar(1 / dtNow);
+      if (hand.posValid && dtNow > 0) {
+        hand.vel.copy(_thv).sub(hand.prevPos).multiplyScalar(1 / dtNow);
+        hand.velHist[hand.velIdx].copy(hand.vel); hand.velIdx = (hand.velIdx + 1) % hand.velHist.length;
+      }
       hand.prevPos.copy(_thv); hand.posValid = true;
-    } else hand.posValid = false;
+    } else { hand.posValid = false; hand.vel.set(0, 0, 0); hand.velHist.forEach(v => v.set(0, 0, 0)); }
   });
 
   const selecting = game.phase === 'select';
   stageTable.visible = selecting;
-  HOLSTERS.forEach(h => { h.ring.visible = selecting || !!game.running; });
+  holoArch.visible = selecting || game.paused;
+  sash.visible = game.mode === 'vr';
+  HOLSTERS.forEach(h => { if (h.ring) h.ring.visible = selecting || !!game.running; });
 
-  for (const id in arms) {
-    const w = arms[id], u = w.userData, hold = u.holder;
+  for (const w of ARMS) {
+    const u = w.userData, hold = u.holder;
     if (hold === 'flight' || hold === 'stuck') { w.visible = true; continue; }
     if (hold === 'table') {
       w.visible = selecting;
       if (selecting) {
-        u.def.tableAnchor.getWorldPosition(_hp); u.def.tableAnchor.getWorldQuaternion(_hq);
+        u.tableAnchor.getWorldPosition(_hp); u.tableAnchor.getWorldQuaternion(_hq);
         w.position.copy(_hp); w.quaternion.copy(_hq);
       }
       continue;
@@ -2045,30 +2279,38 @@ function loadoutTick(dt) {
 }
 const _gq0 = new THREE.Quaternion();
 
-/* Hand off the default kit, then let the player rearrange it on the table. */
-function dealDefaultLoadout() {
-  const dom = SETTINGS.dominant === 'left' ? 0 : 1;
-  giveTo(arms.fc, dom);
-  stowIn(arms.tng, dom === 1 ? 0 : 1);        // opposite hip
-  stowIn(arms.dktahg, dom === 1 ? 1 : 0);
-  stowIn(arms.batleth, 2);                    // left shoulder — reach over and draw it
-  stowIn(arms.rifle, 3);
-  returnToTable(arms.comp);
-}
-
 function handFire(hand, down, src) {
   if (game.paused) { if (down) setPause(false); return; }
-  if (game.phase === 'select') { if (down) tryBegin(hand); return; }
+  if (game.phase === 'select') { if (down) tryLobbyPad(hand); return; }
   const w = handWeapon(hand);
   if (!w.userData.isGun) { if (down && game.over) tryRestart(); return; }
   down ? triggerDown(w, src) : triggerUp(w, src);
 }
-/* Trigger with a hand over the pad starts the program. */
-function tryBegin(hand) {
+/* The lobby pads: trigger with a hand over one (desktop: look at it and click). */
+const _ray = new THREE.Raycaster();
+function padUnderGaze() {
+  camera.getWorldPosition(_hp); camera.getWorldDirection(_gz);
+  _ray.set(_hp, _gz); _ray.far = 3.5;
+  const hits = _ray.intersectObjects(lobbyPads.map(p => p.mesh), false);
+  if (!hits.length) return null;
+  return lobbyPads.find(p => p.mesh === hits[0].object) || null;
+}
+function tryLobbyPad(hand) {
   const i = hand && hand.index !== undefined ? hand.index : 2;
-  if (!handPose(i, _hp, _hq)) return;
-  stageTable.userData.pad.getWorldPosition(_ap);
-  if (_ap.distanceTo(_hp) < 0.3 || i === 2) beginDrill();
+  let pad = null;
+  if (i === 2) pad = padUnderGaze();
+  else if (handPose(i, _hp, _hq)) {
+    let bd = 0.20;
+    lobbyPads.forEach(p => { p.mesh.getWorldPosition(_ap); const d = _ap.distanceTo(_hp); if (d < bd) { bd = d; pad = p; } });
+  }
+  if (pad) pressPad(pad);
+}
+function pressPad(pad) {
+  if (pad.id === 'begin') { beginDrill(); return; }
+  if (game.program !== pad.id) {
+    setProgram(pad.id); AudioKit.ackBeep(); flashGrid(0.25);
+    toast(PROG_TITLE[pad.id].toUpperCase() + ' · LOADED');
+  } else AudioKit.ackBeep();
 }
 function beginDrill() {
   if (game.phase !== 'select') return;
@@ -2187,10 +2429,9 @@ function pollHandButtons() {
       if (ax < -0.6 && pAxP >= -0.6) setPhaserVol(SETTINGS.phaserVol - 0.05);
       hand.prevAx = ax;
     } else {
-      // A/X: tap stows what you are holding, hold 0.6 s calls the pause
+      // A/X: hold 0.6 s calls the pause (a tap does nothing — the grip is the whole inventory)
       if (lower && !hand.prevLower) { hand.lowerT = perf; hand.lowerFired = false; }
       if (lower && !hand.lowerFired && perf - hand.lowerT > 0.6) { hand.lowerFired = true; setPause(true); }
-      if (!lower && hand.prevLower && !hand.lowerFired) quickStow(i);
       if (upper !== hand.prevUpper) handFire(hand, upper, 'thumb');
       const w = handWeapon(hand);
       const pAx = hand.prevAx === undefined ? 0 : hand.prevAx;
@@ -2203,17 +2444,6 @@ function pollHandButtons() {
     hand.prevLower = lower; hand.prevUpper = upper; hand.prevStick = stick;
   }
 }
-/* Tap A/X: put what you are holding back on your body, nearest free holster. */
-function quickStow(i) {
-  const w = heldBy(i); if (!w) return;
-  if (!handPose(i, _hp, _hq)) return;
-  let best = -1, bd = 9;
-  HOLSTERS.forEach((h, k) => { if (holsterOccupant(k)) return;
-    h.anchor.getWorldPosition(_ap); const d = _ap.distanceTo(_hp);
-    if (d < bd) { bd = d; best = k; } });
-  if (best >= 0) { stowIn(w, best); AudioKit.ackBeep(); toast('STOWED · ' + HOLSTERS[best].label); }
-}
-
 /* ───────────────────── bat'leth combat ───────────────────── */
 const _bw = new THREE.Vector3(), _bv = new THREE.Vector3();
 function deflectBolt(bolt, blade) {
@@ -2293,28 +2523,31 @@ function setupDesk() {
     if (e.code === 'Enter' && game.phase === 'select') { beginDrill(); return; }
     if (/^Digit[1-6]$/.test(e.code)) {              // desktop: pick straight off the rack
       const def = ARMORY[Number(e.code.slice(5)) - 1];
-      if (def) { const w = arms[def.id], cur = heldBy(2);
-        if (w === cur) return;
-        if (cur) returnToTable(cur);
-        giveTo(w, 2); AudioKit.ackBeep(); toast(w.userData.label); }
+      if (def) deskTake(def);
       return;
     }
     if (e.code === 'KeyG') { const cur = heldBy(2);
       if (cur && !cur.userData.isGun) {                        // desktop throw, straight ahead
-        const hd = desk.hand; hd.vel = hd.vel || new THREE.Vector3();
-        camera.getWorldDirection(hd.vel); hd.vel.multiplyScalar(9); hd.vel.y += 1.2;
-        throwWeapon(cur, 2);
+        camera.getWorldDirection(_gz); _gz.multiplyScalar(9); _gz.y += 1.2;
+        throwWeapon(cur, 2, _gz);
       } else if (cur) { returnToTable(cur); toast('EMPTY HANDS'); } }
+    if (e.code === 'KeyX') { const cur = heldBy(2); if (cur) dropWeapon(cur, 2); }
     if (e.code === 'KeyF') { const p2 = pickUpThrown(camera.getWorldPosition(new THREE.Vector3()), 2.2);
       if (p2 && !heldBy(2)) { giveTo(p2, 2); AudioKit.ackBeep(); toast('RECOVERED · ' + p2.userData.label); } }
     if (e.code === 'KeyB' || e.code === 'KeyQ') {   // step through the armory
       const cur = heldBy(2);
-      const at = cur ? ARMORY.findIndex(d => arms[d.id] === cur) : -1;
-      const next = ARMORY[(at + 1) % ARMORY.length];
-      if (cur) returnToTable(cur);
-      giveTo(arms[next.id], 2); AudioKit.ackBeep(); toast(next.label);
+      const at = cur ? ARMORY.indexOf(cur.userData.def) : -1;
+      deskTake(ARMORY[(at + 1) % ARMORY.length]);
     } });
   document.addEventListener('keyup', e => { desk.keys[e.code] = false; });
+}
+/* Desktop has no grip: a key swaps what is in the hand, the old one goes back to the table. */
+function deskTake(def) {
+  const cur = heldBy(2);
+  const w = instancesOf(def.id).find(x => x !== cur && x.userData.holder !== 'flight' && !x.userData.holder.startsWith('hand'));
+  if (!w) return;
+  if (cur) returnToTable(cur);
+  giveTo(w, 2); AudioKit.ackBeep(); toast(w.userData.label);
 }
 function deskDashDir(out) {
   const f = out.set(-Math.sin(desk.yaw), 0, -Math.cos(desk.yaw));
@@ -2361,7 +2594,7 @@ function deskTick(dt) {
    The dials worth arguing about live here, not in the code. Saved per browser. */
 const DEFAULTS = { telegraph: 0.55, assist: 2.5, targetScale: 0.75, agility: 1.0, brightness: 0.72,
                    targetHP: 3, fleeSpeed: 3.4, discSpeed: 3.0, courtSize: 3.4, phaserVol: 0.45,
-                   beamSweep: 0.10, dominant: 'right', v: 2 };
+                   beamSweep: 0.10, v: 2 };
 const SETTINGS = JSON.parse(JSON.stringify(DEFAULTS));
 function loadSettings() {
   try {
@@ -2369,7 +2602,6 @@ function loadSettings() {
     if (!raw) return;
     const saved = JSON.parse(raw);
     Object.assign(SETTINGS, saved);
-    if (SETTINGS.dominant !== 'left') SETTINGS.dominant = 'right';
     if (!saved.v || saved.v < DEFAULTS.v) {   // v2 split assist from the beam — reset both dials
       SETTINGS.assist = DEFAULTS.assist;
       SETTINGS.beamSweep = DEFAULTS.beamSweep;
@@ -2567,6 +2799,7 @@ const pauseEl = document.getElementById('pause');
 document.getElementById('btn-resume').addEventListener('click', () => setPause(false));
 document.getElementById('p-vol').addEventListener('input', e => setPhaserVol(Number(e.target.value)));
 document.getElementById('btn-quit').addEventListener('click', quitToMenu);
+document.getElementById('btn-leave').addEventListener('click', leaveHolodeck);
 const toastEl = document.getElementById('toast');
 let toastTimer = null;
 function toast(msg) { toastEl.textContent = msg; toastEl.style.opacity = 1;
@@ -2579,15 +2812,11 @@ function resetGame() {
   while (stunBolts.length) despawnBolt(0);
   while (targets.length) { scene.remove(targets[0]); targets.splice(0, 1); }
   targetRespawnQueue = [];
-  for (const id in arms) { const u = arms[id].userData;
+  for (const w of ARMS) { const u = w.userData;
     if (!u.isGun) continue;
     u.beamCharge = 1; u.beamRecharging = false;
-    u.battery = u.batteryMax; u.wasDry = false; updateBatteryGauge(arms[id]); }
-  thrown.length = 0;
-  for (const id in arms) { const u = arms[id].userData;
-    if (u.holder === 'flight' || u.holder === 'stuck') {       // recall anything left in a wall
-      u.holder = 'holster2'; if (u.vel) u.vel.set(0, 0, 0); } }
-  refreshHeld();
+    u.battery = u.batteryMax; u.wasDry = false; updateBatteryGauge(w); }
+  recallLoose(game.phase === 'playing');           // a restart hands loose blades back; the first start does nothing
   if (game.program === 'velocity') {
     VEL.speed = TUNE.discSpeed; VEL.strikes = 0; VEL.splitT = 0;
     while (VEL.discs.length > 1) { const gone = VEL.discs.pop(); scene.remove(gone.mesh); }
@@ -2611,10 +2840,31 @@ function startProgram(mode) {
     lockPointer(renderer.domElement); }
   game.phase = 'select';
   game.running = false; game.over = false; game.paused = false;
-  if (!game.dealt) { dealDefaultLoadout(); game.dealt = true; }
+  parkRemote(); drawTableConsole();
   applyProgram();
   flashGrid(0.35); AudioKit.ackBeep();
-  toast('CHOOSE YOUR WEAPONS · TRIGGER ON THE PAD TO BEGIN');
+  toast('THE LOBBY · ARM YOURSELF FROM THE TABLE · TRIGGER ON A PAD');
+}
+/* Anything in flight or lying about is recalled: to a free holster or sheath on your
+   body if `toBody` and one fits (a restart mid-program), otherwise to its place on
+   the table (the lobby). */
+function recallLoose(toBody) {
+  thrown.length = 0;
+  for (const w of ARMS) { const u = w.userData;
+    if (u.holder !== 'flight' && u.holder !== 'stuck') continue;
+    u.dropped = false; if (u.vel) u.vel.set(0, 0, 0);
+    let k = -1;
+    if (toBody) k = HOLSTERS.findIndex((h, j) => holsterAccepts(h, w) && !holsterOccupant(j) && (u.def.id !== 'dktahg' || h.accepts === 'dktahg'));
+    if (toBody && k < 0) k = HOLSTERS.findIndex((h, j) => holsterAccepts(h, w) && !holsterOccupant(j));
+    u.holder = k >= 0 ? 'holster' + k : 'table';
+  }
+  refreshHeld();
+}
+/* Between programs the remote waits off to the side of the arch. */
+function parkRemote() {
+  remote.state = 'stalk'; remote.timer = 2.5;
+  remote.pos.set(1.7, 1.5, -2.6); remote.base.copy(remote.pos); remote.g.position.copy(remote.pos);
+  remotePickWaypoint();
 }
 
 let endedAt = 0;
@@ -2711,7 +2961,7 @@ function setProgram(p) {
   document.getElementById('brief-range').hidden = p !== 'range';
   document.getElementById('brief-velocity').hidden = p !== 'velocity';
   btnVR.textContent = p === 'velocity' ? 'Enter the court' : 'Enter the range';
-  applyProgram();
+  applyProgram(); drawTableConsole(); hudDirty = true;
 }
 progBtns.forEach(b => b.addEventListener('click', () => setProgram(b.dataset.prog)));
 setProgram('range');
@@ -2737,28 +2987,18 @@ const CONTROLS = [
   { id: 's-court', out: 'o-court', key: 'courtSize', fmt: v => '±' + v.toFixed(1) + ' m' },
   { id: 's-vol', out: 'o-vol', key: 'phaserVol', fmt: v => v === 0 ? 'muted' : Math.round(v * 100) + '%' },
 ];
-const DOM_RADIOS = ['dom-right', 'dom-left'];
 function syncSettingsUI() {
   CONTROLS.forEach(c => {
     const el = document.getElementById(c.id);
     el.value = SETTINGS[c.key];
     document.getElementById(c.out).textContent = c.fmt(Number(SETTINGS[c.key]));
   });
-  document.getElementById('dom-right').checked = SETTINGS.dominant !== 'left';
-  document.getElementById('dom-left').checked = SETTINGS.dominant === 'left';
 }
 CONTROLS.forEach(c => {
   document.getElementById(c.id).addEventListener('input', e => {
     SETTINGS[c.key] = Number(e.target.value);
     document.getElementById(c.out).textContent = c.fmt(SETTINGS[c.key]);
     applySettings(); saveSettings();
-  });
-});
-DOM_RADIOS.forEach(id => {
-  document.getElementById(id).addEventListener('change', e => {
-    if (!e.target.checked) return;
-    SETTINGS.dominant = e.target.value; saveSettings();
-    game.dealt = false;                                   // the next drill deals to the other hand
   });
 });
 document.getElementById('btn-reset').addEventListener('click', () => {
@@ -2807,8 +3047,11 @@ renderer.setAnimationLoop((time) => {
   if (game.mode) loadoutTick(dt);
   if (!game.paused) thrownTick(dt);
   if (game.phase === 'select') {
-    stageTable.userData.padMat.color.setHSL(0.09, 1, 0.45 + 0.25 * Math.sin(perf * 4));
-    HOLSTERS.forEach(h => { h.ringMat.opacity = 0.18 + 0.12 * Math.sin(perf * 3); });
+    lobbyPads.forEach(p => {
+      if (p.id === 'begin') p.mat.color.setHSL(0.09, 1, 0.45 + 0.25 * Math.sin(perf * 4));
+      else p.mat.color.copy(p.base).multiplyScalar(game.program === p.id ? 1.0 : 0.30);
+    });
+    HOLSTERS.forEach(h => { if (h.ringMat) h.ringMat.opacity = 0.18 + 0.12 * Math.sin(perf * 3); });
   }
   if (renderer.xr.isPresenting) pollHandButtons();
   if (game.mode === 'desk') deskTick(dt);

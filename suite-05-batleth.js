@@ -1,0 +1,41 @@
+suite("bat'leth: the Onshape outline drives the blade", () => {
+  const b = arms.batleth, body = b.children.find(c => c.name === 'BatlethBladeAssembly');
+  assert(BATLETH_OUTLINE.length === 7, 'outer edge plus six cut-outs');
+  const blade = body.children.find(c => c.name === 'BatlethBlade');
+  assert(blade && blade.geometry.parameters[0].holes.length === 6, 'six holes cut from the plate');
+  const pts = blade.geometry.parameters[0].getPoints();
+  const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+  assert(near(Math.max(...xs) - Math.min(...xs), 1.1135, 0.002), 'tip to tip 1.11 m like the OBJ (' + (Math.max(...xs) - Math.min(...xs)).toFixed(3) + ')');
+  assert(near(Math.max(...ys) - Math.min(...ys), 0.3153, 0.002), 'blade depth 0.315 m like the OBJ');
+  assert(Math.abs(Math.max(...xs) + Math.min(...xs)) < 0.002, 'centred on the hand');
+  assert(Math.min(...ys) < -0.29 && Math.max(...ys) > 0.01, 'tips at -Y, handle edge just past the origin at +Y');
+  const grips = body.children.filter(c => /^BatlethGrip\d$/.test(c.name));
+  assert(grips.length === 3, 'three wraps');
+  assert(near(grips[1].position.x, 0) && near(grips[1].position.y, 0), 'centre wrap sits on the origin, where the hand is');
+  assert(grips[0].position.x < -0.3 && grips[2].position.x > 0.3, 'end wraps out on the side bars');
+  assert(b.userData.samples.length === 11, 'eleven edge samples');
+  const sy = b.userData.samples.map(o => o.position.y);
+  assert(Math.min(...sy) < -0.30 && Math.max(...sy) < -0.14, 'samples ride the blade edge, none on the handle side');
+  assert(near(b.scale.x, 1.0), 'true scale');
+  assert(near(body.rotation.x, Math.PI / 2), 'laid flat');
+  assert(body.children.every(c => c.name) && [blade.material.name, grips[0].material.name].every(Boolean), 'every part and material named');
+});
+suite("bat'leth still works as a weapon: shoulder holster, two hands, throw", () => {
+  enterVR(); resetAll(); frame();
+  const b = arms.batleth;
+  handAtWorld(0, tableWorld(b)); settle(); grip(0);
+  assert(heldBy(0) === b, 'taken off the table');
+  handAtWorld(0, slotWorld(2)); settle(); ungrip(0);
+  assert(b.userData.holder === 'holster2', 'over the left shoulder');
+  handAtWorld(0, slotWorld(2)); grip(0);
+  placeHand(0, -0.25, 1.3, -0.3); placeHand(1, 0.25, 1.3, -0.3); settle(); grip(1);
+  assert(b.userData.support === 1, 'spanned by both hands');
+  frame();
+  assert(near(b.position.x, 0, 1e-6) && near(b.position.z, -0.3, 1e-6), 'centred between the hands');
+  ungrip(1); settle();
+  for (let k = 0; k < 6; k++) { ctrl(0).position.z -= 3.0 / 72; frame(1 / 72); }
+  ungrip(0);
+  assert(b.userData.holder === 'flight' && !b.userData.dropped, 'a hard release throws it');
+  frame(1 / 72, 300);
+  assert(b.userData.holder === 'stuck', 'and it plants');
+});

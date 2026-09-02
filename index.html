@@ -200,6 +200,17 @@
         <div class="row"><label for="s-bri">Brightness</label>
           <input type="range" id="s-bri" min="0.3" max="1" step="0.05"><output id="o-bri"></output></div>
 
+        <h2>Wardrobe</h2>
+        <div class="row"><label for="s-gender">Gender</label>
+          <select id="s-gender"><option value="nb">Non-binary</option><option value="female">Female</option><option value="male">Male</option></select><output></output></div>
+        <div class="row"><label for="s-species">Species</label>
+          <select id="s-species"><option value="klingon">Klingon</option><option value="human">Human</option></select><output></output></div>
+        <div class="row"><label for="s-affil">Affiliation</label>
+          <select id="s-affil"><option value="starfleet">Starfleet</option><option value="empire">The Empire</option></select><output></output></div>
+        <div class="row"><label for="s-uniform">Uniform</label>
+          <select id="s-uniform"><option value="pants">Trousers</option><option value="skirt">Skirt</option></select><output></output></div>
+        <p class="hint">Also on the console behind the table in the lobby. Starfleet's skirt is the skant; the Empire's is an armoured tasset.</p>
+
         <h2>Display</h2>
         <div class="row"><label for="s-fps">Refresh</label>
           <select id="s-fps">
@@ -229,10 +240,11 @@
         <dt>Holsters</dt><dd>Two on the hips, two over the shoulders &mdash; any weapon fits. The bat'leth wants the <b>left shoulder</b>; either hand draws it, both hands span it. It deflects stun bolts even held still; a returned bolt that hits the remote pays 200</dd>
         <dt>The sash</dt><dd>A Klingon baldric over the <b>right shoulder</b>, six sheaths down the chest, <b>d'k tahgs only</b>. Let a knife go against your chest and it seats in the nearest empty sheath</dd>
         <dt>Throw a blade</dt><dd>Let go mid-swing and it flies. It <b>plants only point-first</b>, at speed &mdash; land it flat and it bounces, skids and lies where it stops, like anything else you drop. Heavier weapons throw shorter and tumble slower. Grip near anything lying about to pick it up (desktop: G throws, F recovers)</dd>
+        <dt>The wardrobe</dt><dd>The console behind the table: <b>point at a button and pull the trigger</b> &mdash; gender, species, affiliation, trousers or skirt. The mannequin beside it wears your choices; so do you, down to the boots</dd>
         <dt>The line</dt><dd>Empty hand, squeeze grip with nothing in reach: a hook fires from the <b>wrist bracer</b>. Cast it toward a lost weapon and it homes, latches and <b>reels it back into your hand</b>. Cast at nothing and it is a rope dart &mdash; swing it and the hook hits what a blade would. Let go of grip to reel in (desktop: T)</dd>
         <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD roams the whole room · Shift sprint · <b>Space dash</b> (dodge!) · C duck · wheel sets power · B or 1–6 weapon · X drops it · in the lobby, click a pad or press Enter · P pause</dd>
       </dl>
-      <p class="footnote">M0.19 feel prototype — telegraph timing, phaser feel, a physical armory with real throws, the sash, the line, and the Onshape bat'leth. On Quest, open this
+      <p class="footnote">M0.20 feel prototype — telegraph timing, phaser feel, a physical armory with real throws, the sash, the line, the Onshape bat'leth, and a body with a wardrobe. On Quest, open this
         page in the headset browser. If the Enter button stays unavailable inside an embedded viewer,
         open the page in its own tab.</p>
       <p class="footnote" id="diag" style="font-family:monospace;font-size:11px;color:#6a6a5c;line-height:1.6"></p>
@@ -1804,8 +1816,8 @@ const bodyFrame = new THREE.Group(); bodyFrame.name = 'BodyFrame'; playerRig.add
 const HOLSTERS = [
   { id: 'hipL',  label: 'LEFT HIP',   pos: [-0.24, 0.94,  0.04], rot: [0, 0,  0.30] },
   { id: 'hipR',  label: 'RIGHT HIP',  pos: [ 0.24, 0.94,  0.04], rot: [0, 0, -0.30] },
-  { id: 'backL', label: 'LEFT SHOULDER',  pos: [-0.22, 1.44, 0.17], rot: [0.55, 0,  0.6] },
-  { id: 'backR', label: 'RIGHT SHOULDER', pos: [ 0.22, 1.44, 0.17], rot: [0.55, 0, -0.6] },
+  { id: 'backL', label: 'LEFT SHOULDER',  pos: [-0.22, 1.44, 0.29], rot: [0.55, 0,  0.6] },   // against the back, behind the torso
+  { id: 'backR', label: 'RIGHT SHOULDER', pos: [ 0.22, 1.44, 0.29], rot: [0.55, 0, -0.6] },
 ];
 HOLSTERS.forEach((h, i) => {
   const a = new THREE.Object3D(); a.name = 'Holster_' + h.id;
@@ -1870,6 +1882,181 @@ const sash = new THREE.Group(); sash.name = 'KlingonSash'; sash.visible = false;
     HOLSTERS.push({ id: 'sash' + (k + 1), label: 'SASH · ' + (k + 1), anchor: a, ring: null, ringMat: null,
                     accepts: 'dktahg', reach: () => TUNE.sashReach });
   }
+}
+
+/* ═══════════════ the body ═══════════════
+   A first-person body hung from the headset: torso and pelvis under the head,
+   two-bone legs to feet planted under the hips (the knees bend when you crouch),
+   two-bone arms out to the palms, fists at the palms. Height calibrates to your
+   standing eye height. The same builder dresses the mannequin in the lobby.
+   (parts named, materials named & colored per uniform) */
+const AVATAR = { gender: 'nb', species: 'klingon', affiliation: 'starfleet', uniform: 'pants' };
+const AVATAR_OPTIONS = {
+  gender:      [['nb', 'NON-BINARY'], ['female', 'FEMALE'], ['male', 'MALE']],
+  species:     [['klingon', 'KLINGON'], ['human', 'HUMAN']],
+  affiliation: [['starfleet', 'STARFLEET'], ['empire', 'THE EMPIRE']],
+  uniform:     [['pants', 'TROUSERS'], ['skirt', 'SKIRT']],
+};
+const AVATAR_LABEL = { gender: 'GENDER', species: 'SPECIES', affiliation: 'AFFILIATION', uniform: 'UNIFORM' };
+const BODY = {   // proportions at a 1.60 m eye height, in metres — everything scales with the wearer
+  eye: 1.60, neckDrop: 0.15, shoulderDrop: 0.21, hipDrop: 0.66, thigh: 0.44, shin: 0.41, ankle: 0.07,
+  upperArm: 0.29, forearm: 0.26, torsoZ: 0.15, torsoD: 0.22, stance: 0.13,
+};
+function bodyDims(g) {   // subtle: shoulder half-width, hip half-width, torso width
+  return g === 'female' ? { shoulder: 0.17, hip: 0.135, torsoW: 0.30 }
+       : g === 'male'   ? { shoulder: 0.21, hip: 0.115, torsoW: 0.36 }
+                        : { shoulder: 0.19, hip: 0.125, torsoW: 0.33 };
+}
+function bodyPalette(a) {
+  const skin = a.species === 'klingon' ? 0x8b5a3c : 0xd9a679, hair = a.species === 'klingon' ? 0x14100e : 0x3a2a1e;
+  if (a.affiliation === 'starfleet')
+    return { skin, hair, torso: 0x101014, yoke: 0xc9a227, collar: 0x7d7d80, sleeve: 0x101014, legs: 0x101014,
+             boot: 0x0c0c0e, skirt: 0xc9a227, tights: 0x101014, metal: 0xd8d0b8, badge: 0xd4af37 };
+  return   { skin, hair, torso: 0x2b2a2c, yoke: 0x55545a, collar: 0x3a2f28, sleeve: 0x3f3e44, legs: 0x3a2f28,
+             boot: 0x1a1a1c, skirt: 0x4a4a50, tights: 0x2b2a2c, metal: 0x7a7a80, badge: 0x7a7a80 };
+}
+function buildBody(a, withHead) {
+  const P = bodyPalette(a), D = bodyDims(a.gender);
+  const mat = (name, color, metal) => { const m = new THREE.MeshStandardMaterial({ color, metalness: metal ? 0.7 : 0.1, roughness: metal ? 0.4 : 0.85 }); m.name = 'Mat_' + name; return m; };
+  const M = { skin: mat('Skin', P.skin), hair: mat('Hair', P.hair), torso: mat('Uniform', P.torso), yoke: mat('UniformYoke', P.yoke),
+              collar: mat('Collar', P.collar), sleeve: mat('Sleeve', P.sleeve), legs: mat('Trousers', P.legs), boot: mat('Boot', P.boot),
+              skirt: mat('Skirt', P.skirt), tights: mat('Tights', P.tights), metal: mat('Armor', P.metal, true), badge: mat('Combadge', P.badge, true) };
+  const g = new THREE.Group(); g.name = withHead ? 'Mannequin' : 'PlayerBody';
+  const box = (name, w, h, d, m) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.name = name; g.add(b); return b; };
+  const limb = (name, r0, r1, m) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(r0, r1, 1, 10), m); c.name = name; g.add(c); return c; };
+  const empire = a.affiliation === 'empire', skirt = a.uniform === 'skirt';
+  const rig = { g, s: 1, D, materials: M, empire, skirt,
+    torso: box('Torso', D.torsoW, 0.34, BODY.torsoD, skirt && !empire ? M.yoke : M.torso),   // the skant is a tunic in the division colour
+    yoke:  box('Yoke', D.torsoW + 0.012, 0.14, BODY.torsoD + 0.012, empire ? M.metal : (skirt ? M.torso : M.yoke)),
+    neck:  limb('Neck', 0.055, 0.06, M.skin),
+    collar: box('Collar', 0.17, 0.05, 0.17, M.collar),
+    pelvis: box('Pelvis', D.hip * 2 + 0.04, 0.17, 0.21, skirt ? M.skirt : M.legs),
+    thighL: limb('ThighL', 0.078, 0.066, skirt ? M.tights : M.legs), thighR: limb('ThighR', 0.078, 0.066, skirt ? M.tights : M.legs),
+    shinL:  limb('ShinL', 0.062, 0.05, skirt ? M.tights : M.legs),   shinR:  limb('ShinR', 0.062, 0.05, skirt ? M.tights : M.legs),
+    bootL:  box('BootL', 0.10, 0.08, 0.27, M.boot), bootR: box('BootR', 0.10, 0.08, 0.27, M.boot),
+    upperL: limb('UpperArmL', 0.052, 0.046, M.sleeve), upperR: limb('UpperArmR', 0.052, 0.046, M.sleeve),
+    foreL:  limb('ForearmL', 0.046, 0.04, M.sleeve),   foreR:  limb('ForearmR', 0.046, 0.04, M.sleeve),
+    handL:  box('FistL', 0.05, 0.09, 0.085, M.skin),   handR:  box('FistR', 0.05, 0.09, 0.085, M.skin),
+    shoulderL: null, shoulderR: null, skirtMesh: null, lames: [], badge: null, head: null, hair: null, ridge: null };
+  if (empire) {                                                        // pauldrons for the Empire
+    rig.shoulderL = box('PauldronL', 0.13, 0.07, 0.16, M.metal); rig.shoulderR = box('PauldronR', 0.13, 0.07, 0.16, M.metal);
+  } else rig.badge = box('Combadge', 0.035, 0.03, 0.008, M.badge);   // and the badge for Starfleet
+  if (skirt) {
+    if (empire) { for (let k = 0; k < 8; k++) rig.lames.push(box('Tasset' + (k + 1), 0.12, 0.30, 0.02, M.metal)); }  // armoured tasset
+    else { rig.skirtMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.26, 0.34, 18, 1, true), M.skirt);
+           rig.skirtMesh.name = 'Skirt'; rig.skirtMesh.material.side = THREE.DoubleSide; g.add(rig.skirtMesh); }
+  }
+  if (withHead) {
+    rig.head = new THREE.Mesh(new THREE.SphereGeometry(0.105, 16, 12), M.skin); rig.head.name = 'Head'; g.add(rig.head);
+    rig.hair = box('Hair', 0.20, a.species === 'klingon' ? 0.34 : 0.10, a.species === 'klingon' ? 0.16 : 0.20, M.hair);
+    if (a.species === 'klingon') rig.ridge = box('ForeheadRidge', 0.07, 0.05, 0.03, M.skin);
+  }
+  return rig;
+}
+/* two-bone IK: joint between S and W with lengths L1/L2, bending toward `pole` */
+const _ikD = new THREE.Vector3(), _ikP = new THREE.Vector3();
+function twoBone(S, W, L1, L2, pole, outElbow, outWrist) {
+  _ikD.copy(W).sub(S); let d = _ikD.length();
+  const maxD = (L1 + L2) * 0.995;
+  if (d < 1e-4) { outElbow.copy(S).addScaledVector(pole, L1); outWrist.copy(outElbow).addScaledVector(pole, L2); return; }
+  _ikD.multiplyScalar(1 / d); if (d > maxD) d = maxD;
+  outWrist.copy(S).addScaledVector(_ikD, d);
+  _ikP.copy(pole).addScaledVector(_ikD, -pole.dot(_ikD));
+  if (_ikP.lengthSq() < 1e-6) _ikP.set(0, -1, 0).addScaledVector(_ikD, _ikD.y);
+  _ikP.normalize();
+  const cosA = Math.max(-1, Math.min(1, (L1 * L1 + d * d - L2 * L2) / (2 * L1 * d)));
+  const a = Math.acos(cosA);
+  outElbow.copy(S).addScaledVector(_ikD, L1 * Math.cos(a)).addScaledVector(_ikP, L1 * Math.sin(a));
+}
+const _lA = new THREE.Vector3(), _lB = new THREE.Vector3(), _lC = new THREE.Vector3(), _lE = new THREE.Vector3(), _lW = new THREE.Vector3(),
+      _lPole = new THREE.Vector3(), _lQ = new THREE.Quaternion(), _lDir = new THREE.Vector3(), _lUp = new THREE.Vector3(0, 1, 0);
+function placeLimb(m, A, B) {
+  m.position.copy(A).add(B).multiplyScalar(0.5);
+  _lDir.copy(B).sub(A); const L = _lDir.length();
+  if (L < 1e-5) { m.visible = false; return; }
+  m.visible = true; m.quaternion.setFromUnitVectors(_lUp, _lDir.multiplyScalar(1 / L)); m.scale.y = L;
+}
+/* Pose a rig. `F.local(x, y, z, out)` maps the body frame (origin under the head, −Z forward,
+   y from the floor) to world; `F.q` is the body's world yaw; `F.eye` is eye height above the
+   floor; `F.wrist(side, outPos, outQ)` gives a palm pose or false for a hanging arm. */
+function poseBody(rig, F) {
+  const s = rig.s = Math.max(0.8, Math.min(1.3, F.eye / BODY.eye)), D = rig.D;
+  const eye = F.eye, sh = eye - BODY.shoulderDrop * s, hip = eye - BODY.hipDrop * s, z = BODY.torsoZ * s;
+  const setBox = (m, x, y, zz, sy) => { F.local(x, y, zz, m.position); m.quaternion.copy(F.q); m.scale.set(s, sy || s, s); };
+  setBox(rig.torso, 0, (sh + hip) / 2 + 0.02 * s, z, ((sh - hip) - 0.06 * s) / 0.34);
+  setBox(rig.yoke, 0, sh - 0.05 * s, z);
+  setBox(rig.pelvis, 0, hip, z);
+  setBox(rig.collar, 0, sh + 0.02 * s, z);
+  F.local(0, sh, z, _lA); F.local(0, eye - BODY.neckDrop * s * 0.3, z - 0.02 * s, _lB); placeLimb(rig.neck, _lA, _lB); rig.neck.scale.x = rig.neck.scale.z = s;
+  if (rig.badge) { setBox(rig.badge, -0.08 * s, sh - 0.06 * s, z - BODY.torsoD * s / 2 - 0.006, s); }
+  if (rig.skirtMesh) setBox(rig.skirtMesh, 0, hip - 0.20 * s, z);
+  rig.lames.forEach((l, k) => { const a = k / 8 * Math.PI * 2, r = 0.19 * s;
+    F.local(Math.sin(a) * r, hip - 0.20 * s, z + Math.cos(a) * r, l.position);
+    l.quaternion.copy(F.q); l.rotateY(a); l.scale.set(s, s, s); });
+  if (rig.head) { setBox(rig.head, 0, eye + 0.02 * s, z - 0.05 * s); rig.head.quaternion.copy(F.q);
+    setBox(rig.hair, 0, eye + (rig.ridge ? -0.06 : 0.09) * s, z + (rig.ridge ? 0.08 : 0.0) * s);
+    if (rig.ridge) setBox(rig.ridge, 0, eye + 0.07 * s, z - 0.13 * s); }
+  // legs: hips to feet planted under them; knees bend forward as the hips come down
+  [[-1, rig.thighL, rig.shinL, rig.bootL], [1, rig.thighR, rig.shinR, rig.bootR]].forEach(([side, thigh, shin, boot]) => {
+    F.local(side * D.hip * 0.8 * s, hip - 0.05 * s, z, _lA);
+    F.local(side * BODY.stance * s, BODY.ankle * s, z - 0.01 * s, _lB);
+    _lPole.set(side * 0.15, 0, -1).applyQuaternion(F.q);
+    twoBone(_lA, _lB, BODY.thigh * s, BODY.shin * s, _lPole, _lE, _lW);
+    placeLimb(thigh, _lA, _lE); placeLimb(shin, _lE, _lW);
+    thigh.scale.x = thigh.scale.z = shin.scale.x = shin.scale.z = s;
+    boot.position.copy(_lW); F.local(0, 0, -0.06 * s, _lC).sub(F.local(0, 0, 0, _lA)); boot.position.add(_lC); boot.position.y = BODY.ankle * s * 0.6;
+    boot.quaternion.copy(F.q); boot.scale.set(s, s, s);
+  });
+  // arms: shoulders out to wherever the palms are; elbows drop and swing out a little
+  [[-1, 'left', rig.upperL, rig.foreL, rig.handL, rig.shoulderL], [1, 'right', rig.upperR, rig.foreR, rig.handR, rig.shoulderR]]
+    .forEach(([side, name, upper, fore, hand, pauldron]) => {
+      F.local(side * D.shoulder * s, sh - 0.02 * s, z, _lA);
+      if (pauldron) { pauldron.position.copy(_lA); pauldron.position.y += 0.03 * s; pauldron.quaternion.copy(F.q); pauldron.scale.set(s, s, s); }
+      const tracked = F.wrist(name, _lB, _lQ);
+      if (!tracked) { F.local(side * (D.shoulder + 0.06) * s, sh - 0.62 * s, z + 0.04 * s, _lB); _lQ.copy(F.q); }
+      _lPole.set(side * 0.55, -1, 0.45).applyQuaternion(F.q);
+      twoBone(_lA, _lB, BODY.upperArm * s, BODY.forearm * s, _lPole, _lE, _lW);
+      placeLimb(upper, _lA, _lE); placeLimb(fore, _lE, _lW);
+      upper.scale.x = upper.scale.z = fore.scale.x = fore.scale.z = s;
+      hand.position.copy(tracked ? _lB : _lW); hand.quaternion.copy(_lQ); hand.scale.set(s, s, s);
+    });
+}
+/* the player's own body, and the mannequin in the lobby */
+const avatar = { rig: null, stand: 1.5, dummy: null, dummyAt: new THREE.Vector3(0.62, 0, -1.95) };
+const _avP = new THREE.Vector3(), _avQ = new THREE.Quaternion(), _avM = new THREE.Matrix4();
+function handForSide(side) {
+  for (const h of hands) if (h.src && h.src.handedness === side) return h.index;
+  return side === 'left' ? 0 : 1;
+}
+const playerFrame = {
+  eye: 1.6, q: new THREE.Quaternion(),
+  local(x, y, z, out) { return bodyFrame.localToWorld(out.set(x, y, z)); },
+  wrist(side, outP, outQ) { const i = handForSide(side); return palmPose(i, outP, outQ); },
+};
+const dummyFrame = {
+  eye: 1.60, q: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI),
+  local(x, y, z, out) { out.set(x, y, z).applyQuaternion(this.q); return out.add(avatar.dummyAt); },
+  wrist() { return false; },
+};
+function rebuildAvatars() {
+  if (avatar.rig) { scene.remove(avatar.rig.g); }
+  if (avatar.dummy) { scene.remove(avatar.dummy.g); }
+  avatar.rig = buildBody(AVATAR, false); avatar.rig.g.visible = false; scene.add(avatar.rig.g);
+  avatar.dummy = buildBody(AVATAR, true); scene.add(avatar.dummy.g);
+  poseBody(avatar.dummy, dummyFrame);
+}
+rebuildAvatars();
+function bodyTick() {
+  const rig = avatar.rig; if (!rig) return;
+  const show = game.mode === 'vr' && renderer.xr.isPresenting;
+  rig.g.visible = show;
+  if (avatar.dummy) avatar.dummy.g.visible = game.phase === 'select';
+  if (!show) return;
+  camera.getWorldPosition(_avP);
+  if (_avP.y > 1.15) avatar.stand = Math.max(avatar.stand, _avP.y);   // your standing height is the tallest you have stood
+  playerFrame.eye = _avP.y;
+  bodyFrame.getWorldQuaternion(playerFrame.q);
+  poseBody(rig, playerFrame);
 }
 
 /* The staging table: the whole armory laid out, and the three lobby pads along its
@@ -1943,6 +2130,106 @@ function drawTableConsole() {
   tableConsole.tex.needsUpdate = true;
 }
 
+/* ═══════════════ the wardrobe: a console behind the table, the mannequin beside it ═══════════════
+   Point a hand at a button and pull the trigger (desktop: look and click). Every
+   choice redresses you and the mannequin and is remembered with the settings. */
+const WARDROBE_W = 1.0, WARDROBE_H = 0.72;
+const wardrobe = (() => {
+  const g = new THREE.Group(); g.name = 'Wardrobe'; g.position.set(-0.55, 0, -1.92); scene.add(g);
+  const frameMat = new THREE.MeshStandardMaterial({ color: 0x565a63, metalness: 0.7, roughness: 0.4 }); frameMat.name = 'Mat_WardrobeFrame';
+  const pedestal = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.95, 0.18), frameMat);
+  pedestal.name = 'WardrobePedestal'; pedestal.position.set(0, 0.475, 0); g.add(pedestal);
+  const back = new THREE.Mesh(new THREE.BoxGeometry(WARDROBE_W + 0.06, WARDROBE_H + 0.06, 0.03), frameMat);
+  back.name = 'WardrobeFrame'; back.position.set(0, 1.32, 0.02); back.rotation.x = -0.22; g.add(back);
+  const strip = new THREE.Mesh(new THREE.BoxGeometry(0.05, WARDROBE_H + 0.06, 0.01), new THREE.MeshBasicMaterial({ color: 0xff9c00 }));
+  strip.material.name = 'Mat_WardrobeStrip'; strip.name = 'WardrobeStrip'; strip.position.set(-(WARDROBE_W + 0.06) / 2 - 0.03, 1.32, 0.02); strip.rotation.x = -0.22; g.add(strip);
+  const cv = document.createElement('canvas'); cv.width = 1024; cv.height = 740;
+  const tex = new THREE.CanvasTexture(cv);
+  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true }); mat.name = 'Mat_WardrobePanel';
+  const panel = new THREE.Mesh(new THREE.PlaneGeometry(WARDROBE_W, WARDROBE_H), mat);
+  panel.name = 'WardrobePanel'; panel.position.set(0, 1.32, 0.04); panel.rotation.x = -0.22; g.add(panel);
+  return { g, panel, cv, ctx: cv.getContext('2d'), tex, buttons: [] };
+})();
+function drawWardrobe() {
+  const c = wardrobe.ctx, W = wardrobe.cv.width, H = wardrobe.cv.height;
+  c.clearRect(0, 0, W, H);
+  c.fillStyle = 'rgba(12,12,19,0.94)'; roundRect(c, 0, 0, W, H, 34); c.fill();
+  const dsp = (px, w) => (w || 600) + ' ' + px + 'px Antonio, "Arial Narrow", sans-serif';
+  c.textBaseline = 'top'; c.textAlign = 'left';
+  c.fillStyle = '#f2c14e'; c.font = dsp(58, 700); c.fillText('WARDROBE', 60, 30);
+  c.fillStyle = '#8d8a7b'; c.font = dsp(26, 400); c.fillText('POINT AND PULL THE TRIGGER · THE MANNEQUIN WEARS WHAT YOU PICK', 60, 96);
+  wardrobe.buttons = [];
+  const keys = Object.keys(AVATAR_OPTIONS);
+  keys.forEach((key, r) => {
+    const y = 150 + r * 142;
+    c.fillStyle = '#cc99cc'; c.font = dsp(28, 400); c.fillText(AVATAR_LABEL[key], 60, y);
+    const opts = AVATAR_OPTIONS[key], gap = 18, w = Math.floor((W - 120 - gap * (opts.length - 1)) / opts.length), h = 66;
+    opts.forEach(([value, label], k) => {
+      const x = 60 + k * (w + gap), by = y + 40, on = AVATAR[key] === value;
+      wardrobe.buttons.push({ key, value, label, x, y: by, w, h });
+      if (on) { c.fillStyle = '#ff9c00'; roundRect(c, x, by, w, h, 22); c.fill(); }
+      else { c.strokeStyle = '#cc99cc'; c.lineWidth = 3; roundRect(c, x, by, w, h, 22); c.stroke(); }
+      c.fillStyle = on ? '#140b00' : '#e8e4d8'; c.font = dsp(30, 600); c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText(label, x + w / 2, by + h / 2 + 1); c.textAlign = 'left'; c.textBaseline = 'top';
+    });
+  });
+  wardrobe.tex.needsUpdate = true;
+}
+/* where a ray meets the panel: the button under it, if any */
+const _wo = new THREE.Vector3(), _wn = new THREE.Vector3(), _wx = new THREE.Vector3(), _wy = new THREE.Vector3(), _wq = new THREE.Quaternion(), _wp = new THREE.Vector3();
+function wardrobeHit(origin, dir, outPoint) {
+  if (!wardrobe.g.visible) return null;
+  const P = wardrobe.panel;
+  P.getWorldQuaternion(_wq); P.getWorldPosition(_wo);
+  _wn.set(0, 0, 1).applyQuaternion(_wq);
+  const denom = dir.dot(_wn); if (Math.abs(denom) < 1e-6) return null;
+  const t = _wp.copy(_wo).sub(origin).dot(_wn) / denom; if (t < 0 || t > 6) return null;
+  _wp.copy(origin).addScaledVector(dir, t).sub(_wo);
+  _wx.set(1, 0, 0).applyQuaternion(_wq); _wy.set(0, 1, 0).applyQuaternion(_wq);
+  const lx = _wp.dot(_wx), ly = _wp.dot(_wy);
+  if (Math.abs(lx) > WARDROBE_W / 2 || Math.abs(ly) > WARDROBE_H / 2) return null;
+  const px = (lx / WARDROBE_W + 0.5) * wardrobe.cv.width, py = (0.5 - ly / WARDROBE_H) * wardrobe.cv.height;
+  if (outPoint) outPoint.copy(_wp).add(_wo);
+  const button = wardrobe.buttons.find(b => px >= b.x && px <= b.x + b.w && py >= b.y && py <= b.y + b.h) || null;
+  return { button, px, py, t };
+}
+function setAvatarOption(key, value) {
+  if (!AVATAR_OPTIONS[key] || !AVATAR_OPTIONS[key].some(o => o[0] === value)) return;
+  if (AVATAR[key] === value) { AudioKit.ackBeep(); return; }
+  AVATAR[key] = value; applyAvatar(); AudioKit.ackBeep(); flashGrid(0.15);
+  const o = AVATAR_OPTIONS[key].find(o => o[0] === value); toast(AVATAR_LABEL[key] + ' · ' + o[1]);
+}
+function applyAvatar() {
+  rebuildAvatars(); drawWardrobe();
+  if (typeof syncWardrobeUI === 'function') syncWardrobeUI();
+  if (typeof saveSettings === 'function') saveSettings();
+}
+/* a thin pointer from each hand while it is on the panel */
+const lobbyPointers = [0, 1].map(i => {
+  const geo = new THREE.BufferGeometry(); const arr = new Float32Array(6);
+  geo.setAttribute('position', new THREE.BufferAttribute(arr, 3));
+  const mat = new THREE.LineBasicMaterial({ color: 0xff9c00, transparent: true, opacity: 0.7 }); mat.name = 'Mat_Pointer';
+  const line = new THREE.Line(geo, mat); line.name = 'LobbyPointer' + i; line.frustumCulled = false; line.visible = false; scene.add(line);
+  const dot = new THREE.Mesh(new THREE.SphereGeometry(0.012, 8, 8), new THREE.MeshBasicMaterial({ color: 0xff9c00 }));
+  dot.material.name = 'Mat_PointerDot'; dot.name = 'LobbyPointerDot' + i; dot.visible = false; scene.add(dot);
+  return { line, arr, dot };
+});
+const _ppt = new THREE.Vector3();
+function pointersTick() {
+  const selecting = game.phase === 'select' && renderer.xr.isPresenting;
+  lobbyPointers.forEach((pt, i) => {
+    let hit = null;
+    if (selecting && handPose(i, _hp, _hq)) { _gz.set(0, 0, -1).applyQuaternion(_hq); hit = wardrobeHit(_hp, _gz, _ppt); }
+    pt.line.visible = pt.dot.visible = !!hit;
+    if (!hit) return;
+    pt.arr[0] = _hp.x; pt.arr[1] = _hp.y; pt.arr[2] = _hp.z; pt.arr[3] = _ppt.x; pt.arr[4] = _ppt.y; pt.arr[5] = _ppt.z;
+    pt.line.geometry.attributes.position.needsUpdate = true;
+    pt.dot.position.copy(_ppt);
+    pt.line.material.color.setHex(hit.button ? 0xff9c00 : 0x99ccff); pt.dot.material.color.setHex(hit.button ? 0xff9c00 : 0x99ccff);
+  });
+}
+drawWardrobe();
+
 const EMPTY_HAND = { userData: { isEmpty: true, label: 'NO WEAPON' } };
 function heldBy(i) { for (const w of ARMS) if (w.userData.holder === 'hand' + i) return w; return null; }
 function holsterOccupant(k) { for (const w of ARMS) if (w.userData.holder === 'holster' + k) return w; return null; }
@@ -1990,6 +2277,31 @@ function returnToTable(w) {
 }
 
 const _hp = new THREE.Vector3(), _hq = new THREE.Quaternion(), _ap = new THREE.Vector3();
+/* Two poses per hand. handPose is the aim ray — where a phaser barrel goes. palmPose is
+   the WebXR grip space: origin in the palm, +Y up out of the top of the fist, −Z out of
+   the knuckles, +X through the palm — where a handle sits. Melee weapons use the palm. */
+function palmPose(i, outPos, outQuat) {
+  if (i === 2) return handPose(i, outPos, outQuat);
+  const g = gripControllers[i];
+  if (!g || !g.visible) return handPose(i, outPos, outQuat);    // no grip pose yet: fall back to the ray
+  g.getWorldPosition(outPos); g.getWorldQuaternion(outQuat);
+  return true;
+}
+/* How each melee weapon sits in the fist: a rotation from the weapon's own frame into the
+   grip frame, and where the weapon's origin lands relative to the palm. If a blade ever
+   comes out of the wrong side of the fist on a particular controller, this is the table
+   to flip — nothing else depends on it. */
+const HOLD = {};
+{
+  const mk = (x, y, z) => new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(
+    new THREE.Vector3(...x), new THREE.Vector3(...y), new THREE.Vector3(...z)));
+  // d'k tahg, hammer grip: blade (its −Z) up out of the fist, edge (its X) forward, the
+  // flat of the blade (its Y) against the palm; the guard rides the top of the fist
+  HOLD.dktahg  = { q: mk([0, 0, -1], [1, 0, 0], [0, -1, 0]), offset: new THREE.Vector3(0, 0.05, 0) };
+  // bat'leth, one hand on the centre bar: the bar (its X) runs through the fist, the
+  // points (its −Z) go out of the knuckles, the plate stands edge-on to the palm
+  HOLD.batleth = { q: mk([0, 1, 0], [-1, 0, 0], [0, 0, 1]), offset: new THREE.Vector3(0, 0, 0) };
+}
 function handPose(i, outPos, outQuat) {
   if (i === 2) {                                            // desktop: the hand is the viewmodel,
     camera.getWorldPosition(outPos);                        // not the camera itself
@@ -2453,7 +2765,7 @@ function loadoutTick(dt) {
   });
 
   const selecting = game.phase === 'select';
-  stageTable.visible = selecting;
+  stageTable.visible = selecting; wardrobe.g.visible = selecting;
   holoArch.visible = selecting || game.paused;
   sash.visible = game.mode === 'vr';
   HOLSTERS.forEach(h => { if (h.ring) h.ring.visible = selecting || !!game.running; });
@@ -2477,18 +2789,21 @@ function loadoutTick(dt) {
       continue;
     }
     const i = Number(hold.slice(4));
-    if (!handPose(i, _mainP, _hq)) { w.visible = false; continue; }
+    const melee = !u.isGun && i !== 2;                    // blades sit in the palm; guns ride the aim ray
+    if (!(melee ? palmPose(i, _mainP, _hq) : handPose(i, _mainP, _hq))) { w.visible = false; continue; }
     w.visible = (i === 2) ? (game.mode === 'desk') : renderer.xr.isPresenting;
     const sup = u.support;
-    if (sup !== null && sup !== undefined && handPose(sup, _suppP, _gq0)) {
-      if (u.def.grip === 'span') {                       // bat'leth: spans hand to hand
+    if (sup !== null && sup !== undefined && (melee ? palmPose(sup, _suppP, _gq0) : handPose(sup, _suppP, _gq0))) {
+      if (u.def.grip === 'span') {                       // bat'leth: spans palm to palm, and rolls with the wrists
         _gx.copy(_suppP).sub(_mainP);
         if (_gx.lengthSq() < 1e-4) _gx.set(1, 0, 0);
         _gx.normalize();
-        camera.getWorldPosition(_gz); _gz.sub(_mainP); _gz.y *= 0.3;
-        _gz.addScaledVector(_gx, -_gz.dot(_gx));
-        if (_gz.lengthSq() < 1e-4) _gz.set(0, 0, 1);
-        _gz.normalize(); _gy.crossVectors(_gz, _gx).normalize();
+        _gy.set(1, 0, 0).applyQuaternion(_hq);             // the main palm's normal sets the plate's plane
+        _gy.addScaledVector(_gx, -_gy.dot(_gx));
+        if (_gy.lengthSq() < 1e-4) _gy.set(0, 1, 0).addScaledVector(_gx, -_gx.y);
+        _gy.normalize(); _gz.crossVectors(_gx, _gy).normalize();
+        camera.getWorldPosition(_mainP2).sub(_mainP);        // the points face away from you
+        if (_gz.dot(_mainP2) < 0) { _gy.negate(); _gz.negate(); }
         _gm4.makeBasis(_gx, _gy, _gz);
         w.quaternion.setFromRotationMatrix(_gm4);
         w.position.copy(_mainP).add(_suppP).multiplyScalar(0.5);
@@ -2510,13 +2825,17 @@ function loadoutTick(dt) {
       w.position.copy(_mainP).add(_vmOff);
       w.quaternion.copy(_hq);
       if (u.baseY === undefined) { u.baseY = 0; }
+    } else if (melee && HOLD[u.def.id]) {                 // one hand on a blade: seat it in the fist
+      const h = HOLD[u.def.id];
+      w.quaternion.copy(_hq).multiply(h.q);
+      w.position.copy(_mainP).add(_mainP2.copy(h.offset).applyQuaternion(_hq));
     } else {
       w.position.copy(_mainP); w.quaternion.copy(_hq);
     }
   }
   refreshHeld();
 }
-const _gq0 = new THREE.Quaternion();
+const _gq0 = new THREE.Quaternion(), _mainP2 = new THREE.Vector3();
 
 function handFire(hand, down, src) {
   if (game.paused) { if (down) setPause(false); return; }
@@ -2542,7 +2861,11 @@ function tryLobbyPad(hand) {
     let bd = 0.20;
     lobbyPads.forEach(p => { p.mesh.getWorldPosition(_ap); const d = _ap.distanceTo(_hp); if (d < bd) { bd = d; pad = p; } });
   }
-  if (pad) pressPad(pad);
+  if (pad) { pressPad(pad); return; }
+  let hit = null;                                              // nothing under the hand: is it pointing at the wardrobe?
+  if (i === 2) { camera.getWorldPosition(_hp); camera.getWorldDirection(_gz); hit = wardrobeHit(_hp, _gz); }
+  else if (handPose(i, _hp, _hq)) { _gz.set(0, 0, -1).applyQuaternion(_hq); hit = wardrobeHit(_hp, _gz); }
+  if (hit && hit.button) setAvatarOption(hit.button.key, hit.button.value);
 }
 function pressPad(pad) {
   if (pad.id === 'begin') { beginDrill(); return; }
@@ -2633,10 +2956,12 @@ function drainBattery(w, amount) {
 }
 
 /* ───────────────────── VR controllers ───────────────────── */
-const vrControllers = [];
+const vrControllers = [], gripControllers = [];
 const hands = [];
 for (let i = 0; i < 2; i++) {
   const c = renderer.xr.getController(i); c.name = 'Controller' + i;
+  const gc = renderer.xr.getControllerGrip(i); gc.name = 'ControllerGrip' + i;
+  playerRig.add(gc); gripControllers.push(gc);
   const hand = { c, index: i, held: null, src: null,
                  prevLower: false, prevUpper: false, prevStick: false };
   c.addEventListener('connected', e => { hand.src = e.data;
@@ -2852,6 +3177,8 @@ function loadSettings() {
     if (!raw) return;
     const saved = JSON.parse(raw);
     Object.assign(SETTINGS, saved);
+    if (saved.avatar) for (const key in AVATAR_OPTIONS) {              // only values the wardrobe offers
+      const v = saved.avatar[key]; if (AVATAR_OPTIONS[key].some(o => o[0] === v)) AVATAR[key] = v; }
     if (!saved.v || saved.v < DEFAULTS.v) {   // v2 split assist from the beam — reset both dials
       SETTINGS.assist = DEFAULTS.assist;
       SETTINGS.beamSweep = DEFAULTS.beamSweep;
@@ -2861,6 +3188,7 @@ function loadSettings() {
   } catch (e) { /* private window or blocked storage — defaults are fine */ }
 }
 function saveSettings() {
+  SETTINGS.avatar = Object.assign({}, AVATAR);
   try { localStorage.setItem('phaserRange.settings', JSON.stringify(SETTINGS)); } catch (e) {}
 }
 function applySettings() {
@@ -2880,7 +3208,7 @@ function applySettings() {
   targets.forEach(t => { t.userData.hpMax = TUNE.targetHP;
     t.userData.hp = Math.min(t.userData.hp, TUNE.targetHP); });
 }
-loadSettings(); applySettings();
+loadSettings(); applySettings(); rebuildAvatars(); drawWardrobe();
 
 /* ───────────────────── remote brain ───────────────────── */
 const _head = new THREE.Vector3(), _tmp = new THREE.Vector3();
@@ -3255,6 +3583,16 @@ CONTROLS.forEach(c => {
     applySettings(); saveSettings();
   });
 });
+/* the wardrobe, from the page too */
+const WARDROBE_SELECTS = { gender: 's-gender', species: 's-species', affiliation: 's-affil', uniform: 's-uniform' };
+function syncWardrobeUI() {
+  for (const key in WARDROBE_SELECTS) { const el = document.getElementById(WARDROBE_SELECTS[key]); if (el) el.value = AVATAR[key]; }
+}
+for (const key in WARDROBE_SELECTS) {
+  const el = document.getElementById(WARDROBE_SELECTS[key]); if (!el) continue;
+  el.addEventListener('change', e => setAvatarOption(key, e.target.value));
+}
+syncWardrobeUI();
 const fpsSel = document.getElementById('s-fps');
 fpsSel.addEventListener('change', e => { SETTINGS.refresh = e.target.value; saveSettings(); syncSettingsUI(); applyRefresh(); });
 /* Ask the running headset session for the chosen refresh rate. */
@@ -3320,7 +3658,7 @@ renderer.setAnimationLoop((time) => {
   fpsClock += dt; if (fpsClock > 0.5) { fpsClock = 0; hudDirty = true; }
 
   vrControllers.forEach(c => c.visible = renderer.xr.isPresenting);
-  if (game.mode) loadoutTick(dt);
+  if (game.mode) { loadoutTick(dt); bodyTick(); pointersTick(); }
   if (!game.paused) { thrownTick(dt); if (game.mode) lineTick(dt); }
   if (game.phase === 'select') {
     lobbyPads.forEach(p => {

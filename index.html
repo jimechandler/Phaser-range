@@ -114,7 +114,9 @@
   /* pause overlay */
   #pause{position:fixed;inset:0;z-index:15;display:flex;align-items:center;justify-content:center;
     background:rgba(7,7,12,.82)}
-  .pausecard{border-left:3px solid var(--amber);padding:22px 26px;background:var(--panel);max-width:420px}
+  .pausecard{border-left:3px solid var(--amber);padding:22px 26px;background:var(--panel);max-width:420px;max-height:92vh;overflow-y:auto}
+  .pausecard.wide{max-width:680px;width:92vw}
+  .pausecard #settings{margin-top:14px}
   .pausecard h2{font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;
     font-size:34px;color:var(--grid);margin:0 0 16px;font-weight:700}
   .pausecard .actions{margin-bottom:12px}
@@ -203,7 +205,14 @@
         <h2>Audio</h2>
         <div class="row"><label for="s-vol">Phaser</label>
           <input type="range" id="s-vol" min="0" max="1" step="0.05"><output id="o-vol"></output></div>
-        <p class="hint">Firing volume — bolt, beam and recharge. Also on the pause menu, mid-drill.</p>
+        <div class="row"><label for="s-mus">Music</label>
+          <input type="range" id="s-mus" min="0" max="1" step="0.05"><output id="o-mus"></output></div>
+        <p class="hint">Firing volume, and the music — a different loop for each room. Every dial here is also on the pause menu, mid-program.</p>
+
+        <h2>Calisthenics</h2>
+        <div class="row"><label for="s-world">World</label>
+          <select id="s-world"><option value="arena">The arena, high noon</option><option value="qonos">Qo'noS, by lava</option></select><output id="o-world"></output></div>
+        <p class="hint">The ruins run out to the horizon under a hard sun, or a volcanic night under the green moon with the fight lit by lava.</p>
 
         <h2>Beam</h2>
         <div class="row"><label for="s-bri">Brightness</label>
@@ -249,7 +258,7 @@
         <dt>Holsters</dt><dd>Two on the hips, two over the shoulders &mdash; any weapon fits. The bat'leth wants the <b>left shoulder</b>; either hand draws it, both hands span it. It deflects stun bolts even held still; a returned bolt that hits the remote pays 200</dd>
         <dt>The sash</dt><dd>A Klingon baldric over the <b>right shoulder</b>, six sheaths down the chest, <b>d'k tahgs only</b>. Let a knife go against your chest and it seats in the nearest empty sheath</dd>
         <dt>Throw a blade</dt><dd>Let go mid-swing and it flies. It <b>plants only point-first</b>, at speed &mdash; land it flat and it bounces, skids and lies where it stops, like anything else you drop. Heavier weapons throw shorter and tumble slower. Grip near anything lying about to pick it up (desktop: G throws, F recovers)</dd>
-        <dt>Calisthenics</dt><dd>Worf's program. A Klingon warrior with a bat'leth: <b>duck the sweep, sidestep the overhead cut</b>, or meet its blade with yours to parry. After a swing it is open &mdash; three hits fell it. Klingon armor and weapons only; a hit in its wind-up breaks the attack</dd>
+        <dt>Calisthenics</dt><dd>Worf's program. BEGIN arms you: a <b>d'k tahg on each hip, the bat'leth over the left shoulder</b>, no sash. Two worlds in Settings &mdash; the arena at high noon, run out to the horizon, or Qo'noS at night with the fight lit by lava. A Klingon warrior with a bat'leth: <b>duck the sweep, sidestep the overhead cut</b>, or meet its blade with yours to parry. After a swing it is open &mdash; three hits fell it. Klingon armor and weapons only; a hit in its wind-up breaks the attack</dd>
         <dt>Catching</dt><dd>Toss a blade and squeeze as it comes back &mdash; it is caught <b>exactly as it lands in your hand</b>, no snap. Re-seat it by holstering and drawing. With a blade in hand the thumbstick trims how it sits: forward/back pitches it toward the knuckles or back, left/right twists it about its length, 10° a flick, remembered</dd>
         <dt>Two hands on a pistol</dt><dd>Grip near a pistol your other hand holds and the second hand <b>steadies it</b>; let go with the first and it passes across</dd>
         <dt>The drones</dt><dd>Tag the remote in its window three times and it <b>bursts</b>; the next one comes in from the dark a little tougher. Five strikes burst the Velocity disc; the court always serves another. The range runs on a <b>four-minute clock</b></dd>
@@ -258,7 +267,7 @@
         <dt>The line</dt><dd>Empty hand, squeeze grip with nothing in reach: a hook fires from the <b>wrist bracer</b>. Cast it toward a lost weapon and it homes, latches and <b>reels it back into your hand</b>. Cast at nothing and it is a rope dart &mdash; swing it and the hook hits what a blade would. Let go of grip to reel in (desktop: T)</dd>
         <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD roams the whole room · Shift sprint · <b>Space dash</b> (dodge!) · C duck · wheel sets power · B or 1–9 weapon · X drops it · in the lobby, click a pad or press Enter · P pause</dd>
       </dl>
-      <p class="footnote">M0.22 feel prototype — the drill (on a clock), Velocity and Calisthenics, with drones that burst and come back; a physical armory with real throws and catches, the sash, the line, the Onshape bat'leth, a body with a wardrobe, saved games and a record book. On Quest, open this
+      <p class="footnote">M0.23 feel prototype — the drill (on a clock), Velocity and Calisthenics with two worlds and its own opera; settings on the pause menu, music in every room; a physical armory with real throws and catches, the sash, the line, the Onshape bat'leth, a body with a wardrobe, saved games and a record book. On Quest, open this
         page in the headset browser. If the Enter button stays unavailable inside an embedded viewer,
         open the page in its own tab.</p>
       <p class="footnote" id="diag" style="font-family:monospace;font-size:11px;color:#6a6a5c;line-height:1.6"></p>
@@ -280,7 +289,7 @@
       <button class="lcars alt" id="btn-quit">Back to the lobby</button>
       <button class="lcars alt" id="btn-leave">Leave the holodeck</button>
     </div>
-    <p class="footnote">Desktop: P pauses. Headset: hold A / X 0.6&thinsp;s to pause; trigger resumes, a fresh A / X press returns you to the lobby, and the thumbstick sets phaser volume.</p>
+    <p class="footnote">Desktop: P pauses. Headset: hold A / X 0.6&thinsp;s to pause; trigger resumes, a fresh A / X press returns you to the lobby, and the thumbstick walks the settings — up and down picks one, left and right turns it.</p>
   </div>
 </div>
 
@@ -457,6 +466,8 @@ const AudioKit = (() => {
     env(g, t, 0.005, peak, dur); o.connect(g); g.connect(bus || master); o.start(t); o.stop(t + dur + 0.05); };
   return {
     unlock: ready,
+    getContext() { return ready() ? ctx : null; },
+    getMaster() { return ready() ? master : null; },
     setPhaserVolume(v) { phaserVol = Math.max(0, Math.min(1, v));
       if (phaserBus) phaserBus.gain.value = phaserVol; },
     getPhaserVolume() { return phaserVol; },
@@ -533,6 +544,101 @@ const AudioKit = (() => {
   };
 })();
 
+/* ═══════════════ the music: a chip tune sequencer, four loops ═══════════════
+   Everything is oscillators: a pulse lead with vibrato, a triangle bass, a low
+   square drone, and drums from noise and swept sines. Notes are written as
+   "D4:6" (name, length in sixteenths; "-" rests) and scheduled a third of a
+   second ahead. One loop per room: the lobby, the range, the court, and the
+   ruins — that last one in D Phrygian dominant over war drums, because a
+   Klingon opera is the only music a bat'leth should be swung to. */
+const Music = (() => {
+  const NAMES = { C: 0, 'C#': 1, Db: 1, D: 2, 'D#': 3, Eb: 3, E: 4, F: 5, 'F#': 6, Gb: 6, G: 7, 'G#': 8, Ab: 8, A: 9, 'A#': 10, Bb: 10, B: 11 };
+  const freq = (n) => { const m = /^([A-G][#b]?)(-?\d)$/.exec(n); if (!m) return 0;
+    return 440 * Math.pow(2, (12 * (Number(m[2]) + 1) + NAMES[m[1]] - 69) / 12); };
+  const parse = (str) => { const out = []; let at = 0;                   // → [{at, len, f}] in sixteenths
+    str.trim().split(/\s+/).forEach(tok => { const [n, l] = tok.split(':'); const len = Number(l || 1);
+      if (n !== '-') out.push({ at, len, f: freq(n) }); at += len; }); return { events: out, length: at }; };
+  const TRACKS = {
+    lobby: { bpm: 84, swing: 0, drums: '', vol: 0.55, channels: [
+      { type: 'triangle', gain: 0.22, decay: 0.9, seq: 'C4:2 E4:2 G4:2 B4:2 C5:4 B4:2 G4:2  A3:2 C4:2 E4:2 G4:2 A4:4 G4:2 E4:2  F3:2 A3:2 C4:2 E4:2 F4:4 E4:2 C4:2  G3:2 B3:2 D4:2 F4:2 G4:8' },
+      { type: 'square', gain: 0.05, decay: 1.0, seq: 'C3:16 A2:16 F2:16 G2:16' },
+    ] },
+    range: { bpm: 124, swing: 0, vol: 0.55, drums: 'k-h-s-h-k-h-s-h-k-h-s-h-k-h-s-h-k-h-s-h-k-h-s-h-k-h-s-h-k-k-s-s-', channels: [
+      { type: 'triangle', gain: 0.28, decay: 0.18, seq: 'A2:2 A2:2 -:2 A2:2 G2:2 -:2 A2:2 A2:2  F2:2 F2:2 -:2 F2:2 G2:2 -:2 F2:2 E2:2  A2:2 A2:2 -:2 A2:2 G2:2 -:2 A2:2 A2:2  D2:2 D2:2 -:2 D2:2 E2:2 -:2 E2:2 G2:2' },
+      { type: 'square', gain: 0.10, decay: 0.5, vib: 1, seq: 'A4:2 C5:2 E5:4 D5:2 C5:2 A4:4  G4:2 A4:2 C5:4 -:2 C5:2 D5:4  E5:2 D5:2 C5:4 A4:2 G4:2 A4:4  D5:2 E5:2 G5:4 E5:2 D5:2 E5:4' },
+      { type: 'square', gain: 0.045, decay: 0.7, seq: 'A3:16 F3:16 A3:16 D3:8 E3:8' },
+    ] },
+    velocity: { bpm: 136, swing: 0, vol: 0.55, drums: 'k-hhs-h-k-hhs-h-k-hhs-h-k-hhs-hhk-hhs-h-k-hhs-h-k-hhs-h-k-k-s-s-', channels: [
+      { type: 'triangle', gain: 0.28, decay: 0.15, seq: 'E2:2 E2:2 E3:2 E2:2 -:2 E2:2 E3:2 E2:2  C2:2 C2:2 C3:2 C2:2 -:2 C2:2 C3:2 C2:2  D2:2 D2:2 D3:2 D2:2 -:2 D2:2 D3:2 D2:2  B1:2 B1:2 B2:2 B1:2 -:2 B1:2 B2:2 B1:2' },
+      { type: 'square', gain: 0.10, decay: 0.4, vib: 1, seq: 'E5:2 -:2 G5:2 -:2 B5:2 G5:2 E5:4  C5:2 -:2 E5:2 -:2 G5:2 E5:2 C5:4  D5:2 -:2 F#5:2 -:2 A5:2 F#5:2 D5:4  B4:2 D5:2 F#5:2 A5:2 B5:8' },
+      { type: 'square', gain: 0.04, decay: 0.6, seq: 'E4:8 G4:8 C4:8 E4:8 D4:8 F#4:8 B3:8 D4:8' },
+    ] },
+    calisthenics: { bpm: 72, swing: 0, vol: 0.65, drums:
+      'T---s---T-T-s---T---s---T-T-s---T---s---T-T-s---T---s---T-T-s---T---s---T-T-s---T---s---T-T-s---T---s---T-T-s---T-T-s-s-T-T-ssss', channels: [
+      { type: 'triangle', gain: 0.32, decay: 0.9, seq: 'D2:8 D2:4 Eb2:4  D2:8 Bb1:4 C2:4  D2:8 D2:4 Eb2:4  D2:8 A1:4 Bb1:4  G1:8 G#1:8  A1:8 Bb1:4 C2:4  D2:12 Eb2:4  D2:16' },
+      { type: 'square', gain: 0.11, decay: 1.0, vib: 2, seq: '-:8 D4:6 Eb4:2  D4:8 Bb3:4 C4:4  D4:6 F#4:2 G4:8  A4:12 G#4:4  A4:8 F#4:4 D4:4  Eb4:12 D4:4  C4:4 Bb3:4 A3:8  D4:16' },
+      { type: 'square', gain: 0.06, decay: 1.0, seq: 'D3:16 D3:16 Bb2:16 A2:16 G2:16 Eb3:16 A2:16 D3:16' },
+      { type: 'sawtooth', gain: 0.035, decay: 1.0, seq: 'A2:16 A2:16 F2:16 E2:16 D2:16 Bb2:16 E2:16 A2:16' },
+    ] },
+  };
+  let ctx = null, bus = null, noise = null, current = null, timer = null, step = 0, nextT = 0, vol = 0.35, ducked = false, trackGain = null;
+  const ready = () => { if (ctx) return true; ctx = AudioKit.getContext(); if (!ctx) return false;
+    bus = ctx.createGain(); bus.gain.value = vol; bus.connect(AudioKit.getMaster());
+    noise = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate); const d = noise.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; return true; };
+  const tone = (type, f, t, dur, gain, decay, vib, out) => {
+    const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type; o.frequency.setValueAtTime(f, t);
+    if (vib) { const l = ctx.createOscillator(), lg = ctx.createGain(); l.frequency.value = 5.5; lg.gain.value = f * 0.007 * vib; l.connect(lg); lg.connect(o.frequency); l.start(t + 0.08); l.stop(t + dur + 0.1); }
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(gain, t + 0.012);
+    g.gain.setValueAtTime(gain, t + Math.max(0.012, dur * decay - 0.03)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(out); o.start(t); o.stop(t + dur + 0.02); };
+  const drum = (ch, t, out) => {
+    const hit = (type, f0, f1, dur, gain) => { const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type;
+      o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur * 0.8);
+      g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); o.connect(g); g.connect(out); o.start(t); o.stop(t + dur + 0.02); };
+    const hiss = (dur, gain, hp) => { const src = ctx.createBufferSource(); src.buffer = noise; const g = ctx.createGain(), f = ctx.createBiquadFilter();
+      f.type = hp ? 'highpass' : 'bandpass'; f.frequency.value = hp ? 6000 : 1800; f.Q.value = 0.8;
+      g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); src.connect(f); f.connect(g); g.connect(out); src.start(t); src.stop(t + dur + 0.01); };
+    if (ch === 'k') hit('sine', 150, 42, 0.14, 0.5);
+    else if (ch === 's') { hit('triangle', 200, 120, 0.08, 0.18); hiss(0.12, 0.22, false); }
+    else if (ch === 'h') hiss(0.04, 0.10, true);
+    else if (ch === 't') hit('sine', 120, 70, 0.22, 0.35);
+    else if (ch === 'T') { hit('sine', 95, 48, 0.42, 0.65); hit('triangle', 60, 40, 0.3, 0.2); hiss(0.05, 0.08, false); }
+  };
+  const tick = () => {
+    if (!current || !ctx) return;
+    const T = TRACKS[current], stepDur = 60 / T.bpm / 4;
+    while (nextT < ctx.currentTime + 0.35) {
+      const t = nextT + ((step % 2) ? T.swing * stepDur : 0);
+      T.channels.forEach(c => { const at = step % c.parsed.length;
+        c.parsed.events.forEach(e => { if (e.at === at) tone(c.type, e.f, t, e.len * stepDur * 0.95, c.gain * T.vol, c.decay, c.vib || 0, trackGain); }); });
+      if (T.drums.length) { const ch = T.drums[step % T.drums.length]; if (ch !== '-') drum(ch, t, trackGain); }
+      step++; nextT += stepDur;
+    }
+  };
+  for (const k in TRACKS) TRACKS[k].channels.forEach(c => { c.parsed = parse(c.seq); });
+  return {
+    play(name) {
+      if (!TRACKS[name] || !ready()) return;
+      if (current === name) return;
+      this.stop(true);
+      current = name; step = 0; nextT = ctx.currentTime + 0.08;
+      trackGain = ctx.createGain(); trackGain.gain.value = 1; trackGain.connect(bus);
+      tick(); timer = setInterval(tick, 80);
+    },
+    stop(quick) {
+      if (timer) { clearInterval(timer); timer = null; }
+      if (trackGain && ctx) { const g = trackGain, t = ctx.currentTime; g.gain.setValueAtTime(g.gain.value, t);
+        g.gain.linearRampToValueAtTime(0.0001, t + (quick ? 0.12 : 0.6)); setTimeout(() => { try { g.disconnect(); } catch (e) {} }, 800); }
+      trackGain = null; current = null;
+    },
+    setVolume(v) { vol = Math.max(0, Math.min(1, v)); if (bus) bus.gain.value = vol * (ducked ? 0.3 : 1); },
+    duck(on) { ducked = !!on; if (bus) bus.gain.value = vol * (ducked ? 0.3 : 1); },
+    playing() { return current; },
+    tracks() { return Object.keys(TRACKS); },
+  };
+})();
+
 /* ─────────────────────────── scene ─────────────────────────── */
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x07070c);
@@ -552,7 +658,7 @@ addEventListener('resize', () => { if (renderer.xr.isPresenting) return;
   camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight); });
 
-scene.add(new THREE.HemisphereLight(0x8890b0, 0x0a0a10, 0.6));
+const hemiLight = new THREE.HemisphereLight(0x8890b0, 0x0a0a10, 0.6); hemiLight.name = 'HemiLight'; scene.add(hemiLight);
 const keyLight = new THREE.DirectionalLight(0xfff2d0, 0.5); keyLight.name = 'KeyLight';
 keyLight.position.set(2, 4, 1); scene.add(keyLight);
 
@@ -1543,11 +1649,15 @@ function discTick(D, dt) {
 function applyProgram() {
   const v = game.program === 'velocity', c = game.program === 'calisthenics';
   court.visible = v;
-  remote.g.visible = !v && !c;
-  if (typeof calisProps !== 'undefined') calisProps.visible = c;
+  remote.g.visible = !v && !c && remote.state !== 'dead';
+  if (typeof calisProps !== 'undefined') {
+    const world = typeof calisWorldName === 'function' ? calisWorldName() : 'arena';
+    calisProps.visible = c && world === 'arena'; calisArena.visible = c && world === 'arena'; calisQonos.visible = c && world === 'qonos';
+    stage.visible = !c;                                   // the ruins have no stage ring
+  }
   VEL.discs.forEach(D => { D.mesh.visible = v && D.live; });
-  if (scene.fog) { scene.fog.density = v ? 0.028 : c ? 0.045 : 0.055; scene.fog.color.setHex(c ? 0x120d09 : 0x07070c); }
-  scene.background.setHex(c ? 0x120d09 : 0x07070c);
+  if (typeof applyLighting === 'function') applyLighting();
+  else if (scene.fog) { scene.fog.density = v ? 0.028 : 0.055; }
 }
 
 /* ───────────────────── game state ───────────────────── */
@@ -1823,10 +1933,10 @@ function drawHUD() {
 }
 /* The VR pause card — spawns 1.7 m down your gaze, whichever way you're facing. */
 const pausePanel = (() => {
-  const cv = document.createElement('canvas'); cv.width = 768; cv.height = 384;
+  const cv = document.createElement('canvas'); cv.width = 768; cv.height = 700;
   const tex = new THREE.CanvasTexture(cv);
   const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true }); mat.name = 'Mat_PauseCard';
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 0.575), mat);
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 1.048), mat);
   mesh.name = 'PauseMenu'; mesh.visible = false; scene.add(mesh);
   return { cv, ctx: cv.getContext('2d'), tex, mesh };
 })();
@@ -1854,29 +1964,73 @@ const holoArch = (() => {
 })();
 
 const _pfwd = new THREE.Vector3(), _phead = new THREE.Vector3();
+/* The pause menu's rows: every dial the page has, reachable in the headset. Stick up and
+   down picks a row, left and right turns it; it applies as you go and is saved. */
+const pct = v => v === 0 ? 'MUTED' : Math.round(v * 100) + '%';
+const PAUSE_ROWS = [
+  { key: 'phaserVol',  label: 'PHASER VOLUME',  min: 0,    max: 1,    step: 0.05, fmt: pct, preview: () => AudioKit.phaserBolt() },
+  { key: 'musicVol',   label: 'MUSIC',          min: 0,    max: 1,    step: 0.05, fmt: pct },
+  { key: 'calisWorld', label: 'CALISTHENICS WORLD', list: [['arena', 'HIGH NOON ARENA'], ['qonos', "QO'NOS · LAVA"]] },
+  { key: 'telegraph',  label: 'TELEGRAPH',      min: 0.35, max: 0.8,  step: 0.05, fmt: v => v.toFixed(2) + ' S' },
+  { key: 'agility',    label: 'REMOTE',         min: 0.6,  max: 2,    step: 0.1,  fmt: v => '×' + v.toFixed(1) },
+  { key: 'targetHP',   label: 'TARGET CHARGE',  min: 1,    max: 6,    step: 1,    fmt: v => v + (v === 1 ? ' HIT' : ' HITS') },
+  { key: 'fleeSpeed',  label: 'TARGET NERVE',   min: 0,    max: 6,    step: 0.2,  fmt: v => v === 0 ? 'HOLDS STILL' : v.toFixed(1) + ' M/S' },
+  { key: 'targetScale',label: 'TARGET SIZE',    min: 0.5,  max: 1.25, step: 0.05, fmt: v => '×' + v.toFixed(2) },
+  { key: 'assist',     label: 'BOLT ASSIST',    min: 0,    max: 6,    step: 0.5,  fmt: v => v === 0 ? 'OFF' : v.toFixed(1) + '°' },
+  { key: 'beamSweep',  label: 'BEAM WIDTH',     min: 0.02, max: 0.4,  step: 0.02, fmt: v => Math.round(v * 100) + ' CM' },
+  { key: 'brightness', label: 'BEAM BRIGHTNESS',min: 0.3,  max: 1,    step: 0.05, fmt: v => Math.round(v * 100) + '%' },
+  { key: 'discSpeed',  label: 'SERVE SPEED',    min: 1.5,  max: 6,    step: 0.25, fmt: v => v.toFixed(2) + ' M/S' },
+  { key: 'courtSize',  label: 'COURT SIZE',     min: 2.5,  max: 5.6,  step: 0.1,  fmt: v => '±' + v.toFixed(1) + ' M' },
+  { key: 'refresh',    label: 'REFRESH',        list: [['auto', 'HEADSET DEFAULT'], ['60', '60 HZ'], ['72', '72 HZ'], ['80', '80 HZ'], ['90', '90 HZ'], ['120', '120 HZ']] },
+];
+const PAUSE_VISIBLE = 8;
+const pauseMenu = { row: 0, top: 0 };
+function pauseMove(dir) {
+  const n = PAUSE_ROWS.length; pauseMenu.row = (pauseMenu.row + dir + n) % n;
+  if (pauseMenu.row < pauseMenu.top) pauseMenu.top = pauseMenu.row;
+  if (pauseMenu.row >= pauseMenu.top + PAUSE_VISIBLE) pauseMenu.top = pauseMenu.row - PAUSE_VISIBLE + 1;
+  AudioKit.chip(); drawPauseCard();
+}
+function pauseAdjust(dir) {
+  const r = PAUSE_ROWS[pauseMenu.row];
+  if (r.list) { const k = Math.max(0, r.list.findIndex(o => o[0] === String(SETTINGS[r.key])));
+    SETTINGS[r.key] = r.list[(k + dir + r.list.length) % r.list.length][0]; }
+  else { const v = Math.round((Number(SETTINGS[r.key]) + dir * r.step) / r.step) * r.step;
+    SETTINGS[r.key] = Math.max(r.min, Math.min(r.max, Math.round(v * 1000) / 1000)); }
+  applySettings(); saveSettings(); syncSettingsUI();
+  if (r.key === 'refresh') applyRefresh();
+  if (r.key === 'calisWorld') applyProgram();
+  if (r.preview) r.preview(); else AudioKit.ackBeep();
+  drawPauseCard();
+}
+function pauseRowValue(r) { if (r.list) { const o = r.list.find(o => o[0] === String(SETTINGS[r.key])); return o ? o[1] : String(SETTINGS[r.key]); } return r.fmt(Number(SETTINGS[r.key])); }
 function drawPauseCard() {
   const c = pausePanel.ctx, W = pausePanel.cv.width, H = pausePanel.cv.height;
   c.clearRect(0, 0, W, H);
   c.fillStyle = 'rgba(12,12,19,0.94)'; roundRect(c, 0, 0, W, H, 34); c.fill();
   c.fillStyle = '#ff9c00'; roundRect(c, 22, 22, 46, H - 44, 22); c.fill();
   const dsp = (px, w) => (w || 600) + ' ' + px + 'px Antonio, "Arial Narrow", sans-serif';
-  c.textBaseline = 'top';
-  c.fillStyle = '#f2c14e'; c.font = dsp(56, 700); c.fillText('PROGRAM SUSPENDED', 110, 40);
-  c.fillStyle = '#e8e4d8'; c.font = dsp(34, 400);
-  c.fillText('TRIGGER — RESUME', 110, 128);
-  c.fillText('A / X (FRESH PRESS) — BACK TO THE LOBBY', 110, 174);
-  // phaser volume, adjustable right here with the stick
-  const vol = AudioKit.getPhaserVolume();
-  c.fillStyle = '#cc99cc'; c.font = dsp(30, 400);
-  c.fillText('◄ STICK ►   PHASER VOLUME', 110, 244);
-  const bx = 110, by = 288, bw = 420, bh = 22;
-  c.fillStyle = '#232330'; roundRect(c, bx, by, bw, bh, 11); c.fill();
-  if (vol > 0) { c.fillStyle = '#f2c14e'; roundRect(c, bx, by, Math.max(bh, bw * vol), bh, 11); c.fill(); }
-  c.fillStyle = '#f2c14e'; c.font = dsp(34, 600);
-  c.fillText(vol === 0 ? 'MUTED' : Math.round(vol * 100) + '%', bx + bw + 20, by - 6);
-  c.fillStyle = '#8d8a7b'; c.font = dsp(28, 400);
-  c.fillText('SCORE ' + game.score + '   ·   ' +
-    (game.program === 'velocity' ? 'STRIKES ' + game.strikes : waveLabel(game.program) + ' ' + game.wave), 110, 330);
+  c.textBaseline = 'top'; c.textAlign = 'left';
+  c.fillStyle = '#f2c14e'; c.font = dsp(52, 700); c.fillText('PROGRAM SUSPENDED', 110, 34);
+  c.fillStyle = '#e8e4d8'; c.font = dsp(28, 400);
+  c.fillText('TRIGGER — RESUME     A / X — BACK TO THE LOBBY', 110, 100);
+  c.fillStyle = '#8d8a7b'; c.fillText('STICK ▲ ▼ PICKS A SETTING · ◄ ► TURNS IT', 110, 136);
+  const y0 = 188, rowH = 56;
+  for (let k = 0; k < PAUSE_VISIBLE; k++) {
+    const idx = pauseMenu.top + k; if (idx >= PAUSE_ROWS.length) break;
+    const r = PAUSE_ROWS[idx], y = y0 + k * rowH, on = idx === pauseMenu.row;
+    if (on) { c.fillStyle = 'rgba(255,156,0,0.16)'; roundRect(c, 96, y - 8, W - 130, rowH - 6, 14); c.fill();
+      c.fillStyle = '#ff9c00'; roundRect(c, 96, y - 8, 8, rowH - 6, 4); c.fill(); }
+    c.fillStyle = on ? '#f2c14e' : '#cc99cc'; c.font = dsp(28, on ? 600 : 400); c.fillText(r.label, 122, y);
+    c.textAlign = 'right'; c.fillStyle = on ? '#fff3d6' : '#e8e4d8'; c.font = dsp(30, 600); c.fillText(pauseRowValue(r), W - 46, y - 2); c.textAlign = 'left';
+    if (!r.list) { const f = (Number(SETTINGS[r.key]) - r.min) / (r.max - r.min), bx = 122, by = y + 36, bw = W - 46 - bx;
+      c.fillStyle = '#232330'; roundRect(c, bx, by, bw, 6, 3); c.fill();
+      c.fillStyle = on ? '#f2c14e' : '#8d8a7b'; roundRect(c, bx, by, Math.max(6, bw * Math.max(0, Math.min(1, f))), 6, 3); c.fill(); }
+  }
+  if (pauseMenu.top + PAUSE_VISIBLE < PAUSE_ROWS.length) { c.fillStyle = '#8d8a7b'; c.font = dsp(24, 400); c.fillText('▼ MORE', 122, y0 + PAUSE_VISIBLE * rowH - 4); }
+  c.fillStyle = '#8d8a7b'; c.font = dsp(26, 400); c.textAlign = 'right';
+  c.fillText('SCORE ' + game.score + '   ·   ' + (game.program === 'velocity' ? 'STRIKES ' + game.strikes : waveLabel(game.program) + ' ' + game.wave), W - 46, H - 52);
+  c.textAlign = 'left';
   pausePanel.tex.needsUpdate = true;
 }
 function showPausePanel() {
@@ -1930,18 +2084,28 @@ function setPause(on) {
     AudioKit.chargeStop();
     activePhasers.forEach(p => { p.userData.holding = false; p.userData.beaming = false; p.userData.charge = 0; });
     setPhaserVol(SETTINGS.phaserVol, true);                    // sync both controls, silently
-    if (game.mode === 'desk') { pauseEl.hidden = false; try { document.exitPointerLock(); } catch (e) {} }
+    if (game.mode === 'desk') { pauseEl.hidden = false; settingsIntoPause(true); try { document.exitPointerLock(); } catch (e) {} }
     else showPausePanel();                                   // in VR the card appears down your gaze
+    Music.duck(true);
     AudioKit.pauseTone();
   } else {
-    pauseEl.hidden = true;
+    pauseEl.hidden = true; settingsIntoPause(false);
     pausePanel.mesh.visible = false;
     if (game.mode === 'desk') lockPointer(renderer.domElement);
+    Music.duck(false);
     AudioKit.resumeTone();
   }
   hudDirty = true; drawHUD();
 }
 function togglePause() { setPause(!game.paused); }
+/* On the desktop the pause card borrows the page's settings panel while the program is held. */
+let settingsHome = null, settingsNext = null, settingsWasOpen = false;
+function settingsIntoPause(on) {
+  const el = document.getElementById('settings'), card = document.querySelector('.pausecard'); if (!el || !card) return;
+  if (on) { if (!settingsHome) { settingsHome = el.parentNode; settingsNext = el.nextSibling; settingsWasOpen = !el.hidden; }
+    card.insertBefore(el, card.querySelector('.footnote')); el.hidden = false; card.classList.add('wide'); }
+  else if (settingsHome) { settingsHome.insertBefore(el, settingsNext); el.hidden = !settingsWasOpen; card.classList.remove('wide'); settingsHome = null; }
+}
 /* Phaser volume, settable from the pause menu on either platform. */
 function setPhaserVol(v, quiet) {
   SETTINGS.phaserVol = Math.max(0, Math.min(1, Math.round(v * 20) / 20));
@@ -1969,6 +2133,7 @@ function quitToMenu() {
   while (VEL.discs.length > 1) { const gone = VEL.discs.pop(); scene.remove(gone.mesh); }
   VEL.discs[0].live = false; VEL.discs[0].mesh.visible = false;
   parkRemote(); recallLoose(false); warriorHide();
+  Music.play('lobby');
   if (game.mode === 'desk') { playerRig.position.set(0, 0, 0); lockPointer(renderer.domElement); }
   applyProgram(); drawTableConsole();
   flashGrid(0.35); AudioKit.ackBeep(); hudDirty = true;
@@ -1976,7 +2141,7 @@ function quitToMenu() {
 }
 /* All the way out: end the headset session (desktop: back to the page). */
 function leaveHolodeck() {
-  saveGame();
+  saveGame(); Music.stop();
   game.paused = false; game.running = false; game.over = false; game.phase = 'idle';
   AudioKit.beamStop(); AudioKit.chargeStop(); AudioKit.humStop();
   pauseEl.hidden = true; pausePanel.mesh.visible = false;
@@ -2536,6 +2701,28 @@ const CALIS = {
 };
 const KLINGON_WEAPONS = ['batleth', 'dktahg', 'disruptor'];
 function weaponAllowed(w) { return game.program !== 'calisthenics' || !!w.userData.def.klingon; }
+/* the warrior's kit: a d'k tahg on each hip, the bat'leth over the left shoulder, and no sash —
+   the sheaths are emptied onto the table. Whatever Klingon arm is already in a hand stays there. */
+function calisLoadout() {
+  const hipL = HOLSTERS.findIndex(h => h.id === 'hipL'), hipR = HOLSTERS.findIndex(h => h.id === 'hipR'), backL = HOLSTERS.findIndex(h => h.id === 'backL');
+  HOLSTERS.forEach((h, k) => { if (h.accepts === 'dktahg') { const w = holsterOccupant(k); if (w) returnToTable(w); } });
+  const freeKnife = () => instancesOf('dktahg').find(w => w.userData.holder === 'table');
+  [hipL, hipR].forEach(k => {
+    const occ = holsterOccupant(k);
+    if (occ && occ.userData.def.id === 'dktahg') return;
+    if (occ) returnToTable(occ);
+    const kn = freeKnife(); if (kn) stowIn(kn, k);
+  });
+  const b = arms.batleth;
+  if (!b.userData.holder.startsWith('hand')) {
+    if (b.userData.holder !== 'holster' + backL) {
+      const occ = holsterOccupant(backL); if (occ && occ !== b) returnToTable(occ);
+      if (b.userData.holder.startsWith('holster')) b.userData.holder = 'table';
+      stowIn(b, backL);
+    }
+  }
+  refreshHeld(); toast("ARMED · D'K TAHG ON EACH HIP · BAT'LETH ON THE BACK");
+}
 /* the ruins: six broken columns in the dark, warmer fog */
 const calisProps = new THREE.Group(); calisProps.name = 'CalisthenicsRuins'; calisProps.visible = false; scene.add(calisProps);
 {
@@ -2549,6 +2736,105 @@ const calisProps = new THREE.Group(); calisProps.name = 'CalisthenicsRuins'; cal
     cap.name = 'RuinCap' + (k + 1); cap.position.set(Math.cos(a) * r, h + 0.09, Math.sin(a) * r); cap.rotation.y = a + 0.2; calisProps.add(cap);
     const rubble = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.3, 0.45), stone);
     rubble.name = 'Rubble' + (k + 1); rubble.position.set(Math.cos(a + 0.35) * (r - 0.6), 0.15, Math.sin(a + 0.35) * (r - 0.6)); rubble.rotation.y = a * 1.7; calisProps.add(rubble);
+  }
+}
+/* Two worlds for the program. THE ARENA, HIGH NOON: the same ruins, run out to the horizon
+   with no holodeck wall, under a hard sun straight overhead. QO'NOS: a volcanic night — stars,
+   the green moon, cones burning on the horizon, and pools of lava round the fight that carry
+   the only warm light. Both are static and cheap: a few dozen boxes and cones, one ground disc.
+   (parts named, materials named & colored) */
+const calisArena = new THREE.Group(); calisArena.name = 'ArenaHighNoon'; calisArena.visible = false; scene.add(calisArena);
+const calisQonos = new THREE.Group(); calisQonos.name = 'QonosNight'; calisQonos.visible = false; scene.add(calisQonos);
+const lavaLights = [];
+{
+  const rnd = (seed => () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; })(7);   // the same ruins every time
+  // — the arena —
+  const sand  = new THREE.MeshStandardMaterial({ color: 0x9a8560, metalness: 0.0, roughness: 1.0 }); sand.name = 'Mat_ArenaSand';
+  const stone = new THREE.MeshStandardMaterial({ color: 0x6d5a45, metalness: 0.05, roughness: 0.95 }); stone.name = 'Mat_ArenaStone';
+  const dark  = new THREE.MeshStandardMaterial({ color: 0x3a2f24, metalness: 0.05, roughness: 1.0 });  dark.name  = 'Mat_ArenaShadowStone';
+  const ground = new THREE.Mesh(new THREE.CircleGeometry(80, 48), sand); ground.name = 'ArenaGround'; ground.rotation.x = -Math.PI / 2; ground.position.y = -0.01; calisArena.add(ground);
+  let n = 0;
+  [[7, 10], [11, 14], [16, 18], [24, 22], [34, 26]].forEach(([r, count], ring) => {
+    for (let k = 0; k < count; k++) {
+      const a = k / count * Math.PI * 2 + rnd() * 0.5, rr = r + (rnd() - 0.5) * 2.5, h = 2.2 + rnd() * 3.5 + ring * 0.6;
+      const fallen = rnd() < 0.22;
+      const col = new THREE.Mesh(new THREE.BoxGeometry(0.55 + ring * 0.08, h, 0.55 + ring * 0.08), ring > 2 ? dark : stone);
+      col.name = 'ArenaColumn' + (++n);
+      if (fallen) { col.position.set(Math.cos(a) * rr, 0.3, Math.sin(a) * rr); col.rotation.set(0, a, Math.PI / 2 - 0.1); }
+      else { col.position.set(Math.cos(a) * rr, h / 2, Math.sin(a) * rr); col.rotation.y = a; }
+      calisArena.add(col);
+      if (!fallen && rnd() < 0.5) { const cap = new THREE.Mesh(new THREE.BoxGeometry(0.8 + ring * 0.1, 0.2, 0.8 + ring * 0.1), stone);
+        cap.name = 'ArenaCap' + n; cap.position.set(Math.cos(a) * rr, h + 0.1, Math.sin(a) * rr); cap.rotation.y = a + 0.2; calisArena.add(cap); }
+    }
+  });
+  for (let k = 0; k < 18; k++) {                                   // broken walls and rubble
+    const a = rnd() * Math.PI * 2, r = 9 + rnd() * 24, w = 2 + rnd() * 4, h = 0.8 + rnd() * 1.6;
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.5), k % 3 ? stone : dark);
+    wall.name = 'ArenaWall' + (k + 1); wall.position.set(Math.cos(a) * r, h / 2, Math.sin(a) * r); wall.rotation.y = a + Math.PI / 2 + (rnd() - 0.5); calisArena.add(wall);
+  }
+  // — Qo'noS —
+  const basalt = new THREE.MeshStandardMaterial({ color: 0x17120f, metalness: 0.1, roughness: 1.0 }); basalt.name = 'Mat_Basalt';
+  const rock   = new THREE.MeshStandardMaterial({ color: 0x241b16, metalness: 0.1, roughness: 0.95 }); rock.name = 'Mat_VolcanicRock';
+  const lava   = new THREE.MeshBasicMaterial({ color: 0xff6a1a }); lava.name = 'Mat_Lava';
+  const lavaGlow = new THREE.MeshBasicMaterial({ color: 0xff3a00, transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending }); lavaGlow.name = 'Mat_LavaGlow';
+  const qground = new THREE.Mesh(new THREE.CircleGeometry(80, 48), basalt); qground.name = 'QonosGround'; qground.rotation.x = -Math.PI / 2; qground.position.y = -0.01; calisQonos.add(qground);
+  for (let k = 0; k < 6; k++) {                                    // volcanoes on the horizon
+    const a = k / 6 * Math.PI * 2 + 0.4 + rnd() * 0.4, r = 32 + rnd() * 14, R = 9 + rnd() * 6, H = 10 + rnd() * 7;
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(R, H, 7), rock); cone.name = 'Volcano' + (k + 1);
+    cone.position.set(Math.cos(a) * r, H / 2 - 0.5, Math.sin(a) * r); cone.rotation.y = rnd() * 6; calisQonos.add(cone);
+    const crater = new THREE.Mesh(new THREE.ConeGeometry(R * 0.28, H * 0.22, 7), lava); crater.name = 'VolcanoCrater' + (k + 1);
+    crater.position.set(cone.position.x, H - 0.6, cone.position.z); calisQonos.add(crater);
+    const halo = new THREE.Mesh(new THREE.SphereGeometry(R * 0.5, 10, 8), lavaGlow); halo.name = 'VolcanoGlow' + (k + 1);
+    halo.position.set(cone.position.x, H - 0.2, cone.position.z); calisQonos.add(halo);
+    for (let j = 0; j < 2; j++) {                                  // lava streaks down the slopes
+      const ang = rnd() * Math.PI * 2, streak = new THREE.Mesh(new THREE.BoxGeometry(0.5, H * 0.75, 0.15), lava);
+      streak.name = 'LavaStreak' + (k + 1) + '_' + (j + 1);
+      streak.position.set(cone.position.x + Math.cos(ang) * R * 0.45, H * 0.5, cone.position.z + Math.sin(ang) * R * 0.45);
+      streak.rotation.set(0, -ang + Math.PI / 2, Math.atan2(R, H) * (Math.cos(ang) > 0 ? -1 : 1) * 0 + 0); streak.lookAt(cone.position.x, H, cone.position.z); streak.rotateX(Math.PI / 2 - Math.atan2(H, R)); calisQonos.add(streak);
+    }
+  }
+  [[5.5, 0.3], [7.5, 1.6], [6.5, 2.9], [8.5, 4.1], [7.0, 5.3]].forEach(([r, a], k) => {   // pools of lava round the fight
+    const R = 1.6 + rnd() * 1.2;
+    const pool = new THREE.Mesh(new THREE.CircleGeometry(R, 18), lava); pool.name = 'LavaPool' + (k + 1);
+    pool.rotation.x = -Math.PI / 2; pool.position.set(Math.cos(a) * r, 0.005, Math.sin(a) * r); calisQonos.add(pool);
+    const rim = new THREE.Mesh(new THREE.RingGeometry(R, R * 1.35, 18), lavaGlow); rim.name = 'LavaPoolGlow' + (k + 1);
+    rim.rotation.x = -Math.PI / 2; rim.position.set(pool.position.x, 0.008, pool.position.z); calisQonos.add(rim);
+    const light = new THREE.PointLight(0xff7a2a, 1.5, 12); light.name = 'LavaLight' + (k + 1);
+    light.position.set(pool.position.x, 0.6, pool.position.z); calisQonos.add(light); lavaLights.push({ light, phase: k * 1.7 });
+  });
+  for (let k = 0; k < 14; k++) {                                   // jagged rock
+    const a = rnd() * Math.PI * 2, r = 3.5 + rnd() * 9, w = 0.5 + rnd() * 1.4;
+    const rk = new THREE.Mesh(new THREE.BoxGeometry(w, w * (0.6 + rnd()), w * 0.8), rock); rk.name = 'VolcanicRock' + (k + 1);
+    rk.position.set(Math.cos(a) * r, w * 0.3, Math.sin(a) * r); rk.rotation.set(rnd() * 0.5, rnd() * 6, rnd() * 0.5); calisQonos.add(rk);
+  }
+  const moonMat = new THREE.MeshBasicMaterial({ color: 0x8fe89a }); moonMat.name = 'Mat_GreenMoon';
+  const moon = new THREE.Mesh(new THREE.SphereGeometry(5, 20, 14), moonMat); moon.name = 'GreenMoon'; moon.position.set(26, 36, -52); calisQonos.add(moon);
+  const mariaMat = new THREE.MeshBasicMaterial({ color: 0x5aa866 }); mariaMat.name = 'Mat_MoonMaria';
+  [[1.8, 1.2, 4.2], [-1.5, -1.6, 4.6], [0.6, 2.9, 3.9]].forEach(([x, y, z], k) => {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(1.1 + k * 0.3, 10, 8), mariaMat); m.name = 'MoonMaria' + (k + 1);
+    m.position.set(moon.position.x + x, moon.position.y + y, moon.position.z + z); calisQonos.add(m); });
+  const starGeo = new THREE.BufferGeometry(); const starPos = new Float32Array(700 * 3);
+  for (let k = 0; k < 700; k++) { const u = rnd() * Math.PI * 2, v = 0.08 + rnd() * 0.9, rr = 78;
+    starPos[k * 3] = Math.cos(u) * Math.cos(v) * rr; starPos[k * 3 + 1] = Math.sin(v) * rr; starPos[k * 3 + 2] = Math.sin(u) * Math.cos(v) * rr; }
+  starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+  const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xdfe8ff, size: 2.2, sizeAttenuation: false })); stars.name = 'Stars'; stars.material.name = 'Mat_Stars'; calisQonos.add(stars);
+}
+function calisWorldName() { return SETTINGS.calisWorld === 'qonos' ? 'qonos' : 'arena'; }
+/* the scene's lighting for the program in hand */
+function applyLighting() {
+  const c = game.program === 'calisthenics', world = calisWorldName();
+  if (c && world === 'arena') {
+    scene.background.setHex(0x9ec8ff); scene.fog.color.setHex(0xd6ccb4); scene.fog.density = 0.011;
+    hemiLight.color.setHex(0xdfe8ff); hemiLight.groundColor.setHex(0x8a7a5a); hemiLight.intensity = 0.95;
+    keyLight.color.setHex(0xfff4dc); keyLight.intensity = 1.35; keyLight.position.set(1.5, 10, 0.8);
+  } else if (c) {
+    scene.background.setHex(0x05060c); scene.fog.color.setHex(0x1a0805); scene.fog.density = 0.02;
+    hemiLight.color.setHex(0x1b2c22); hemiLight.groundColor.setHex(0x3a1206); hemiLight.intensity = 0.45;
+    keyLight.color.setHex(0x6fbf80); keyLight.intensity = 0.28; keyLight.position.set(-5, 7, -9);
+  } else {
+    scene.background.setHex(0x07070c); scene.fog.color.setHex(0x07070c); scene.fog.density = game.program === 'velocity' ? 0.028 : 0.055;
+    hemiLight.color.setHex(0x8890b0); hemiLight.groundColor.setHex(0x0a0a10); hemiLight.intensity = 0.6;
+    keyLight.color.setHex(0xfff2d0); keyLight.intensity = 0.5; keyLight.position.set(2, 4, 1);
   }
 }
 const warrior = { rig: null, blade: null, pos: new THREE.Vector3(0, 0, -3.4), yaw: 0, state: 'off', timer: 0, hp: CALIS.hp,
@@ -2736,7 +3022,10 @@ function warriorCenter(out) { return warriorFrame.local(0, 1.2, 0, out); }
 const EMPTY_HAND = { userData: { isEmpty: true, label: 'NO WEAPON' } };
 function heldBy(i) { for (const w of ARMS) if (w.userData.holder === 'hand' + i) return w; return null; }
 function holsterOccupant(k) { for (const w of ARMS) if (w.userData.holder === 'holster' + k) return w; return null; }
-function holsterAccepts(h, w) { return !h.accepts || (!!w && w.userData.def.id === h.accepts); }
+function holsterAccepts(h, w) {
+  if (h.accepts === 'dktahg' && game.program === 'calisthenics') return false;   // no sash in the ruins
+  return !h.accepts || (!!w && w.userData.def.id === h.accepts);
+}
 function handWeapon(hand) { return (hand && hand.held) || EMPTY_HAND; }
 function handOf(i) { return i === 2 ? desk.hand : hands[i]; }
 function refreshHeld() { hands.forEach((h, i) => h.held = heldBy(i)); if (desk.hand) desk.hand.held = heldBy(2); }
@@ -3056,9 +3345,10 @@ function surfaceDepth(p, clearance, n) {
     d = -Z - p.z; if (d > depth) { depth = d; n.set(0, 0,  1); }
     d = p.y - Y;  if (d > depth) { depth = d; n.set(0, -1, 0); }
   } else {
-    const R = TUNE.arenaRMax + 1.2, r = Math.hypot(p.x, p.z);        // the holodeck wall, out in the dark
+    const open = game.program === 'calisthenics';                       // the ruins run out to the horizon
+    const R = open ? 60 : TUNE.arenaRMax + 1.2, r = Math.hypot(p.x, p.z);   // else the holodeck wall, out in the dark
     let d = r - R; if (d > depth && r > 1e-6) { depth = d; n.set(-p.x / r, 0, -p.z / r); }
-    d = p.y - 4.9; if (d > depth) { depth = d; n.set(0, -1, 0); }     // and its ceiling
+    d = p.y - (open ? 60 : 4.9); if (d > depth) { depth = d; n.set(0, -1, 0); }     // and its ceiling
   }
   return depth;
 }
@@ -3343,7 +3633,7 @@ function loadoutTick(dt) {
   const selecting = game.phase === 'select';
   stageTable.visible = selecting; wardrobe.g.visible = selecting;
   holoArch.visible = selecting || game.paused;
-  sash.visible = game.mode === 'vr';
+  sash.visible = game.mode === 'vr' && game.program !== 'calisthenics';
   HOLSTERS.forEach(h => { if (h.ring) h.ring.visible = selecting || !!game.running; });
 
   for (const w of ARMS) {
@@ -3463,11 +3753,13 @@ function beginDrill() {
     lines.forEach(L => { if (L.latched && !weaponAllowed(L.latched)) releaseLine(L.i); });
     if (sent) toast('KLINGON WEAPONS ONLY · ' + sent + ' RETURNED TO THE TABLE');
     if (AVATAR.affiliation !== 'empire') setAvatarOption('affiliation', 'empire');
+    calisLoadout();
   }
   game.phase = 'playing';
   stageTable.visible = false;
   AudioKit.ackBeep(); flashGrid(0.5);
   resetGame();
+  Music.play(game.program);
   toast('PROGRAM RUNNING');
 }
 
@@ -3577,9 +3869,12 @@ function pollHandButtons() {
       if (upper && !hand.prevUpper) togglePause();
       hand.lowerT = 0; hand.lowerFired = true;
       const pAxP = hand.prevAx === undefined ? 0 : hand.prevAx;
-      if (ax > 0.6 && pAxP <= 0.6) setPhaserVol(SETTINGS.phaserVol + 0.05);
-      if (ax < -0.6 && pAxP >= -0.6) setPhaserVol(SETTINGS.phaserVol - 0.05);
-      hand.prevAx = ax;
+      const ayP = (gp.axes && gp.axes.length > 3) ? gp.axes[3] : 0, pAyP = hand.prevAy === undefined ? 0 : hand.prevAy;
+      if (ax > 0.6 && pAxP <= 0.6) pauseAdjust(1);
+      if (ax < -0.6 && pAxP >= -0.6) pauseAdjust(-1);
+      if (ayP < -0.6 && pAyP >= -0.6) pauseMove(-1);       // stick forward: up the list
+      if (ayP > 0.6 && pAyP <= 0.6) pauseMove(1);
+      hand.prevAx = ax; hand.prevAy = ayP;
     } else {
       // A/X: hold 0.6 s calls the pause (a tap does nothing — the grip is the whole inventory)
       if (lower && !hand.prevLower) { hand.lowerT = perf; hand.lowerFired = false; }
@@ -3757,7 +4052,7 @@ function deskTick(dt) {
    The dials worth arguing about live here, not in the code. Saved per browser. */
 const DEFAULTS = { telegraph: 0.55, assist: 2.5, targetScale: 0.75, agility: 1.0, brightness: 0.72,
                    targetHP: 3, fleeSpeed: 3.4, discSpeed: 3.0, courtSize: 3.4, phaserVol: 0.45,
-                   beamSweep: 0.10, refresh: 'auto', v: 2 };
+                   beamSweep: 0.10, refresh: 'auto', musicVol: 0.35, calisWorld: 'arena', v: 2 };
 const SETTINGS = JSON.parse(JSON.stringify(DEFAULTS));
 function loadSettings() {
   try {
@@ -3795,6 +4090,7 @@ function applySettings() {
   TUNE.courtX = TUNE.courtZ = SETTINGS.courtSize;
   rebuildCourtGrid();
   AudioKit.setPhaserVolume(SETTINGS.phaserVol);
+  Music.setVolume(SETTINGS.musicVol === undefined ? 0.35 : SETTINGS.musicVol);
   targets.forEach(t => { t.userData.hpMax = TUNE.targetHP;
     t.userData.hp = Math.min(t.userData.hp, TUNE.targetHP); });
 }
@@ -4014,6 +4310,7 @@ function startProgram(mode) {
   game.phase = 'select';
   game.running = false; game.over = false; game.paused = false;
   parkRemote(); drawTableConsole(); retractAllLines(); warriorHide();
+  Music.play('lobby');
   applyProgram();
   flashGrid(0.35); AudioKit.ackBeep();
   toast('THE LOBBY · ARM YOURSELF FROM THE TABLE · TRIGGER ON A PAD');
@@ -4049,11 +4346,12 @@ function endProgram() {
   const record = recordRun(game.program, game.score, game.wave);
   clearSave();
   AudioKit.endChime(); flashGrid(0.7); hudDirty = true;
+  Music.stop(); setTimeout(() => { if (game.over) Music.play('lobby'); }, 1500);
   toast(record ? 'NEW RECORD — SCORE ' + game.score : 'PROGRAM COMPLETE — SCORE ' + game.score);
   if (record) setTimeout(() => AudioKit.ackBeep(), 500);
   updateDomRecord();
 }
-function tryRestart() { if (game.over && gt - endedAt > 1.5) { resetGame(); flashGrid(0.4); AudioKit.ackBeep(); toast('PROGRAM RESTARTED'); } }
+function tryRestart() { if (game.over && gt - endedAt > 1.5) { resetGame(); flashGrid(0.4); AudioKit.ackBeep(); Music.play(game.program); toast('PROGRAM RESTARTED'); } }
 
 /* ═══════════════ the record: saved games and high scores ═══════════════
    A running program is snapshotted every few seconds and whenever you pause,
@@ -4190,7 +4488,7 @@ btnVR.addEventListener('click', async () => {
     startProgram('vr');
     applyRefresh();
     session.addEventListener('end', () => {
-      saveGame();
+      saveGame(); Music.stop();
       game.running = false; game.phase = 'idle'; game.mode = null; AudioKit.humStop(); AudioKit.beamStop();
       lobbyEl.style.display = 'flex'; hudEl.style.display = 'none';
       playerRig.position.set(0, 0, 0); camera.position.set(0, 1.6, 0); camera.rotation.set(0, 0, 0);
@@ -4256,6 +4554,7 @@ const CONTROLS = [
   { id: 's-disc', out: 'o-disc', key: 'discSpeed', fmt: v => v.toFixed(2) + ' m/s' },
   { id: 's-court', out: 'o-court', key: 'courtSize', fmt: v => '±' + v.toFixed(1) + ' m' },
   { id: 's-vol', out: 'o-vol', key: 'phaserVol', fmt: v => v === 0 ? 'muted' : Math.round(v * 100) + '%' },
+  { id: 's-mus', out: 'o-mus', key: 'musicVol', fmt: v => v === 0 ? 'muted' : Math.round(v * 100) + '%' },
 ];
 function syncSettingsUI() {
   CONTROLS.forEach(c => {
@@ -4263,6 +4562,8 @@ function syncSettingsUI() {
     el.value = SETTINGS[c.key];
     document.getElementById(c.out).textContent = c.fmt(Number(SETTINGS[c.key]));
   });
+  document.getElementById('s-world').value = SETTINGS.calisWorld || 'arena';
+  document.getElementById('o-world').textContent = SETTINGS.calisWorld === 'qonos' ? "Qo'noS" : 'arena';
   document.getElementById('s-fps').value = String(SETTINGS.refresh || 'auto');
   document.getElementById('o-fps').textContent = !SETTINGS.refresh || SETTINGS.refresh === 'auto' ? 'auto' : SETTINGS.refresh + ' Hz';
 }
@@ -4283,6 +4584,8 @@ for (const key in WARDROBE_SELECTS) {
   el.addEventListener('change', e => setAvatarOption(key, e.target.value));
 }
 syncWardrobeUI();
+const worldSel = document.getElementById('s-world');
+worldSel.addEventListener('change', e => { SETTINGS.calisWorld = e.target.value; saveSettings(); syncSettingsUI(); applyProgram(); });
 const fpsSel = document.getElementById('s-fps');
 fpsSel.addEventListener('change', e => { SETTINGS.refresh = e.target.value; saveSettings(); syncSettingsUI(); applyRefresh(); });
 /* Ask the running headset session for the chosen refresh rate. */
@@ -4365,6 +4668,7 @@ renderer.setAnimationLoop((time) => {
     });
     HOLSTERS.forEach(h => { if (h.ringMat) h.ringMat.opacity = 0.18 + 0.12 * Math.sin(perf * 3); });
   }
+  if (calisQonos.visible) lavaLights.forEach(L => { L.light.intensity = 1.35 + 0.35 * Math.sin(perf * 6.3 + L.phase) + 0.2 * Math.sin(perf * 17 + L.phase * 3); });
   if (renderer.xr.isPresenting) pollHandButtons();
   if (game.mode === 'desk') deskTick(dt);
   if (!game.paused && (game.running || game.over)) {

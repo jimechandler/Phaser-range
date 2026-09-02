@@ -54,6 +54,7 @@
   #progdesc{font-size:14px;color:var(--ink);margin:0 0 14px;max-width:52ch;line-height:1.5}
   #xrstatus{font-family:var(--display);text-transform:uppercase;letter-spacing:.18em;font-size:12px;
     color:var(--dim);margin:0 0 16px}
+  #bestline{font-family:var(--display);letter-spacing:.14em;font-size:13px;color:var(--grid);margin:0 0 10px;text-transform:uppercase}
   #xrstatus.ok{color:var(--grid)}
   .actions{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px}
   button.lcars,a.lcars{font-family:var(--display);text-transform:uppercase;letter-spacing:.12em;
@@ -150,12 +151,20 @@
       <div class="progpick" role="group" aria-label="Holodeck program">
         <button type="button" class="prog is-on" data-prog="range">Phaser Range</button>
         <button type="button" class="prog" data-prog="velocity">Velocity</button>
+        <button type="button" class="prog" data-prog="calisthenics">Calisthenics</button>
       </div>
+      <p class="brief" id="brief-calisthenics" hidden>Worf's program: ruins in the dark, and a <b>Klingon warrior</b>
+        coming for you with a bat'leth. Klingon armor and Klingon weapons only — the bat'leth, the d'k tahg,
+        the disruptor — though a human may wear them. It circles, it winds up, it swings: <b>duck the sweep,
+        step out of the overhead cut</b>, or meet the blade with yours to parry. After every swing it is open
+        &mdash; three hits fell it, and the next one comes faster. Three hits on you ends the program.</p>
+      <p id="bestline"></p>
       <p id="xrstatus">Checking headset support&hellip;</p>
       <div class="actions">
         <button class="lcars" id="btn-vr" disabled>Enter the range</button>
         <a class="lcars alt" id="btn-pop" target="_blank" rel="noopener" hidden>Open standalone</a>
         <button class="lcars alt" id="btn-desk">Desktop drill</button>
+        <button class="lcars alt" id="btn-resume-game" hidden>Resume saved program</button>
         <button class="lcars alt" id="btn-settings" aria-expanded="false">Settings</button>
       </div>
 
@@ -240,11 +249,15 @@
         <dt>Holsters</dt><dd>Two on the hips, two over the shoulders &mdash; any weapon fits. The bat'leth wants the <b>left shoulder</b>; either hand draws it, both hands span it. It deflects stun bolts even held still; a returned bolt that hits the remote pays 200</dd>
         <dt>The sash</dt><dd>A Klingon baldric over the <b>right shoulder</b>, six sheaths down the chest, <b>d'k tahgs only</b>. Let a knife go against your chest and it seats in the nearest empty sheath</dd>
         <dt>Throw a blade</dt><dd>Let go mid-swing and it flies. It <b>plants only point-first</b>, at speed &mdash; land it flat and it bounces, skids and lies where it stops, like anything else you drop. Heavier weapons throw shorter and tumble slower. Grip near anything lying about to pick it up (desktop: G throws, F recovers)</dd>
+        <dt>Calisthenics</dt><dd>Worf's program. A Klingon warrior with a bat'leth: <b>duck the sweep, sidestep the overhead cut</b>, or meet its blade with yours to parry. After a swing it is open &mdash; three hits fell it. Klingon armor and weapons only; a hit in its wind-up breaks the attack</dd>
+        <dt>Catching</dt><dd>Toss a blade and squeeze as it comes back &mdash; it is caught <b>exactly as it lands in your hand</b>, no snap. Re-seat it by holstering and drawing. With a blade in hand the thumbstick trims how it sits: forward/back pitches it toward the knuckles or back, left/right twists it about its length, 10° a flick, remembered</dd>
+        <dt>Two hands on a pistol</dt><dd>Grip near a pistol your other hand holds and the second hand <b>steadies it</b>; let go with the first and it passes across</dd>
+        <dt>Saved games</dt><dd>A running program saves itself every few seconds and whenever you pause or leave. <b>RESUME</b> on the table picks it up, kit and all. Finished runs go in the record: best score per program, on the arch</dd>
         <dt>The wardrobe</dt><dd>The console behind the table: <b>point at a button and pull the trigger</b> &mdash; gender, species, affiliation, trousers or skirt. The mannequin beside it wears your choices; so do you, down to the boots</dd>
         <dt>The line</dt><dd>Empty hand, squeeze grip with nothing in reach: a hook fires from the <b>wrist bracer</b>. Cast it toward a lost weapon and it homes, latches and <b>reels it back into your hand</b>. Cast at nothing and it is a rope dart &mdash; swing it and the hook hits what a blade would. Let go of grip to reel in (desktop: T)</dd>
-        <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD roams the whole room · Shift sprint · <b>Space dash</b> (dodge!) · C duck · wheel sets power · B or 1–6 weapon · X drops it · in the lobby, click a pad or press Enter · P pause</dd>
+        <dt>Desktop</dt><dd>Mouse look · click / hold fire · WASD roams the whole room · Shift sprint · <b>Space dash</b> (dodge!) · C duck · wheel sets power · B or 1–8 weapon · X drops it · in the lobby, click a pad or press Enter · P pause</dd>
       </dl>
-      <p class="footnote">M0.20 feel prototype — telegraph timing, phaser feel, a physical armory with real throws, the sash, the line, the Onshape bat'leth, and a body with a wardrobe. On Quest, open this
+      <p class="footnote">M0.21 feel prototype — the drill, Velocity and now Calisthenics; a physical armory with real throws and catches, the sash, the line, the Onshape bat'leth, a body with a wardrobe, saved games and a record book. On Quest, open this
         page in the headset browser. If the Enter button stays unavailable inside an embedded viewer,
         open the page in its own tab.</p>
       <p class="footnote" id="diag" style="font-family:monospace;font-size:11px;color:#6a6a5c;line-height:1.6"></p>
@@ -404,6 +417,9 @@ const TUNE = {
   lineCone: 0.80,          // rad half-angle the cast looks for a lost weapon in
   lineLatch: 0.32,         // m — how close the hook has to pass a lost weapon to take it
   hookSpeed: 2.5,          // m/s the hook needs to be moving to hit anything
+  // — catching —
+  catchReach: 0.24,        // m from the hand a flying weapon is caught at, grip already squeezed
+  catchArm: 1.6,           // m — a squeeze with something flying this close arms a catch instead of casting the line
   // — grip reach: how close a release has to be to seat in something —
   holsterReach: 0.26,      // m, hips and shoulders
   sashReach: 0.16,         // m, a sheath on the sash (tighter — they sit close together)
@@ -487,6 +503,9 @@ const AudioKit = (() => {
     cast(){ blip('sawtooth', 420, 1500, 0.14, 0.09); blip('sine', 2400, 900, 0.10, 0.05, 0.02); },
     latch(){ blip('sine', 900, 1500, 0.07, 0.13); blip('sine', 1500, 1500, 0.06, 0.11, 0.07); },
     reelIn(){ blip('square', 380, 620, 0.08, 0.06); },
+    grunt(){ blip('sawtooth', 130, 70, 0.28, 0.22); blip('square', 65, 50, 0.20, 0.10, 0.03); },
+    whoosh(){ blip('triangle', 900, 180, 0.22, 0.14); blip('sine', 500, 120, 0.18, 0.08, 0.02); },
+    roar(){ blip('sawtooth', 160, 60, 0.6, 0.3); blip('square', 90, 40, 0.5, 0.15, 0.05); blip('sine', 1200, 300, 0.4, 0.06, 0.1); },
     deflect(){ this.clang(); blip('triangle', 800, 2600, 0.15, 0.12, 0.05); },
     hit(){ blip('sawtooth', 160, 60, 0.45, 0.30); blip('square', 90, 60, 0.4, 0.15); },
     ackBeep(){ blip('sine', 660, 660, 0.07, 0.1); blip('sine', 880, 880, 0.07, 0.1, 0.09); },
@@ -642,14 +661,11 @@ function buildType2TNG() {
   tip.name = 'PhaserTip'; tip.position.set(0, 0.019, -0.098); m.add(tip);
   const muzzle = new THREE.Object3D(); muzzle.name = 'Muzzle';
   muzzle.position.copy(tip.position); m.add(muzzle);
-  // power strip across the shell: the lamp slides left (stun) to right (kill)
-  addPowerScale(m, 0, 0.0555, -0.020, 0.030, 'x');
-  const lampMat2 = new THREE.MeshBasicMaterial({ color: 0x22cc44 }); lampMat2.name = 'Mat_PowerLamp';
-  const slider = new THREE.Mesh(new THREE.SphereGeometry(0.0035, 8, 8), lampMat2);
-  slider.name = 'PowerLampTNG'; slider.position.set(-0.013, 0.058, -0.020); m.add(slider);
+  // power meter down the right flank: ten bars, green at the tail to red at the nose,
+  // lit up to the setting
+  g.userData.powerBars = addPowerBars(m, 0.0245, 0.030, -0.070, 0.060);
   g.userData.muzzle = muzzle; g.userData.tip = tip;
-  g.userData.power = 5; g.userData.powerLamp = lampMat2; g.userData.powerSlider = slider;
-  g.userData.sliderAxis = 'x'; g.userData.sliderFrom = -0.013; g.userData.sliderTo = 0.013;
+  g.userData.power = 5;
   g.userData.gauge = addBatteryGauge(m, -0.025, 0.028, -0.02, 0.008, 0.034);
   g.userData.isGun = true; g.userData.label = 'PHASER · TNG TYPE 2';
   return g;
@@ -737,6 +753,23 @@ function updateBatteryGauge(w) {
   const lv = Math.max(0, Math.min(1, w.userData.battery / w.userData.batteryMax));
   const lit = Math.ceil(lv * g.cells.length - 1e-6);
   for (let i = 0; i < g.cells.length; i++) g.cells[i].material.color.setHex(i < lit ? CELL_LIT : CELL_OUT);
+}
+/* Ten bars along the flank, green at the low end shading to red at the high end; lit up to
+   the setting. Runs along -Z from z0. */
+function addPowerBars(model, x, y, z0, len) {
+  const N = 10, bars = [];
+  const housing = new THREE.Mesh(new THREE.BoxGeometry(0.003, 0.010, len + 0.006),
+    new THREE.MeshStandardMaterial({ color: 0x14171b, metalness: 0.5, roughness: 0.6 }));
+  housing.material.name = 'Mat_PowerHousing'; housing.name = 'PowerMeterHousing';
+  housing.position.set(x, y, z0 + len / 2); model.add(housing);
+  for (let i = 0; i < N; i++) {
+    const hue = 0.33 * (1 - i / (N - 1));                       // green → red
+    const mat = new THREE.MeshBasicMaterial({ color: 0x000000 }); mat.name = 'Mat_PowerBar' + (i + 1);
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(0.004, 0.007, len / N * 0.7), mat);
+    bar.name = 'PowerBar' + (i + 1); bar.position.set(x + 0.0015, y, z0 + len - len / N * (i + 0.5));   // bar 1 at the tail
+    bar.userData.hue = hue; model.add(bar); bars.push(bar);
+  }
+  return bars;
 }
 /* Green at the low end of the dial, red at the high end — the scale you read the lamp against. */
 function addPowerScale(model, x, y, z, len, axis) {
@@ -877,6 +910,71 @@ function buildCompRifle() {
   return g;
 }
 
+/* — 32nd-century phaser (Starfleet, 3189): a slim graphite pistol, light-lined in blue,
+     a squared emitter head, blue bolts — (materials named & colored) */
+function buildPhaser32() {
+  const graphite = new THREE.MeshStandardMaterial({ color: 0x23262c, metalness: 0.8, roughness: 0.35 }); graphite.name = 'Mat_Graphite';
+  const pale     = new THREE.MeshStandardMaterial({ color: 0xb8bcc4, metalness: 0.7, roughness: 0.4 });  pale.name = 'Mat_PaleAlloy';
+  const light    = new THREE.MeshBasicMaterial({ color: 0x4da3ff }); light.name = 'Mat_LightLineBlue';
+  const emit     = new THREE.MeshBasicMaterial({ color: 0x7fc0ff }); emit.name = 'Mat_EmitterBlue';
+  const g = new THREE.Group(); g.name = 'Phaser_32ndCentury';
+  const m = new THREE.Group(); m.name = 'PhaserModel'; g.add(m);
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.030, 0.038, 0.150), graphite);
+  body.name = 'PhaserBody'; body.position.set(0, 0.020, -0.030); m.add(body);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.034, 0.030, 0.050), pale);
+  head.name = 'EmitterHead'; head.position.set(0, 0.024, -0.125); m.add(head);
+  const grip = new THREE.Mesh(new THREE.BoxGeometry(0.026, 0.085, 0.036), graphite);
+  grip.name = 'PhaserGrip'; grip.position.set(0, -0.032, 0.040); grip.rotation.x = -0.42; m.add(grip);
+  [-1, 1].forEach((sgn, i) => {                                    // light lines down both flanks
+    const line = new THREE.Mesh(new THREE.BoxGeometry(0.002, 0.004, 0.120), light);
+    line.name = 'LightLine' + (i + 1); line.position.set(sgn * 0.0155, 0.026, -0.035); m.add(line);
+  });
+  const slot = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.010, 0.006), emit);
+  slot.name = 'EmitterSlot'; slot.position.set(0, 0.024, -0.152); m.add(slot);
+  const tip = new THREE.Mesh(new THREE.SphereGeometry(0.006, 10, 10), emit);
+  tip.name = 'PhaserTip'; tip.position.set(0, 0.024, -0.154); m.add(tip);
+  const muzzle = new THREE.Object3D(); muzzle.name = 'Muzzle'; muzzle.position.copy(tip.position); m.add(muzzle);
+  addPowerScale(m, 0, 0.041, 0.010, 0.050, 'z');                   // setting lamp on the spine, blue-era but the scale is the scale
+  const lampMat = new THREE.MeshBasicMaterial({ color: 0x22cc44 }); lampMat.name = 'Mat_PowerLamp';
+  const slider = new THREE.Mesh(new THREE.SphereGeometry(0.0035, 8, 8), lampMat);
+  slider.name = 'PowerLamp32'; slider.position.set(0, 0.045, -0.015); m.add(slider);
+  g.userData.muzzle = muzzle; g.userData.tip = tip;
+  g.userData.power = 5; g.userData.powerLamp = lampMat; g.userData.powerSlider = slider;
+  g.userData.sliderAxis = 'z'; g.userData.sliderFrom = -0.015; g.userData.sliderTo = 0.035;
+  g.userData.gauge = addBatteryGauge(m, -0.017, 0.012, -0.055, 0.007, 0.030);
+  g.userData.isGun = true; g.userData.label = 'PHASER · 32ND CENTURY';
+  return g;
+}
+/* — Klingon disruptor pistol: bronze-black, a flared muzzle bell, green emitter. No dial —
+     it is a Klingon weapon; it is always set to kill — (materials named & colored) */
+function buildDisruptor() {
+  const bronze = new THREE.MeshStandardMaterial({ color: 0x4a3a2a, metalness: 0.85, roughness: 0.45 }); bronze.name = 'Mat_KlingonBronze';
+  const black  = new THREE.MeshStandardMaterial({ color: 0x1c1a1a, metalness: 0.6,  roughness: 0.6 });  black.name  = 'Mat_KlingonBlack';
+  const emit   = new THREE.MeshBasicMaterial({ color: 0x39ff6a }); emit.name = 'Mat_EmitterGreen';
+  const g = new THREE.Group(); g.name = 'KlingonDisruptor';
+  const m = new THREE.Group(); m.name = 'DisruptorModel'; g.add(m);
+  const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.040, 0.050, 0.140), bronze);
+  receiver.name = 'DisruptorReceiver'; receiver.position.set(0, 0.018, -0.020); m.add(receiver);
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.017, 0.090, 12), black);
+  barrel.name = 'DisruptorBarrel'; barrel.rotation.x = Math.PI / 2; barrel.position.set(0, 0.022, -0.125); m.add(barrel);
+  const bell = new THREE.Mesh(new THREE.CylinderGeometry(0.030, 0.016, 0.035, 12, 1, true), bronze);
+  bell.name = 'MuzzleBell'; bell.material.side = THREE.DoubleSide; bell.rotation.x = -Math.PI / 2; bell.position.set(0, 0.022, -0.180); m.add(bell);
+  const grip = new THREE.Mesh(new THREE.BoxGeometry(0.030, 0.095, 0.042), black);
+  grip.name = 'DisruptorGrip'; grip.position.set(0, -0.040, 0.030); grip.rotation.x = -0.55; m.add(grip);
+  const spine = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.012, 0.110), black);
+  spine.name = 'DisruptorSpine'; spine.position.set(0, 0.049, -0.030); m.add(spine);
+  const tip = new THREE.Mesh(new THREE.SphereGeometry(0.009, 12, 12), emit);
+  tip.name = 'DisruptorTip'; tip.position.set(0, 0.022, -0.190); m.add(tip);
+  const muzzle = new THREE.Object3D(); muzzle.name = 'Muzzle'; muzzle.position.copy(tip.position); m.add(muzzle);
+  const killLamp = new THREE.Mesh(new THREE.SphereGeometry(0.004, 8, 8), new THREE.MeshBasicMaterial({ color: 0xe5484d }));
+  killLamp.material.name = 'Mat_KillLamp'; killLamp.name = 'KillLamp'; killLamp.position.set(0, 0.056, 0.010); m.add(killLamp);
+  g.userData.muzzle = muzzle; g.userData.tip = tip;
+  g.userData.power = 10; g.userData.fixedPower = 10;
+  g.userData.gauge = addBatteryGauge(m, -0.023, 0.018, -0.030, 0.009, 0.040);
+  g.userData.isGun = true; g.userData.label = 'KLINGON DISRUPTOR';
+  return g;
+}
+
 /* ───────────────────── training remote ───────────────────── */
 const remote = (() => {
   const chrome = new THREE.MeshStandardMaterial({ color: 0xc8ccd4, metalness: 0.95, roughness: 0.25 }); chrome.name = 'Mat_ChromeDisc';
@@ -993,18 +1091,22 @@ function flashLine(from, to, color, life, width) {
 
 /* the bolt: a six-inch slug cut from the same cloth as the beam, thrown down the line */
 const boltFx = [];
-function spawnBoltFx(from, dir, dist, charged) {
+/* every energy weapon has its own colour: TNG-era phasers red, the 32nd-century phaser blue,
+   the Klingon disruptor green */
+const BOLT_RED = { shaft: 0xff0510, core: 0xffccd8 }, BOLT_BLUE = { shaft: 0x2f7dff, core: 0xd6ecff }, BOLT_GREEN = { shaft: 0x22e05a, core: 0xccffd8 };
+function spawnBoltFx(from, dir, dist, charged, colors) {
+  const C = colors || BOLT_RED;
   const g = new THREE.Group(); g.name = 'PhaserBolt';
   const b = TUNE.beamBright;
   const k = 0.8 + 1.6 * Math.min(1, charged || 0);      // a fat slug means a full cell behind it
   const R = TUNE.boltRadius * k, L = TUNE.boltLen * (0.85 + 0.8 * Math.min(1, charged || 0));
   const shaft = new THREE.Mesh(new THREE.CylinderGeometry(R, R * 0.7, L, 10, 1, true),
-    new THREE.MeshBasicMaterial({ color: 0xff0510, transparent: true, opacity: 0.75 * b,
+    new THREE.MeshBasicMaterial({ color: C.shaft, transparent: true, opacity: 0.75 * b,
       side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
   shaft.material.name = 'Mat_BoltShaft'; shaft.name = 'BoltShaft';
   shaft.rotation.x = Math.PI / 2; g.add(shaft);
   const core = new THREE.Mesh(new THREE.CylinderGeometry(R * 0.32, R * 0.22, L * 0.92, 8, 1, true),
-    new THREE.MeshBasicMaterial({ color: 0xffccd8, transparent: true, opacity: 0.9 * b,
+    new THREE.MeshBasicMaterial({ color: C.core, transparent: true, opacity: 0.9 * b,
       side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
   core.material.name = 'Mat_BoltCore'; core.name = 'BoltCore';
   core.rotation.x = Math.PI / 2; g.add(core);
@@ -1076,7 +1178,8 @@ function boltFxTick(dt) {
 
 /* the sustained beam: a wide red shaft with a hot white core */
 const _beamUp = new THREE.Vector3(0, 1, 0), _beamMid = new THREE.Vector3(), _beamQ = new THREE.Quaternion();
-function flashBeam(from, dir, len) {
+function flashBeam(from, dir, len, colors) {
+  const C = colors || BOLT_RED;
   const mk = (radius, color, opacity, name) => {
     const m = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius * 0.55, len, 12, 1, true),
       new THREE.MeshBasicMaterial({ color, transparent: true, opacity, side: THREE.DoubleSide,
@@ -1088,8 +1191,8 @@ function flashBeam(from, dir, len) {
     scene.add(m); shotFlashes.push({ line: m, life: 0.05, max: 0.05, peak: opacity });
   };
   const b = TUNE.beamBright;
-  mk(TUNE.beamRadius, 0xff0510, 0.60 * b, 'PhaserBeamShaft');       // saturated red envelope
-  mk(TUNE.beamRadius * 0.26, 0xffccd8, 0.75 * b, 'PhaserBeamCore'); // thin pink-white core
+  mk(TUNE.beamRadius, C.shaft, 0.60 * b, 'PhaserBeamShaft');        // saturated envelope
+  mk(TUNE.beamRadius * 0.26, C.core, 0.75 * b, 'PhaserBeamCore');   // thin pale core
 }
 
 /* pop effect: brief expanding shell */
@@ -1351,11 +1454,13 @@ function discTick(D, dt) {
   }
 }
 function applyProgram() {
-  const v = game.program === 'velocity';
+  const v = game.program === 'velocity', c = game.program === 'calisthenics';
   court.visible = v;
-  remote.g.visible = !v;
+  remote.g.visible = !v && !c;
+  if (typeof calisProps !== 'undefined') calisProps.visible = c;
   VEL.discs.forEach(D => { D.mesh.visible = v && D.live; });
-  if (scene.fog) scene.fog.density = v ? 0.028 : 0.055;
+  if (scene.fog) { scene.fog.density = v ? 0.028 : c ? 0.045 : 0.055; scene.fog.color.setHex(c ? 0x120d09 : 0x07070c); }
+  scene.background.setHex(c ? 0x120d09 : 0x07070c);
 }
 
 /* ───────────────────── game state ───────────────────── */
@@ -1462,10 +1567,14 @@ function fireBolt(phaser, energy) {
   if (game.program === 'velocity') {
     const nd = nearestLiveDisc(_rayO, _rayD);
     if (nd && nd.dist < bestD) { bestD = nd.dist; bestKind = 'disc'; bestDisc = nd.d; }
+  } else if (game.program === 'calisthenics') {
+    if (warrior.state !== 'off' && warrior.state !== 'dead') {
+      const d = rayHit(_rayO, _rayD, warriorCenter(_wS), 0.38, 0, asst);
+      if (d > 0 && d < bestD) { bestD = d; bestKind = 'warrior'; } }
   } else { const d = rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS, 0, asst); // remote is a target any time now
     if (d > 0 && d < bestD) { bestD = d; bestKind = (remote.state === 'vulnerable') ? 'remote' : 'chip'; } }
   if (bestKind) { game.hits++; hitPoint = _rayO.clone().add(_rayD.clone().multiplyScalar(bestD)); }
-  else if (game.program !== 'velocity' &&
+  else if (game.program === 'range' &&
            rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS + 0.55, 0, 0) > 0 &&
            Math.random() < TUNE.remoteJukeChance)
     remoteJuke();  // shot went close — the remote saw it and breaks off
@@ -1475,7 +1584,7 @@ function fireBolt(phaser, energy) {
     end = _rayO.clone().addScaledVector(_rayD, reach);
   }
   { const d = end.clone().sub(_vis); const len = d.length() || 0.001; d.multiplyScalar(1 / len);
-    spawnBoltFx(_vis.clone(), d, len, charged);
+    spawnBoltFx(_vis.clone(), d, len, charged, phaser.userData.def && phaser.userData.def.bolt);
     if (boltFx.length) boltFx[boltFx.length - 1].energy = bestKind ? 0 : E; }  // a miss keeps its charge
   if (bestKind === 'target') damageTarget(bestIdx, TUNE.boltDamageBase + TUNE.boltDamagePerEnergy * E);
   else if (bestKind === 'bolt') { const b = stunBolts[bestIdx];
@@ -1483,6 +1592,7 @@ function fireBolt(phaser, energy) {
     addScore(TUNE.ptsBoltDown); bumpStreak(); toast('BOLT INTERCEPTED'); }
   else if (bestKind === 'remote') onRemoteTagged();
   else if (bestKind === 'chip') onRemoteChipped();
+  else if (bestKind === 'warrior') { game.hits--; if (warriorStruck('bolt')) game.hits++; }
   else if (bestKind === 'disc') onDiscStruck(_rayD, E, bestDisc);
   hudDirty = true;
 }
@@ -1495,9 +1605,9 @@ function beamTick(phaser, dt) {
     reach = Math.min(25, courtRayLimit(_rayO, _rayD));
     const hitPt = _rayO.clone().addScaledVector(_rayD, reach);
     const vDir = hitPt.sub(_vis); const vLen = Math.max(0.1, vDir.length()); vDir.normalize();
-    flashBeam(_vis.clone(), vDir, vLen);
+    flashBeam(_vis.clone(), vDir, vLen, phaser.userData.def && phaser.userData.def.bolt);
   } else {
-    flashBeam(_vis.clone(), _rayD.clone(), 25);
+    flashBeam(_vis.clone(), _rayD.clone(), 25, phaser.userData.def && phaser.userData.def.bolt);
   }
   haptic(phaser, 0.35, 30);
   for (let i = targets.length - 1; i >= 0; i--)
@@ -1511,6 +1621,10 @@ function beamTick(phaser, dt) {
         const s = D.v.length(); if (s > TUNE.discSpeedMax) D.v.multiplyScalar(TUNE.discSpeedMax / s);
       }
     }
+    return;
+  }
+  if (game.program === 'calisthenics') {
+    if (warrior.state !== 'off' && warrior.state !== 'dead' && rayHit(_rayO, _rayD, warriorCenter(_wS), 0.38, TUNE.beamSweep) > 0) warriorStruck('beam');
     return;
   }
   if (rayHit(_rayO, _rayD, remote.pos, REMOTE_RADIUS, TUNE.beamSweep) > 0) { // the beam counter-attacks too
@@ -1539,6 +1653,7 @@ const worldHUD = (() => {
   return { cv, ctx: cv.getContext('2d'), tex, mesh };
 })();
 
+function waveLabel(p) { return p === 'velocity' ? 'SPEED' : p === 'calisthenics' ? 'LEVEL' : 'WAVE'; }
 function drawHUD() {
   const c = worldHUD.ctx, W = worldHUD.cv.width, H = worldHUD.cv.height;
   c.clearRect(0, 0, W, H);
@@ -1548,20 +1663,27 @@ function drawHUD() {
   c.textBaseline = 'top';
   if (fpsAvg) { c.textAlign = 'right'; c.fillStyle = '#8d8a7b'; c.font = dsp(30, 400);
     c.fillText(Math.round(fpsAvg) + ' FPS', W - 40, 36); c.textAlign = 'left'; }
-  const vmode = game.program === 'velocity';
+  const vmode = game.program === 'velocity', cmode = game.program === 'calisthenics';
   const cols = [{ lab: 'SCORE', val: game.score }, { lab: 'STREAK', val: game.streak },
-                { lab: vmode ? 'SPEED' : 'WAVE', val: game.wave }];
+                { lab: waveLabel(game.program), val: game.wave }];
   cols.forEach((col, i) => { const x = 140 + i * 250;
     c.fillStyle = '#cc99cc'; c.font = dsp(34, 400); c.fillText(col.lab, x, 60);
     c.fillStyle = '#f2c14e'; c.font = dsp(110, 700); c.fillText(String(col.val), x, 110); });
-  if (game.phase === 'select') {                       // the lobby: what is loaded, and how the grip works
+  if (game.phase === 'select') {                       // the lobby: what is loaded, the record, how the grip works
     c.fillStyle = '#cc99cc'; c.font = dsp(34, 400); c.fillText('LOADED', 140, 280);
     c.fillStyle = '#f2c14e'; c.font = dsp(64, 700); c.fillText(PROG_TITLE[game.program].toUpperCase(), 140, 314);
+    const B = bestFor(game.program), sv = loadSave();
+    c.fillStyle = '#8d8a7b'; c.font = dsp(30, 400); c.textAlign = 'right';
+    c.fillText(B.best ? 'BEST ' + B.best + ' · ' + waveLabel(game.program) + ' ' + B.bestWave : 'NO RECORD YET', W - 40, 290);
+    if (sv) c.fillText('SAVED · ' + PROG_TITLE[sv.program].toUpperCase() + ' · ' + sv.score, W - 40, 330);
+    c.textAlign = 'left';
     c.fillStyle = '#99ccff'; c.font = dsp(32, 600);
     c.fillText('GRIP HOLDS · LET GO AT A HOLSTER TO STOW · ELSEWHERE IT DROPS', 140, 392);
-    c.fillText('PADS ON THE TABLE: PHASER RANGE · VELOCITY · BEGIN', 140, 432);
+    c.fillText('PADS: RANGE · VELOCITY · CALISTHENICS · RESUME · BEGIN', 140, 432);
     worldHUD.tex.needsUpdate = true; return;
   }
+  { const B = bestFor(game.program); if (B.best) { c.textAlign = 'right'; c.fillStyle = '#8d8a7b'; c.font = dsp(26, 400);
+      c.fillText('BEST ' + B.best, W - 40, 72); c.textAlign = 'left'; } }
   c.fillStyle = '#cc99cc'; c.font = dsp(34, 400); c.fillText('TOLERANCE', 140, 280);
   for (let i = 0; i < TUNE.pips; i++) { c.beginPath(); c.arc(170 + i * 90, 375, 30, 0, Math.PI * 2);
     c.fillStyle = i < game.pips ? '#f2c14e' : '#232330'; c.fill(); }
@@ -1576,6 +1698,7 @@ function drawHUD() {
     c.fillStyle = '#8d8a7b'; c.font = dsp(38, 400);
     c.fillText('ACCURACY ' + acc + '%', 480, 340);
     c.fillText(vmode ? 'STRIKES ' + game.strikes + '   DISCS ' + VEL.discs.length
+             : cmode ? 'KILLS ' + (game.kills || 0) + '   PARRIES ' + (game.parries || 0)
                      : 'TAGS ' + game.tags + '   DODGES ' + game.dodges, 480, 395);
   }
   worldHUD.tex.needsUpdate = true;
@@ -1635,7 +1758,7 @@ function drawPauseCard() {
   c.fillText(vol === 0 ? 'MUTED' : Math.round(vol * 100) + '%', bx + bw + 20, by - 6);
   c.fillStyle = '#8d8a7b'; c.font = dsp(28, 400);
   c.fillText('SCORE ' + game.score + '   ·   ' +
-    (game.program === 'velocity' ? 'STRIKES ' + game.strikes : 'WAVE ' + game.wave), 110, 330);
+    (game.program === 'velocity' ? 'STRIKES ' + game.strikes : waveLabel(game.program) + ' ' + game.wave), 110, 330);
   pausePanel.tex.needsUpdate = true;
 }
 function showPausePanel() {
@@ -1684,6 +1807,7 @@ function setPause(on) {
   if (!on && !game.paused) return;
   game.paused = on;
   if (on) {
+    saveGame();
     AudioKit.beamStop();
     AudioKit.chargeStop();
     activePhasers.forEach(p => { p.userData.holding = false; p.userData.beaming = false; p.userData.charge = 0; });
@@ -1716,6 +1840,7 @@ function setPhaserVol(v, quiet) {
    (v0.17 ended the XR session here, which dropped you into the browser panel in
    Meta Home; the lobby is a room in the program now.) */
 function quitToMenu() {
+  saveGame();
   game.paused = false; game.running = false; game.over = false; game.phase = 'select';
   AudioKit.beamStop(); AudioKit.chargeStop(); AudioKit.humStop();
   activePhasers.forEach(p => { p.userData.holding = false; p.userData.beaming = false; p.userData.charge = 0; });
@@ -1725,7 +1850,7 @@ function quitToMenu() {
   targetRespawnQueue = [];
   while (VEL.discs.length > 1) { const gone = VEL.discs.pop(); scene.remove(gone.mesh); }
   VEL.discs[0].live = false; VEL.discs[0].mesh.visible = false;
-  parkRemote(); recallLoose(false);
+  parkRemote(); recallLoose(false); warriorHide();
   if (game.mode === 'desk') { playerRig.position.set(0, 0, 0); lockPointer(renderer.domElement); }
   applyProgram(); drawTableConsole();
   flashGrid(0.35); AudioKit.ackBeep(); hudDirty = true;
@@ -1733,6 +1858,7 @@ function quitToMenu() {
 }
 /* All the way out: end the headset session (desktop: back to the page). */
 function leaveHolodeck() {
+  saveGame();
   game.paused = false; game.running = false; game.over = false; game.phase = 'idle';
   AudioKit.beamStop(); AudioKit.chargeStop(); AudioKit.humStop();
   pauseEl.hidden = true; pausePanel.mesh.visible = false;
@@ -1749,6 +1875,8 @@ function powerColor(mat, p) { mat.color.setHSL(0.33 * (1 - (p - 1) / 9), 1.0, 0.
 function updatePowerVisual(w) {
   const u = w.userData; if (!u.isGun) return;
   if (u.powerLamp) powerColor(u.powerLamp, u.power);
+  if (u.powerBars) u.powerBars.forEach((bar, i) => {
+    if (i < u.power) bar.material.color.setHSL(bar.userData.hue, 1.0, 0.5); else bar.material.color.setHex(0x1a1c20); });
   if (u.dialPivot) u.dialPivot.rotation.y = -((u.power - 1) / 9) * (Math.PI * 1.5); // clockwise sweep
   if (u.powerSlider) {                                   // low end → high end along its rail
     const f = (u.power - 1) / 9;
@@ -1760,6 +1888,7 @@ function updatePowerVisual(w) {
 function powerLabel(p) { return p <= 3 ? 'STUN' : p >= 8 ? 'KILL' : 'DISRUPT'; }
 function changePower(w, delta) {
   const u = w.userData; if (!u.isGun) return;
+  if (u.fixedPower) { AudioKit.dryFire(); toast(u.label + ' · KILL ONLY'); return; }
   const next = Math.max(1, Math.min(10, u.power + delta));
   if (next === u.power) return;
   u.power = next; updatePowerVisual(w); hudDirty = true;
@@ -1780,12 +1909,17 @@ function beamPowerScale(w) { return 0.4 + 0.12 * ((w.userData.power || 5)); }
 const ARMORY = [
   // mass in kg, bounce = restitution, reach = m from the grip to the point (blades),
   // stick = how squarely the point has to meet a surface to plant (1 = dead on)
-  { id: 'fc',      label: 'PHASER · FIRST CONTACT', build: buildPhaser,    isGun: true,  hands: 1, cap: 1.0, grip: 'forward', lay: 'side', mass: 0.45, bounce: 0.30 },
-  { id: 'tng',     label: 'PHASER · TNG TYPE 2',    build: buildType2TNG,  isGun: true,  hands: 1, cap: 1.0, grip: 'forward', lay: 'flat', mass: 0.40, bounce: 0.25 },
+  { id: 'fc',      label: 'PHASER · FIRST CONTACT', build: buildPhaser,    isGun: true,  hands: 1, cap: 1.0, grip: 'forward', lay: 'side', mass: 0.45, bounce: 0.30, bolt: BOLT_RED },
+  { id: 'tng',     label: 'PHASER · TNG TYPE 2',    build: buildType2TNG,  isGun: true,  hands: 1, cap: 1.0, grip: 'forward', lay: 'flat', mass: 0.40, bounce: 0.25, bolt: BOLT_RED },
+  { id: 'p32',     label: 'PHASER · 32ND CENTURY',  build: buildPhaser32,  isGun: true,  hands: 1, cap: 1.2, grip: 'forward', lay: 'side', mass: 0.38, bounce: 0.30, bolt: BOLT_BLUE },
+  // the disruptor has no dial: always kill. It charges fast and its cell comes back fast, so
+  // it is one heavy shot every few seconds rather than a cannon you wait half a minute for
+  { id: 'disruptor', label: 'KLINGON DISRUPTOR',    build: buildDisruptor, isGun: true,  hands: 1, cap: 0.6, grip: 'forward', lay: 'side', mass: 0.7,  bounce: 0.30, bolt: BOLT_GREEN,
+    chargeRate: 1.2, regen: 2.5, klingon: true },
   { id: 'rifle',   label: 'PHASER RIFLE',           build: buildRifle,     isGun: true,  hands: 2, cap: 1.9, grip: 'forward', lay: 'side', mass: 3.2,  bounce: 0.20 },
   { id: 'comp',    label: 'COMPRESSION RIFLE',      build: buildCompRifle, isGun: true,  hands: 2, cap: 1.6, grip: 'forward', lay: 'side', mass: 2.8,  bounce: 0.20 },
-  { id: 'batleth', label: "BAT'LETH",               build: buildBatleth,   isGun: false, hands: 2, grip: 'span', lay: 'flat', mass: 2.4,  bounce: 0.30, reach: 0.30, stick: 0.30 },
-  { id: 'dktahg',  label: "D'K TAHG",               build: buildDkTahg,    isGun: false, hands: 1, grip: 'span', lay: 'flat', mass: 0.5,  bounce: 0.40, reach: 0.255, stick: 0.50, count: 6 },
+  { id: 'batleth', label: "BAT'LETH",               build: buildBatleth,   isGun: false, hands: 2, grip: 'span', lay: 'flat', mass: 2.4,  bounce: 0.30, reach: 0.30, stick: 0.30, klingon: true },
+  { id: 'dktahg',  label: "D'K TAHG",               build: buildDkTahg,    isGun: false, hands: 1, grip: 'span', lay: 'flat', mass: 0.5,  bounce: 0.40, reach: 0.255, stick: 0.50, count: 6, klingon: true },
 ];
 const arms = {};                       // instance id → the weapon ('fc', 'dktahg3', …)
 const ARMS = [];                       // every instance, in table order
@@ -2094,13 +2228,17 @@ function orientAnchor(a, zDir, yDir) {                      // local Z → zDir,
   slot(arms.batleth, 0,     -0.30, 0.006);                             // flat, points away, handholds toward you
   slot(arms.rifle,  -0.62,  -0.08, 0.035, [ 1, 0, 0], [0, 0, 1]);      // across the table, muzzle out left, grip away
   slot(arms.comp,    0.62,  -0.08, 0.036, [-1, 0, 0], [0, 0, 1]);      // across the table, muzzle out right
-  slot(arms.fc,     -1.00,   0.25, 0.025, [ 0, 0, 1], [-1, 0, 0]);     // on its side, muzzle away
-  slot(arms.tng,    -0.74,   0.25, 0.020);                             // the wedge lies flat by nature
-  instancesOf('dktahg').forEach((w, k) => slot(w, -0.36 + k * 0.24, 0.25, 0.015));   // six in a row, blades away
+  slot(arms.fc,       -1.05,  0.25, 0.025, [ 0, 0, 1], [-1, 0, 0]);   // pistols on their sides, muzzles away
+  slot(arms.tng,      -0.80,  0.25, 0.020);                            // the wedge lies flat by nature
+  slot(arms.p32,      -0.55,  0.25, 0.025, [ 0, 0, 1], [-1, 0, 0]);
+  slot(arms.disruptor, -0.30, 0.25, 0.028, [ 0, 0, 1], [-1, 0, 0]);
+  instancesOf('dktahg').forEach((w, k) => slot(w, 0.0 + k * 0.20, 0.25, 0.015));   // six in a row, blades away
   // the pads: which program, and go
-  [{ id: 'range', label: 'PHASER RANGE', x: -0.5, color: 0xcc99cc },
-   { id: 'velocity', label: 'VELOCITY', x: 0, color: 0x99ccff },
-   { id: 'begin', label: 'BEGIN', x: 0.5, color: 0xff9c00 }].forEach(def => {
+  [{ id: 'range', label: 'PHASER RANGE', x: -0.8, color: 0xcc99cc },
+   { id: 'velocity', label: 'VELOCITY', x: -0.4, color: 0x99ccff },
+   { id: 'calisthenics', label: 'CALISTHENICS', x: 0, color: 0xe5484d },
+   { id: 'resume', label: 'RESUME', x: 0.4, color: 0x7de07a },
+   { id: 'begin', label: 'BEGIN', x: 0.8, color: 0xff9c00 }].forEach(def => {
     const mat = new THREE.MeshBasicMaterial({ color: def.color }); mat.name = 'Mat_Pad_' + def.id;
     const pad = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.02, 20), mat);
     pad.name = 'Pad_' + def.id; pad.position.set(def.x, TABLE_TOP + 0.012, 0.42); stageTable.add(pad);
@@ -2109,10 +2247,10 @@ function orientAnchor(a, zDir, yDir) {                      // local Z → zDir,
 }
 /* Labels for the pads, a strip standing at the table's front edge. */
 const tableConsole = (() => {
-  const cv = document.createElement('canvas'); cv.width = 1280; cv.height = 64;
+  const cv = document.createElement('canvas'); cv.width = 1600; cv.height = 64;
   const tex = new THREE.CanvasTexture(cv);
   const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true }); mat.name = 'Mat_TableConsole';
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.08), mat); mesh.name = 'TableConsole';
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 0.08), mat); mesh.name = 'TableConsole';
   mesh.position.set(0, TABLE_TOP + 0.045, TABLE_D / 2 - 0.005); mesh.rotation.x = -0.35;   // leans back toward the pads
   stageTable.add(mesh);
   return { cv, ctx: cv.getContext('2d'), tex, mesh };
@@ -2122,10 +2260,10 @@ function drawTableConsole() {
   c.clearRect(0, 0, W, H);
   c.textBaseline = 'middle'; c.textAlign = 'center';
   lobbyPads.forEach(p => {
-    const on = p.id === 'begin' || game.program === p.id;
+    const on = p.id === 'begin' || game.program === p.id || (p.id === 'resume' && !!loadSave());
     c.fillStyle = on ? '#' + p.base.getHexString() : '#5a5a68';
-    c.font = (on ? '700 ' : '400 ') + '46px Antonio, "Arial Narrow", sans-serif';
-    c.fillText(p.label, W * (0.5 + p.x / 1.6), H / 2 + 2);
+    c.font = (on ? '700 ' : '400 ') + '44px Antonio, "Arial Narrow", sans-serif';
+    c.fillText(p.label, W * (0.5 + p.x / 2.0), H / 2 + 2);
   });
   tableConsole.tex.needsUpdate = true;
 }
@@ -2195,6 +2333,8 @@ function wardrobeHit(origin, dir, outPoint) {
 }
 function setAvatarOption(key, value) {
   if (!AVATAR_OPTIONS[key] || !AVATAR_OPTIONS[key].some(o => o[0] === value)) return;
+  if (key === 'affiliation' && value !== 'empire' && game.program === 'calisthenics') {
+    AudioKit.dryFire(); toast("THE EMPIRE'S PROGRAM · KLINGON ARMOR ONLY"); return; }
   if (AVATAR[key] === value) { AudioKit.ackBeep(); return; }
   AVATAR[key] = value; applyAvatar(); AudioKit.ackBeep(); flashGrid(0.15);
   const o = AVATAR_OPTIONS[key].find(o => o[0] === value); toast(AVATAR_LABEL[key] + ' · ' + o[1]);
@@ -2230,6 +2370,219 @@ function pointersTick() {
 }
 drawWardrobe();
 
+/* ═══════════════ calisthenics: Worf's program ═══════════════
+   Ruins in the dark and a Klingon warrior with a bat'leth. It closes, circles,
+   winds up — an overhead cut you sidestep, or a chest-high sweep you duck or
+   step back from — and swings. Meet the swing with your own blade to parry.
+   After a swing it is open: three hits fell it, and the next one comes faster.
+   Klingon armor and Klingon weapons only; humans may wear them. */
+const CALIS = {
+  keepDist: 1.15, attackDist: 1.5, approachSpeed: 1.25, strafeSpeed: 0.55,   // a bat'leth's reach
+  stalkMin: 1.4, stalkMax: 2.6,        // s between attacks at level 1 (÷ tempo)
+  telegraph: 0.75, telegraphFloor: 0.36, swing: 0.38, recover: 0.95, stagger: 0.55, deathTime: 1.4,
+  tempoPerLevel: 0.12, hp: 3,
+  headRadius: 0.25, torsoRadius: 0.24, parryReach: 0.22, bodyReach: 0.32,
+  ptsHit: 100, ptsParry: 50, ptsKill: 300, ptsChip: 25, ptsDodge: 10,
+};
+const KLINGON_WEAPONS = ['batleth', 'dktahg', 'disruptor'];
+function weaponAllowed(w) { return game.program !== 'calisthenics' || !!w.userData.def.klingon; }
+/* the ruins: six broken columns in the dark, warmer fog */
+const calisProps = new THREE.Group(); calisProps.name = 'CalisthenicsRuins'; calisProps.visible = false; scene.add(calisProps);
+{
+  const stone = new THREE.MeshStandardMaterial({ color: 0x4a3b2e, metalness: 0.05, roughness: 0.95 }); stone.name = 'Mat_RuinStone';
+  const moss  = new THREE.MeshStandardMaterial({ color: 0x2f3d22, metalness: 0.0,  roughness: 1.0 });  moss.name  = 'Mat_RuinMoss';
+  for (let k = 0; k < 6; k++) {
+    const a = k / 6 * Math.PI * 2 + 0.3, r = 4.1 + (k % 2) * 0.5, h = 2.4 + ((k * 7) % 5) * 0.25;
+    const col = new THREE.Mesh(new THREE.BoxGeometry(0.5, h, 0.5), stone);
+    col.name = 'RuinColumn' + (k + 1); col.position.set(Math.cos(a) * r, h / 2, Math.sin(a) * r); col.rotation.y = a; calisProps.add(col);
+    const cap = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.18, 0.7), moss);
+    cap.name = 'RuinCap' + (k + 1); cap.position.set(Math.cos(a) * r, h + 0.09, Math.sin(a) * r); cap.rotation.y = a + 0.2; calisProps.add(cap);
+    const rubble = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.3, 0.45), stone);
+    rubble.name = 'Rubble' + (k + 1); rubble.position.set(Math.cos(a + 0.35) * (r - 0.6), 0.15, Math.sin(a + 0.35) * (r - 0.6)); rubble.rotation.y = a * 1.7; calisProps.add(rubble);
+  }
+}
+const warrior = { rig: null, blade: null, pos: new THREE.Vector3(0, 0, -3.4), yaw: 0, state: 'off', timer: 0, hp: CALIS.hp,
+  level: 1, tempo: 1, kind: 'overhead', swingT: 0, strafe: 1, strafeT: 0, sink: 0, chipCd: 0, hitThisSwing: false, parried: false,
+  q: new THREE.Quaternion(), bladeQ: new THREE.Quaternion(), bladeP: new THREE.Vector3(), samplesW: [] };
+const warriorFrame = {
+  eye: 1.62, q: warrior.q,
+  local(x, y, z, out) { out.set(x, y - warrior.sink, z).applyQuaternion(warrior.q); return out.add(warrior.pos); },
+  wrist(side, outP, outQ) {
+    if (!warrior.blade) return false;
+    warrior.blade.localToWorld(outP.set(side === 'left' ? -0.328 : 0.328, 0, -0.0977));
+    warrior.blade.getWorldQuaternion(outQ); return true;
+  },
+};
+function buildWarrior() {
+  if (warrior.rig) scene.remove(warrior.rig.g);
+  if (warrior.blade) scene.remove(warrior.blade);
+  warrior.rig = buildBody({ gender: 'male', species: 'klingon', affiliation: 'empire', uniform: 'pants' }, true);
+  warrior.rig.g.name = 'KlingonWarrior'; warrior.rig.g.visible = false; scene.add(warrior.rig.g);
+  warrior.blade = buildBatleth(); warrior.blade.name = 'WarriorBatleth'; warrior.blade.visible = false; scene.add(warrior.blade);
+  warrior.samplesW = warrior.blade.userData.samples.map(() => new THREE.Vector3());
+}
+buildWarrior();
+/* the bat'leth's poses in the warrior's own frame: position, and an Euler tilt on top of its yaw */
+// the overhead cut comes down edge-on — the bar vertical, one end leading, the hands one
+// above the other — so it is a narrow stripe you sidestep, and it lands at the chest whether
+// you stand or crouch. The sweep passes at about 1.45 m at its widest: duck under it or
+// step back; a sidestep will not save you.
+const BLADE_POSE = {
+  guard:   { p: [0.05, 1.05, -0.42], e: [-0.35, 0, 0.15] },
+  back:    { p: [0.10, 1.00, -0.20], e: [-0.90, 0.40, 0.50] },
+  raise:   { p: [0.05, 1.95, -0.10], e: [-1.60, 0, 1.57] },
+  cut:     { p: [0.05, 0.95, -0.95], e: [ 0.90, 0, 1.57] },
+  wind:    { p: [0.80, 1.50, -0.25], e: [ 0.10, -1.25, 0.20] },
+  through: { p: [-0.80, 1.40, -0.55], e: [0.10, 1.25, -0.20] },
+  sweepMid:{ p: [0.00, 1.45, -1.05], e: [0.10, 0, 0] },
+};
+const _bpA = new THREE.Vector3(), _bpB = new THREE.Vector3(), _bpE = new THREE.Euler(), _bpQa = new THREE.Quaternion(), _bpQb = new THREE.Quaternion();
+const smooth = t => t * t * (3 - 2 * t);
+function bladePoseQ(pose, out) { _bpE.set(pose.e[0], pose.e[1], pose.e[2]); return out.copy(warrior.q).multiply(_bpQb.setFromEuler(_bpE)); }
+/* blend between two poses (optionally through a third) at t in 0..1 */
+function setBladePose(a, b, t, via) {
+  warriorFrame.local(a.p[0], a.p[1], a.p[2], _bpA); warriorFrame.local(b.p[0], b.p[1], b.p[2], _bpB);
+  if (via) { warriorFrame.local(via.p[0], via.p[1], via.p[2], warrior.bladeP);
+    const u = 1 - t; warrior.bladeP.multiplyScalar(2 * u * t).addScaledVector(_bpA, u * u).addScaledVector(_bpB, t * t); }
+  else warrior.bladeP.lerpVectors(_bpA, _bpB, t);
+  bladePoseQ(a, _bpQa); bladePoseQ(b, warrior.bladeQ);
+  warrior.bladeQ.slerp(_bpQa, 1 - t);
+  warrior.blade.position.copy(warrior.bladeP); warrior.blade.quaternion.copy(warrior.bladeQ);
+}
+function warriorSetLevel(level) {
+  warrior.level = Math.max(1, level | 0); warrior.tempo = 1 + CALIS.tempoPerLevel * (warrior.level - 1); game.wave = warrior.level;
+}
+function warriorSpawn(level) {
+  warriorSetLevel(level);
+  const a = Math.random() * Math.PI * 2, r = 3.4;
+  warrior.pos.set(Math.cos(a) * r, 0, Math.sin(a) * r); warrior.sink = 0; warrior.hp = CALIS.hp;
+  warrior.state = 'approach'; warrior.timer = (CALIS.stalkMin + Math.random() * (CALIS.stalkMax - CALIS.stalkMin)) / warrior.tempo;
+  warrior.chipCd = 0; warrior.strafe = Math.random() < 0.5 ? -1 : 1; warrior.strafeT = 2 + Math.random() * 2;
+  warrior.rig.g.visible = true; warrior.blade.visible = true;
+  setBladePose(BLADE_POSE.guard, BLADE_POSE.guard, 0);
+}
+function warriorHide() { warrior.state = 'off'; if (warrior.rig) warrior.rig.g.visible = false; if (warrior.blade) warrior.blade.visible = false; }
+/* the warrior takes a hit from anything of yours: open (after a swing, or staggered) it counts;
+   winding up it breaks the attack; otherwise it is a chip */
+function warriorStruck(kind) {
+  const W = warrior;
+  if (W.state === 'off' || W.state === 'dead') return false;
+  if (W.chipCd > 0) return false;
+  W.chipCd = 0.35;
+  if (W.state === 'recover' || W.state === 'stagger') {
+    W.hp--; game.hits++; addScore(CALIS.ptsHit); bumpStreak();
+    AudioKit.impact(0.9, true); warriorFrame.local(0, 1.2, 0, _bpA); popEffect(_bpA, 0xe5484d);
+    if (W.hp <= 0) {
+      W.state = 'dead'; W.timer = CALIS.deathTime; game.kills = (game.kills || 0) + 1; addScore(CALIS.ptsKill);
+      AudioKit.roar(); flashGrid(0.5); toast('WARRIOR DOWN +' + CALIS.ptsKill);
+    } else { W.state = 'stagger'; W.timer = CALIS.stagger / W.tempo; toast('HIT ' + (CALIS.hp - W.hp) + '/' + CALIS.hp + ' +' + CALIS.ptsHit); }
+    return true;
+  }
+  if (W.state === 'telegraph') {                              // caught winding up: the attack is broken
+    W.state = 'stagger'; W.timer = CALIS.stagger * 0.8 / W.tempo; addScore(CALIS.ptsChip); bumpStreak();
+    AudioKit.feintOff(); toast('ATTACK BROKEN +' + CALIS.ptsChip); return true;
+  }
+  addScore(CALIS.ptsChip); AudioKit.clang(); toast('+' + CALIS.ptsChip);  // a glancing hit on its guard
+  return true;
+}
+const _wHead = new THREE.Vector3(), _wTo = new THREE.Vector3(), _wPerp = new THREE.Vector3(), _wS = new THREE.Vector3(), _wB = new THREE.Vector3();
+/* distance from point p to the segment a→b */
+function segDist(p, a, b) {
+  _wS.copy(b).sub(a); const L2 = _wS.lengthSq(); if (L2 < 1e-9) return p.distanceTo(a);
+  const t = Math.max(0, Math.min(1, _wB.copy(p).sub(a).dot(_wS) / L2));
+  _wB.copy(a).addScaledVector(_wS, t); return p.distanceTo(_wB);
+}
+function warriorTick(dt) {
+  const W = warrior; if (W.state === 'off') return;
+  if (W.chipCd > 0) W.chipCd -= dt;
+  camera.getWorldPosition(_wHead);
+  _wTo.copy(_wHead).sub(W.pos); _wTo.y = 0; const dist = _wTo.length(); if (dist > 1e-4) _wTo.multiplyScalar(1 / dist);
+  W.yaw = Math.atan2(-_wTo.x, -_wTo.z);
+  W.q.setFromAxisAngle(_upv, W.yaw);
+  const moving = W.state === 'approach' || W.state === 'circle';
+  if (moving || W.state === 'stagger') {
+    const radial = W.state === 'stagger' ? -0.9 : Math.max(-1, Math.min(1, (dist - CALIS.keepDist) * 1.6));
+    W.pos.addScaledVector(_wTo, radial * CALIS.approachSpeed * W.tempo * dt);
+    if (moving && dist < 2.8) {
+      _wPerp.set(-_wTo.z, 0, _wTo.x); W.pos.addScaledVector(_wPerp, W.strafe * CALIS.strafeSpeed * W.tempo * dt);
+      W.strafeT -= dt; if (W.strafeT <= 0) { W.strafe = -W.strafe; W.strafeT = 1.5 + Math.random() * 2.5; }
+    }
+    const r = Math.hypot(W.pos.x, W.pos.z), rMax = TUNE.arenaRMax - 0.3;     // it stays in the ruins
+    if (r > rMax) { W.pos.x *= rMax / r; W.pos.z *= rMax / r; }
+    if (dist < 0.9) W.pos.addScaledVector(_wTo, -(0.9 - dist));                 // and out of your face
+  }
+  W.timer -= dt;
+  const tele = Math.max(CALIS.telegraphFloor, CALIS.telegraph / W.tempo);
+  switch (W.state) {
+    case 'approach': case 'circle':
+      setBladePose(BLADE_POSE.guard, BLADE_POSE.guard, 0);
+      if (W.timer <= 0 && dist < CALIS.attackDist) {
+        W.state = 'telegraph'; W.timer = tele; W.kind = Math.random() < 0.55 ? 'overhead' : 'sweep';
+        W.hitThisSwing = false; W.parried = false; AudioKit.grunt();
+      } else if (W.timer <= 0) W.timer = 0.4;                                  // out of reach: keep coming
+      break;
+    case 'telegraph': {
+      const t = smooth(1 - Math.max(0, W.timer / tele));
+      if (W.kind === 'overhead') setBladePose(BLADE_POSE.guard, BLADE_POSE.raise, t);
+      else setBladePose(BLADE_POSE.guard, BLADE_POSE.wind, t);
+      if (W.timer <= 0) { W.state = 'swing'; W.swingT = 0; AudioKit.whoosh(); }
+      break; }
+    case 'swing': {
+      W.swingT += dt; const t = Math.min(1, W.swingT / (CALIS.swing / Math.sqrt(W.tempo)));
+      if (W.kind === 'overhead') setBladePose(BLADE_POSE.raise, BLADE_POSE.cut, t * t);
+      else setBladePose(BLADE_POSE.wind, BLADE_POSE.through, smooth(t), BLADE_POSE.sweepMid);
+      warriorSwingContacts();
+      if (t >= 1) { W.state = 'recover'; W.timer = CALIS.recover / W.tempo * (W.parried ? 1.5 : 1);
+        if (!W.hitThisSwing && !W.parried) { game.dodges++; addScore(CALIS.ptsDodge); bumpStreak(); } }
+      break; }
+    case 'recover': {
+      const t = smooth(1 - Math.max(0, W.timer / (CALIS.recover / W.tempo)));
+      setBladePose(W.kind === 'overhead' ? BLADE_POSE.cut : BLADE_POSE.through, BLADE_POSE.guard, t);
+      if (W.timer <= 0) { W.state = 'circle'; W.timer = (CALIS.stalkMin + Math.random() * (CALIS.stalkMax - CALIS.stalkMin)) / W.tempo; }
+      break; }
+    case 'stagger':
+      setBladePose(BLADE_POSE.back, BLADE_POSE.back, 0);
+      if (W.timer <= 0) { W.state = 'circle'; W.timer = 0.6 / W.tempo; }
+      break;
+    case 'dead':
+      W.sink += dt * 1.3; setBladePose(BLADE_POSE.back, BLADE_POSE.back, 0);
+      if (W.timer <= 0) { warriorSpawn(W.level + 1); toast('LEVEL ' + W.level); AudioKit.ackBeep(); hudDirty = true; saveGame(); }
+      break;
+  }
+  poseBody(W.rig, warriorFrame);
+  if (W.rig.head) { W.rig.head.lookAt(_wHead); }                     // it watches you
+}
+/* during a swing: does the blade reach you, and does your blade meet it? */
+function warriorSwingContacts() {
+  const W = warrior;
+  W.blade.userData.samples.forEach((o, k) => o.getWorldPosition(W.samplesW[k]));
+  camera.getWorldPosition(_wHead);
+  _wB.copy(_wHead); _wB.y -= 0.75;                                     // the torso runs down from the head
+  if (!W.hitThisSwing && !W.parried) {
+    for (const p of W.samplesW) {
+      if (p.distanceTo(_wHead) < CALIS.headRadius || segDist(p, _wHead, _wB) < CALIS.torsoRadius) {
+        W.hitThisSwing = true; onPlayerHit(); AudioKit.impact(1, true); break;
+      }
+    }
+  }
+  if (!W.parried) for (const b of activeBlades) {                     // your blade, in a hand, on its blade
+    if (!b.visible || !b.userData.holder || !b.userData.holder.startsWith('hand')) continue;
+    let met = false;
+    for (const o of b.userData.samples) { o.getWorldPosition(_wS);
+      for (const p of W.samplesW) if (p.distanceTo(_wS) < CALIS.parryReach) { met = true; break; }
+      if (met) break; }
+    if (met) { W.parried = true; game.parries = (game.parries || 0) + 1; addScore(CALIS.ptsParry); bumpStreak();
+      AudioKit.deflect(); popEffect(_wS, 0xfff3d6); haptic(b, 0.9, 70); toast('PARRIED +' + CALIS.ptsParry); break; }
+  }
+}
+/* is a point on the warrior's body? (head to hips) */
+function warriorBodyHit(p, extra) {
+  if (warrior.state === 'off' || warrior.state === 'dead') return false;
+  warriorFrame.local(0, 1.55, 0, _wS); warriorFrame.local(0, 0.85, 0, _wB);
+  return segDist(p, _wS, _wB) < CALIS.bodyReach + (extra || 0);
+}
+function warriorCenter(out) { return warriorFrame.local(0, 1.2, 0, out); }
+
 const EMPTY_HAND = { userData: { isEmpty: true, label: 'NO WEAPON' } };
 function heldBy(i) { for (const w of ARMS) if (w.userData.holder === 'hand' + i) return w; return null; }
 function holsterOccupant(k) { for (const w of ARMS) if (w.userData.holder === 'holster' + k) return w; return null; }
@@ -2245,10 +2598,21 @@ function cancelTrigger(w) {
   u.charge = 0;
 }
 
-function giveTo(w, i) {
+/* keepPose: the weapon stays exactly where it was relative to the hand — a catch. Otherwise
+   it seats into its canonical hold (drawn from a holster, taken off the table). */
+const _gvP = new THREE.Vector3(), _gvQ = new THREE.Quaternion();
+function giveTo(w, i, keepPose) {
   const prev = heldBy(i);
   if (prev && prev !== w) return false;                    // that hand is full
   cancelTrigger(w);
+  const u = w.userData;
+  u.custom = false;
+  if (keepPose && i !== 2 && (u.isGun ? handPose(i, _gvP, _gvQ) : palmPose(i, _gvP, _gvQ))) {
+    _gvQ.invert();
+    u.holdQ = (u.holdQ || new THREE.Quaternion()).copy(_gvQ).multiply(w.quaternion);
+    u.holdOff = (u.holdOff || new THREE.Vector3()).copy(w.position).sub(_gvP).applyQuaternion(_gvQ);
+    u.custom = true;
+  }
   if (w.userData.support === i) w.userData.support = null;
   const wasFlying = thrown.indexOf(w);
   if (wasFlying >= 0) thrown.splice(wasFlying, 1);
@@ -2302,6 +2666,22 @@ const HOLD = {};
   // points (its −Z) go out of the knuckles, the plate stands edge-on to the palm
   HOLD.batleth = { q: mk([0, 1, 0], [-1, 0, 0], [0, 0, 1]), offset: new THREE.Vector3(0, 0, 0) };
 }
+/* A per-blade trim on top of HOLD, in the fist's own frame: pitch tilts the blade toward the
+   knuckles or back (about the fist's X), twist turns it about its own length (the fist's Y).
+   Dialled in the headset with the thumbstick — forward/back pitches, left/right twists, 10° a
+   flick — and remembered with the settings. */
+const HOLD_TWEAK = { dktahg: { pitch: 0, twist: 0 }, batleth: { pitch: 0, twist: 0 } };
+const _htQ = new THREE.Quaternion(), _htE = new THREE.Euler();
+function holdTweakQ(id) {
+  const t = HOLD_TWEAK[id]; if (!t || (!t.pitch && !t.twist)) return _htQ.identity();
+  _htE.set(t.pitch * Math.PI / 180, t.twist * Math.PI / 180, 0); return _htQ.setFromEuler(_htE);
+}
+function nudgeHold(w, axis, deg) {
+  const id = w.userData.def.id, t = HOLD_TWEAK[id]; if (!t) return;
+  t[axis] = Math.max(-90, Math.min(90, t[axis] + deg));
+  if (typeof saveSettings === 'function') saveSettings();
+  AudioKit.ackBeep(); toast('HOLD · ' + axis.toUpperCase() + ' ' + (t[axis] > 0 ? '+' : '') + t[axis] + '°');
+}
 function handPose(i, outPos, outQuat) {
   if (i === 2) {                                            // desktop: the hand is the viewmodel,
     camera.getWorldPosition(outPos);                        // not the camera itself
@@ -2340,7 +2720,7 @@ function nearestStowed(pos) {
 function nearestTableWeapon(pos, maxD) {
   let best = null, bd = maxD;
   ARMS.forEach(w => {
-    if (w.userData.holder !== 'table') return;
+    if (w.userData.holder !== 'table' || !weaponAllowed(w)) return;
     w.userData.tableAnchor.getWorldPosition(_ap);
     const d = _ap.distanceTo(pos); if (d < bd) { bd = d; best = w; } });
   return best;
@@ -2355,29 +2735,55 @@ function handGrip(i) {
   const k = nearestStowed(_hp);
   if (k >= 0) { const hw = holsterOccupant(k); giveTo(hw, i); AudioKit.ackBeep(); toast('DREW · ' + hw.userData.label); return; }
   const planted = pickUpThrown(_hp, 0.40);                     // off the floor, the table, or out of a wall
-  if (planted) { giveTo(planted, i); AudioKit.ackBeep(); toast('RECOVERED · ' + planted.userData.label); return; }
-  if (game.phase === 'select') {
-    const tw = nearestTableWeapon(_hp, TUNE.tableReach);
-    if (tw) { giveTo(tw, i); AudioKit.ackBeep(); toast(tw.userData.label); return; }
+  if (planted) {
+    const catching = planted.userData.holder === 'flight';   // out of the air: it stays as you caught it
+    giveTo(planted, i, catching); AudioKit.ackBeep(); toast((catching ? 'CAUGHT · ' : 'RECOVERED · ') + planted.userData.label); return;
   }
   const other = 1 - i;
   const ow = (i === 2) ? null : heldBy(other);
+  let near = Infinity;
+  if (ow) { ow.userData.muzzle ? ow.userData.muzzle.getWorldPosition(_ap) : ow.getWorldPosition(_ap);
+    near = Math.min(_ap.distanceTo(_hp), ow.position.distanceTo(_hp)); }
+  if (game.phase === 'select' && near > 0.25) {                 // the table, unless the hand is right on the other hand's weapon
+    const tw = nearestTableWeapon(_hp, TUNE.tableReach);
+    if (tw) { giveTo(tw, i); AudioKit.ackBeep(); toast(tw.userData.label); return; }
+  }
   if (ow) {
-    ow.userData.muzzle ? ow.userData.muzzle.getWorldPosition(_ap) : ow.getWorldPosition(_ap);
-    const near = Math.min(_ap.distanceTo(_hp), ow.position.distanceTo(_hp));
     if (near < 0.55) {
-      if (ow.userData.def.hands === 2 && ow.userData.support === null) {
+      // guns and two-handers take a supporting hand (let go with the first hand and it passes
+      // across); a knife goes straight to the other hand
+      if ((ow.userData.isGun || ow.userData.def.hands === 2) && ow.userData.support === null) {
         ow.userData.support = i; AudioKit.ackBeep(); toast('TWO-HANDED · ' + ow.userData.label);
-      } else { giveTo(ow, i); AudioKit.ackBeep(); toast('SWITCHED HANDS'); }
+      } else if (!ow.userData.isGun && ow.userData.def.hands === 1) { giveTo(ow, i); AudioKit.ackBeep(); toast('SWITCHED HANDS'); }
       return;
     }
   }
+  // something in the air nearby, or just thrown from this hand: the squeeze is a catch, not a cast
+  const hand = handOf(i);
+  for (const w of ARMS) if (w.userData.holder === 'flight' && (w.position.distanceTo(_hp) < TUNE.catchArm || (hand && hand.threw === w && perf - hand.threwAt < 2.5))) {
+    if (hand) hand.catching = true; return;
+  }
   if (game.phase !== 'idle') castLine(i);                       // nothing in reach: the line goes out
+}
+/* an armed catch: the hand is squeezed and empty; the first flying weapon to come within reach is taken as it is */
+function catchTick() {
+  hands.forEach((hand, i) => {
+    if (!hand.catching) return;
+    if (heldBy(i)) { hand.catching = false; return; }
+    if (!handPose(i, _hp, _hq)) return;
+    for (const w of ARMS) {
+      if (w.userData.holder !== 'flight') continue;
+      if (w.position.distanceTo(_hp) < TUNE.catchReach) {
+        giveTo(w, i, true); hand.catching = false; AudioKit.ackBeep(); haptic(w, 0.5, 30); toast('CAUGHT · ' + w.userData.label); return;
+      }
+    }
+  });
 }
 /* Let go: a supporting hand just comes off; a holding hand releases the weapon into
    whatever is there — a holster, a sheath, the air. */
 function handGripEnd(i) {
   for (const w of ARMS) if (w.userData.support === i) w.userData.support = null;
+  const hand = handOf(i); if (hand) hand.catching = false;
   if (lineActive(i)) { releaseLine(i); return; }
   const w = heldBy(i); if (!w) return;
   releaseWeapon(w, i);
@@ -2442,6 +2848,7 @@ function throwWeapon(w, i, vel) {
   if (_thv.lengthSq() < 1e-6) _thv.set(1, 0, 0);
   launch(w, _tsp, _thv, (4 + speed * 0.6) * throwFactor(m));
   u.dropped = false;
+  const hand = handOf(i); if (hand) { hand.threw = w; hand.threwAt = perf; }
   AudioKit.feintOff(); haptic(w, 0.6, 50);
   toast('THROWN · ' + u.label);
   return true;
@@ -2449,12 +2856,13 @@ function throwWeapon(w, i, vel) {
 function dropWeapon(w, i) {
   const u = w.userData, hand = handOf(i);
   _tsp.set(0, 0, 0);
-  if (hand && hand.vel) _tsp.copy(hand.vel).multiplyScalar(0.6);
-  if (_tsp.length() > 1.2) _tsp.setLength(1.2);          // it slips out; it is not flung
+  if (hand) handPeakVel(hand, _tsp);                       // it leaves with the hand's momentum — a toss is a toss
+  if (_tsp.length() > TUNE.throwSpeed) _tsp.setLength(TUNE.throwSpeed);   // …short of a throw, which is throwWeapon's job
   _thv.set(1, 0.3, 0.2);
-  launch(w, _tsp, _thv, 1.5);
+  launch(w, _tsp, _thv, 0.8 + _tsp.length() * 1.2);
   u.dropped = true;
-  toast('DROPPED · ' + u.label);
+  if (hand) { hand.threw = w; hand.threwAt = perf; }
+  toast((_tsp.length() > 0.5 ? 'TOSSED · ' : 'DROPPED · ') + u.label);
 }
 /* Where a lying thing's grip sits: on the table top if it is over the table, else the floor. */
 function restHeight(x, y, z) {
@@ -2520,6 +2928,8 @@ function thrownTick(dt) {
           if (!D.live) continue;
           if (D.mesh.position.distanceTo(w.position) < TUNE.discRadius + 0.2) { _tsp.copy(u.vel); discBladeHit(w.position, _tsp, D); break; }
         }
+      } else if (game.program === 'calisthenics') {
+        if (warriorBodyHit(w.position, 0.1) && warriorStruck('thrown')) u.vel.multiplyScalar(-0.3);
       } else if (w.position.distanceTo(remote.pos) < REMOTE_RADIUS + 0.22) {
         if (remote.state === 'vulnerable') onRemoteTagged(); else onRemoteChipped();
         u.vel.multiplyScalar(-0.3);
@@ -2701,6 +3111,8 @@ function lineTick(dt) {
         if (game.program === 'velocity') {
           for (const D of VEL.discs) { if (!D.live) continue;
             if (D.mesh.position.distanceTo(tip) < TUNE.discRadius + 0.16) { discBladeHit(tip, _lv, D); tipPrev.copy(tip); break; } }
+        } else if (game.program === 'calisthenics') {
+          if (warriorBodyHit(tip, 0.05) && warriorStruck('hook')) tipPrev.copy(tip).addScaledVector(_lv, dt * 0.4);
         } else if (tip.distanceTo(remote.pos) < REMOTE_RADIUS + 0.18) {
           if (remote.state === 'vulnerable') onRemoteTagged(); else onRemoteChipped();
           tipPrev.copy(tip).addScaledVector(_lv, dt * 0.4);              // it bounces off
@@ -2774,7 +3186,7 @@ function loadoutTick(dt) {
     const u = w.userData, hold = u.holder;
     if (hold === 'flight' || hold === 'stuck' || hold === 'tethered') { w.visible = true; continue; }
     if (hold === 'table') {
-      w.visible = selecting;
+      w.visible = selecting && weaponAllowed(w);
       if (selecting) {
         u.tableAnchor.getWorldPosition(_hp); u.tableAnchor.getWorldQuaternion(_hq);
         w.position.copy(_hp); w.quaternion.copy(_hq);
@@ -2793,7 +3205,7 @@ function loadoutTick(dt) {
     if (!(melee ? palmPose(i, _mainP, _hq) : handPose(i, _mainP, _hq))) { w.visible = false; continue; }
     w.visible = (i === 2) ? (game.mode === 'desk') : renderer.xr.isPresenting;
     const sup = u.support;
-    if (sup !== null && sup !== undefined && (melee ? palmPose(sup, _suppP, _gq0) : handPose(sup, _suppP, _gq0))) {
+    if (sup !== null && sup !== undefined && u.def.hands === 2 && (melee ? palmPose(sup, _suppP, _gq0) : handPose(sup, _suppP, _gq0))) {
       if (u.def.grip === 'span') {                       // bat'leth: spans palm to palm, and rolls with the wrists
         _gx.copy(_suppP).sub(_mainP);
         if (_gx.lengthSq() < 1e-4) _gx.set(1, 0, 0);
@@ -2825,9 +3237,12 @@ function loadoutTick(dt) {
       w.position.copy(_mainP).add(_vmOff);
       w.quaternion.copy(_hq);
       if (u.baseY === undefined) { u.baseY = 0; }
+    } else if (u.custom) {                                // caught: it stays where you caught it
+      w.quaternion.copy(_hq).multiply(u.holdQ);
+      w.position.copy(_mainP).add(_mainP2.copy(u.holdOff).applyQuaternion(_hq));
     } else if (melee && HOLD[u.def.id]) {                 // one hand on a blade: seat it in the fist
       const h = HOLD[u.def.id];
-      w.quaternion.copy(_hq).multiply(h.q);
+      w.quaternion.copy(_hq).multiply(holdTweakQ(u.def.id)).multiply(h.q);
       w.position.copy(_mainP).add(_mainP2.copy(h.offset).applyQuaternion(_hq));
     } else {
       w.position.copy(_mainP); w.quaternion.copy(_hq);
@@ -2869,13 +3284,22 @@ function tryLobbyPad(hand) {
 }
 function pressPad(pad) {
   if (pad.id === 'begin') { beginDrill(); return; }
+  if (pad.id === 'resume') { resumeGame(); return; }
   if (game.program !== pad.id) {
     setProgram(pad.id); AudioKit.ackBeep(); flashGrid(0.25);
-    toast(PROG_TITLE[pad.id].toUpperCase() + ' · LOADED');
+    toast(PROG_TITLE[pad.id].toUpperCase() + (pad.id === 'calisthenics' ? ' · KLINGON ARMS ONLY' : ' · LOADED'));
   } else AudioKit.ackBeep();
 }
 function beginDrill() {
   if (game.phase !== 'select') return;
+  if (game.program === 'calisthenics') {                       // the Empire's program: Klingon arms only
+    let sent = 0;
+    ARMS.forEach(w => { const h = w.userData.holder;
+      if (!weaponAllowed(w) && (h.startsWith('hand') || h.startsWith('holster'))) { returnToTable(w); sent++; } });
+    lines.forEach(L => { if (L.latched && !weaponAllowed(L.latched)) releaseLine(L.i); });
+    if (sent) toast('KLINGON WEAPONS ONLY · ' + sent + ' RETURNED TO THE TABLE');
+    if (AVATAR.affiliation !== 'empire') setAvatarOption('affiliation', 'empire');
+  }
   game.phase = 'playing';
   stageTable.visible = false;
   AudioKit.ackBeep(); flashGrid(0.5);
@@ -2894,7 +3318,8 @@ function phaserTick(phaser, dt) {
     if (!u.beaming) {
       // draw the cell into the charge until this setting says stop
       const cap = chargeCapEnergy(phaser);
-      const draw = Math.min(TUNE.chargeRate * dt, Math.max(0, cap - (u.charge || 0)), u.battery);
+      const rate = (u.def && u.def.chargeRate) || TUNE.chargeRate;
+      const draw = Math.min(rate * dt, Math.max(0, cap - (u.charge || 0)), u.battery);
       if (draw > 0) { u.charge = (u.charge || 0) + draw; drainBattery(phaser, draw); }
       AudioKit.chargeUpdate((u.charge || 0) / Math.max(0.001, cap));
       const topped = (u.charge || 0) >= cap - 1e-6 || u.battery <= 0.001;
@@ -2924,7 +3349,7 @@ function phaserTick(phaser, dt) {
   }
   // the cell trickles back when you let it rest
   if (!u.holding && u.battery < u.batteryMax) {
-    u.battery = Math.min(u.batteryMax, u.battery + TUNE.batteryRegen * dt);
+    u.battery = Math.min(u.batteryMax, u.battery + TUNE.batteryRegen * ((u.def && u.def.regen) || 1) * dt);
     updateBatteryGauge(phaser); hudDirty = true;
   }
   // amber tip breathes with charge
@@ -2945,7 +3370,8 @@ function chargeCapSec(p) {
 function chargeCapEnergy(w) {
   const p = w.userData.power || 5;
   if (p >= 10) return w.userData.batteryMax;            // kill: everything you have
-  return Math.min(w.userData.batteryMax, TUNE.chargeRate * chargeCapSec(p));
+  const rate = (w.userData.def && w.userData.def.chargeRate) || TUNE.chargeRate;
+  return Math.min(w.userData.batteryMax, rate * chargeCapSec(p));
 }
 function drainBattery(w, amount) {
   const u = w.userData;
@@ -3009,11 +3435,17 @@ function pollHandButtons() {
       if (upper !== hand.prevUpper) handFire(hand, upper, 'thumb');
       const w = handWeapon(hand);
       const pAx = hand.prevAx === undefined ? 0 : hand.prevAx;
+      const ay = (gp.axes && gp.axes.length > 3) ? gp.axes[3] : 0, pAy = hand.prevAy === undefined ? 0 : hand.prevAy;
       if (w.userData.isGun) {
         if (ax > 0.6 && pAx <= 0.6) changePower(w, 1);
         if (ax < -0.6 && pAx >= -0.6) changePower(w, -1);
+      } else if (!w.userData.isEmpty && HOLD_TWEAK[w.userData.def.id]) {     // a blade: trim how it sits
+        if (ax > 0.6 && pAx <= 0.6) nudgeHold(w, 'twist', 10);
+        if (ax < -0.6 && pAx >= -0.6) nudgeHold(w, 'twist', -10);
+        if (ay < -0.6 && pAy >= -0.6) nudgeHold(w, 'pitch', 10);     // stick forward: blade leans forward
+        if (ay > 0.6 && pAy <= 0.6) nudgeHold(w, 'pitch', -10);
       }
-      hand.prevAx = ax;
+      hand.prevAx = ax; hand.prevAy = ay;
     }
     hand.prevLower = lower; hand.prevUpper = upper; hand.prevStick = stick;
   }
@@ -3043,6 +3475,10 @@ function bladeTick(b, dt) {
   for (let i = 0; i < u.samples.length; i++) {
     u.samples[i].getWorldPosition(_bw);
     const speed = u.prevValid ? _bw.distanceTo(u.prev[i]) / dt : 0;
+    if (game.program === 'calisthenics') {                     // a real swing on the warrior's body
+      if (speed > minSpeed && warriorBodyHit(_bw, 0)) { if (warriorStruck('blade')) haptic(b, 0.7, 50); }
+      u.prev[i].copy(_bw); continue;
+    }
     if (game.program === 'velocity') {
       const reach = TUNE.discRadius + 0.14 * (b.scale.x || 1);
       for (const D of VEL.discs) {
@@ -3095,7 +3531,7 @@ function setupDesk() {
       deskDashDir(desk.dashVel).multiplyScalar(6.5); desk.dashCd = 1.2; AudioKit.feintOff();
     }
     if (e.code === 'Enter' && game.phase === 'select') { beginDrill(); return; }
-    if (/^Digit[1-6]$/.test(e.code)) {              // desktop: pick straight off the rack
+    if (/^Digit[1-8]$/.test(e.code)) {              // desktop: pick straight off the rack
       const def = ARMORY[Number(e.code.slice(5)) - 1];
       if (def) deskTake(def);
       return;
@@ -3177,6 +3613,7 @@ function loadSettings() {
     if (!raw) return;
     const saved = JSON.parse(raw);
     Object.assign(SETTINGS, saved);
+    if (saved.holdTweak) for (const id in HOLD_TWEAK) if (saved.holdTweak[id]) Object.assign(HOLD_TWEAK[id], saved.holdTweak[id]);
     if (saved.avatar) for (const key in AVATAR_OPTIONS) {              // only values the wardrobe offers
       const v = saved.avatar[key]; if (AVATAR_OPTIONS[key].some(o => o[0] === v)) AVATAR[key] = v; }
     if (!saved.v || saved.v < DEFAULTS.v) {   // v2 split assist from the beam — reset both dials
@@ -3189,6 +3626,7 @@ function loadSettings() {
 }
 function saveSettings() {
   SETTINGS.avatar = Object.assign({}, AVATAR);
+  SETTINGS.holdTweak = JSON.parse(JSON.stringify(HOLD_TWEAK));
   try { localStorage.setItem('phaserRange.settings', JSON.stringify(SETTINGS)); } catch (e) {}
 }
 function applySettings() {
@@ -3395,12 +3833,15 @@ function resetGame() {
     u.beamCharge = 1; u.beamRecharging = false;
     u.battery = u.batteryMax; u.wasDry = false; updateBatteryGauge(w); }
   recallLoose(game.phase === 'playing');           // a restart hands loose blades back; the first start does nothing
+  game.kills = 0; game.parries = 0;
   if (game.program === 'velocity') {
     VEL.speed = TUNE.discSpeed; VEL.strikes = 0; VEL.splitT = 0;
     while (VEL.discs.length > 1) { const gone = VEL.discs.pop(); scene.remove(gone.mesh); }
     VEL.discs[0].sinceStrike = 0; VEL.discs[0].energy = 0;
     VEL.discs[0].wobX = VEL.discs[0].wobZ = 0;
     velocityServe(1.6);
+  } else if (game.program === 'calisthenics') {
+    warriorSpawn(1); warrior.timer += 1.2;                   // a breath before the first approach
   } else {
     remote.state = 'stalk'; remote.timer = 2.5;
     remote.pos.set(0, 1.6, -3.2); remote.base.copy(remote.pos); remotePickWaypoint();
@@ -3412,13 +3853,13 @@ function resetGame() {
 
 function startProgram(mode) {
   game.mode = mode; AudioKit.unlock();
-  if (game.program !== 'velocity') AudioKit.humStart(); else AudioKit.humStop();
+  if (game.program === 'range') AudioKit.humStart(); else AudioKit.humStop();
   lobbyEl.style.display = 'none';
   if (mode === 'desk') { setupDesk(); hudEl.style.display = 'block';
     lockPointer(renderer.domElement); }
   game.phase = 'select';
   game.running = false; game.over = false; game.paused = false;
-  parkRemote(); drawTableConsole(); retractAllLines();
+  parkRemote(); drawTableConsole(); retractAllLines(); warriorHide();
   applyProgram();
   flashGrid(0.35); AudioKit.ackBeep();
   toast('THE LOBBY · ARM YOURSELF FROM THE TABLE · TRIGGER ON A PAD');
@@ -3448,12 +3889,92 @@ function parkRemote() {
 let endedAt = 0;
 function endProgram() {
   game.running = false; game.over = true; endedAt = gt;
+  if (game.program === 'calisthenics') { warrior.state = 'off'; }
   AudioKit.beamStop(); AudioKit.chargeStop();          // no whine left hanging past the end
   activePhasers.forEach(p => { p.userData.holding = false; p.userData.beaming = false; p.userData.charge = 0; });
+  const record = recordRun(game.program, game.score, game.wave);
+  clearSave();
   AudioKit.endChime(); flashGrid(0.7); hudDirty = true;
-  toast('PROGRAM COMPLETE — SCORE ' + game.score);
+  toast(record ? 'NEW RECORD — SCORE ' + game.score : 'PROGRAM COMPLETE — SCORE ' + game.score);
+  if (record) setTimeout(() => AudioKit.ackBeep(), 500);
+  updateDomRecord();
 }
 function tryRestart() { if (game.over && gt - endedAt > 1.5) { resetGame(); flashGrid(0.4); AudioKit.ackBeep(); toast('PROGRAM RESTARTED'); } }
+
+/* ═══════════════ the record: saved games and high scores ═══════════════
+   A running program is snapshotted every few seconds and whenever you pause,
+   walk out to the lobby or leave the holodeck; RESUME in the lobby picks it
+   back up, kit and all. A finished program clears the save and goes into the
+   scores: best score and best wave/speed/level per program, and the last five
+   runs. All in this browser's storage. */
+const SAVE_KEY = 'phaserRange.save', SCORES_KEY = 'phaserRange.scores';
+let saveExists = false;
+const SCORES = { range: { best: 0, bestWave: 0, runs: [] }, velocity: { best: 0, bestWave: 0, runs: [] }, calisthenics: { best: 0, bestWave: 0, runs: [] } };
+function loadScores() {
+  try { const raw = localStorage.getItem(SCORES_KEY); if (!raw) return;
+    const sv = JSON.parse(raw); for (const k in SCORES) if (sv[k]) Object.assign(SCORES[k], sv[k]); } catch (e) {}
+}
+function saveScores() { try { localStorage.setItem(SCORES_KEY, JSON.stringify(SCORES)); } catch (e) {} }
+function bestFor(program) { return SCORES[program] || SCORES.range; }
+/* a finished run goes into the book; returns true if it is a new best score */
+function recordRun(program, score, wave) {
+  const S = bestFor(program), record = score > S.best;
+  S.best = Math.max(S.best, score); S.bestWave = Math.max(S.bestWave, wave);
+  S.runs.unshift({ score, wave, when: Date.now() }); S.runs.length = Math.min(S.runs.length, 5);
+  saveScores(); return record;
+}
+function loadSave() {
+  try { const raw = localStorage.getItem(SAVE_KEY); saveExists = !!raw; return raw ? JSON.parse(raw) : null; }
+  catch (e) { saveExists = false; return null; }
+}
+function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} saveExists = false; if (typeof drawTableConsole === 'function') drawTableConsole(); }
+/* everything a program needs to pick up where it left off */
+function snapshotGame() {
+  const kit = ARMS.map(w => [w.userData.id, w.userData.holder]);
+  const snap = { v: 1, when: Date.now(), program: game.program, mode: game.mode,
+    score: game.score, streak: game.streak, bestStreak: game.bestStreak, wave: game.wave, pips: game.pips,
+    shots: game.shots, hits: game.hits, pops: game.pops, tags: game.tags, dodges: game.dodges, strikes: game.strikes,
+    kills: game.kills || 0, parries: game.parries || 0, popsThisWave: game.popsThisWave, elapsed: gt - game.startTime, kit };
+  if (game.program === 'velocity') { snap.velSpeed = VEL.speed; snap.velStrikes = VEL.strikes; }
+  if (game.program === 'calisthenics') { snap.level = warrior.level; }
+  return snap;
+}
+function saveGame() {
+  if (game.phase !== 'playing' || !game.running) return false;
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(snapshotGame())); saveExists = true; return true; } catch (e) { return false; }
+}
+/* the lobby's RESUME: the saved program, back at its score and wave, your kit where it was */
+function resumeGame() {
+  const sv = loadSave();
+  if (!sv) { AudioKit.dryFire(); toast('NOTHING SAVED'); return false; }
+  if (game.phase !== 'select') return false;
+  setProgram(sv.program);
+  // the kit: holsters as they were; what was in a hand goes to a free holster, or the table
+  recallLoose(false);
+  ARMS.forEach(w => { w.userData.holder = 'table'; w.userData.support = null; });
+  const wanting = [];
+  (sv.kit || []).forEach(([id, holder]) => { const w = arms[id]; if (!w) return;
+    if (/^holster\d+$/.test(holder)) { const k = Number(holder.slice(7));
+      if (HOLSTERS[k] && holsterAccepts(HOLSTERS[k], w) && !holsterOccupant(k)) { w.userData.holder = holder; return; } }
+    if (/^(hand\d|holster\d+)$/.test(holder)) wanting.push(w); });
+  wanting.forEach(w => { const k = HOLSTERS.findIndex((h, j) => holsterAccepts(h, w) && !holsterOccupant(j) && (w.userData.def.id !== 'dktahg' || h.accepts === 'dktahg'))
+    ; const k2 = k >= 0 ? k : HOLSTERS.findIndex((h, j) => holsterAccepts(h, w) && !holsterOccupant(j)); if (k2 >= 0) w.userData.holder = 'holster' + k2; });
+  refreshHeld();
+  beginDrill();
+  Object.assign(game, { score: sv.score || 0, streak: sv.streak || 0, bestStreak: sv.bestStreak || 0, wave: sv.wave || 1,
+    pips: sv.pips || TUNE.pips, shots: sv.shots || 0, hits: sv.hits || 0, pops: sv.pops || 0, tags: sv.tags || 0, dodges: sv.dodges || 0,
+    strikes: sv.strikes || 0, kills: sv.kills || 0, parries: sv.parries || 0, popsThisWave: sv.popsThisWave || 0,
+    startTime: gt - (sv.elapsed || 0) });
+  if (sv.program === 'velocity') { if (sv.velSpeed) VEL.speed = sv.velSpeed; VEL.strikes = sv.velStrikes || 0; }
+  if (sv.program === 'calisthenics') { warriorSetLevel(sv.level || sv.wave || 1); }
+  hudDirty = true; AudioKit.ackBeep();
+  toast('RESUMED · ' + PROG_TITLE[sv.program].toUpperCase() + ' · ' + game.score);
+  return true;
+}
+loadScores(); loadSave();
+let saveClock = 0;
+document.addEventListener('visibilitychange', () => { if (document.hidden) saveGame(); });
+addEventListener('pagehide', () => saveGame());
 
 /* DOM hooks */
 const btnVR = document.getElementById('btn-vr'), btnDesk = document.getElementById('btn-desk'),
@@ -3515,6 +4036,7 @@ btnVR.addEventListener('click', async () => {
     startProgram('vr');
     applyRefresh();
     session.addEventListener('end', () => {
+      saveGame();
       game.running = false; game.phase = 'idle'; game.mode = null; AudioKit.humStop(); AudioKit.beamStop();
       lobbyEl.style.display = 'flex'; hudEl.style.display = 'none';
       playerRig.position.set(0, 0, 0); camera.position.set(0, 1.6, 0); camera.rotation.set(0, 0, 0);
@@ -3530,18 +4052,32 @@ btnVR.addEventListener('click', async () => {
   }
 });
 btnDesk.addEventListener('click', () => startProgram('desk'));
+const btnResumeGame = document.getElementById('btn-resume-game');
+btnResumeGame.addEventListener('click', () => { startProgram('desk'); setTimeout(() => resumeGame(), 0); });
+/* the page shows the record for the program picked, and whether there is a game to resume */
+function updateDomRecord() {
+  const B = bestFor(game.program), sv = loadSave();
+  const el = document.getElementById('bestline');
+  el.textContent = (B.best ? 'Best ' + B.best + ' · ' + waveLabel(game.program).toLowerCase() + ' ' + B.bestWave : 'No record yet')
+    + (sv ? ' · saved: ' + PROG_TITLE[sv.program] + ' at ' + sv.score : '');
+  btnResumeGame.hidden = !sv;
+  if (sv) btnResumeGame.textContent = 'Resume ' + PROG_TITLE[sv.program] + ' · ' + sv.score;
+}
 
 /* program picker */
 const progBtns = Array.prototype.slice.call(document.querySelectorAll('.prog'));
-const PROG_TITLE = { range: 'Phaser Range', velocity: 'Velocity' };
+const PROG_TITLE = { range: 'Phaser Range', velocity: 'Velocity', calisthenics: 'Calisthenics' };
 function setProgram(p) {
+  if (!PROG_TITLE[p]) p = 'range';
   game.program = p;
   progBtns.forEach(b => b.classList.toggle('is-on', b.dataset.prog === p));
   document.getElementById('progtitle').textContent = PROG_TITLE[p];
   document.getElementById('brief-range').hidden = p !== 'range';
   document.getElementById('brief-velocity').hidden = p !== 'velocity';
-  btnVR.textContent = p === 'velocity' ? 'Enter the court' : 'Enter the range';
-  applyProgram(); drawTableConsole(); hudDirty = true;
+  document.getElementById('brief-calisthenics').hidden = p !== 'calisthenics';
+  btnVR.textContent = p === 'velocity' ? 'Enter the court' : p === 'calisthenics' ? 'Enter the ruins' : 'Enter the range';
+  if (p === 'calisthenics' && AVATAR.affiliation !== 'empire') { AVATAR.affiliation = 'empire'; applyAvatar(); }   // Klingon armor only
+  applyProgram(); drawTableConsole(); hudDirty = true; updateDomRecord();
 }
 progBtns.forEach(b => b.addEventListener('click', () => setProgram(b.dataset.prog)));
 setProgram('range');
@@ -3636,7 +4172,7 @@ const hScore = document.getElementById('h-score'), hStreak = document.getElement
       pipEls = document.querySelectorAll('.pip');
 function drawDomHud() {
   hScore.textContent = game.score; hStreak.textContent = game.streak; hWave.textContent = game.wave;
-  document.getElementById('lab-wave').textContent = game.program === 'velocity' ? 'Speed' : 'Wave';
+  document.getElementById('lab-wave').textContent = { velocity: 'Speed', calisthenics: 'Level' }[game.program] || 'Wave';
   const w = desk.hand ? handWeapon(desk.hand) : null;
   const nm = !w || w.userData.isEmpty ? '—' : (w.userData.label || 'BLADE').replace('PHASER · ', '');
   document.getElementById('h-weap').textContent = (!w || !w.userData.isGun) ? nm
@@ -3654,15 +4190,17 @@ renderer.setAnimationLoop((time) => {
   const t = time * 0.001;
   const dt = Math.min(0.05, lastT ? t - lastT : 0.016); lastT = t; perf = t;
   if (!game.paused) gt += dt;
+  if (game.running && !game.paused) { saveClock += dt; if (saveClock > 5) { saveClock = 0; saveGame(); } }
   if (dt > 0) { const f = 1 / dt; fpsAvg = fpsAvg ? fpsAvg + (f - fpsAvg) * 0.06 : f; }
   fpsClock += dt; if (fpsClock > 0.5) { fpsClock = 0; hudDirty = true; }
 
   vrControllers.forEach(c => c.visible = renderer.xr.isPresenting);
   if (game.mode) { loadoutTick(dt); bodyTick(); pointersTick(); }
-  if (!game.paused) { thrownTick(dt); if (game.mode) lineTick(dt); }
+  if (!game.paused) { thrownTick(dt); if (game.mode) { catchTick(); lineTick(dt); } }
   if (game.phase === 'select') {
     lobbyPads.forEach(p => {
       if (p.id === 'begin') p.mat.color.setHSL(0.09, 1, 0.45 + 0.25 * Math.sin(perf * 4));
+      else if (p.id === 'resume') p.mat.color.copy(p.base).multiplyScalar(saveExists ? 0.75 + 0.25 * Math.sin(perf * 3) : 0.18);
       else p.mat.color.copy(p.base).multiplyScalar(game.program === p.id ? 1.0 : 0.30);
     });
     HOLSTERS.forEach(h => { if (h.ringMat) h.ringMat.opacity = 0.18 + 0.12 * Math.sin(perf * 3); });
@@ -3673,6 +4211,8 @@ renderer.setAnimationLoop((time) => {
     updateAim();
     if (game.program === 'velocity') {
       if (game.running) velocityTick(dt);
+    } else if (game.program === 'calisthenics') {
+      if (game.running) warriorTick(dt);
     } else {
       remoteTick(dt);
       if (game.running) { boltsTick(dt); targetsTick(dt); }
